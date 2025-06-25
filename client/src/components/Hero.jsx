@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Menu, X, Eye, EyeOff, ChevronDown } from "lucide-react";
 
 const Hero = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -9,15 +10,15 @@ const Hero = () => {
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    remember: false
+    email: "",
+    password: "",
+    remember: false,
   });
   const [signupData, setSignupData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    employeeId: ''
+    email: "",
+    password: "",
+    confirmPassword: "",
+    employeeId: "",
   });
   const [navShadow, setNavShadow] = useState(false);
 
@@ -26,66 +27,72 @@ const Hero = () => {
     const handleScroll = () => {
       setNavShadow(window.scrollY > 100);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isSigninModalOpen || isSignupModalOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     }
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     };
   }, [isSigninModalOpen, isSignupModalOpen]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSignupInputChange = (e) => {
     const { name, value } = e.target;
-    setSignupData(prev => ({
+    setSignupData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.email && formData.password) {
-      console.log('Login attempt:', formData);
-      alert(`Login attempt with:\nEmail: ${formData.email}\nRemember: ${formData.remember ? 'Yes' : 'No'}`);
+      console.log("Login attempt:", formData);
+      alert(
+        `Login attempt with:\nEmail: ${formData.email}\nRemember: ${
+          formData.remember ? "Yes" : "No"
+        }`
+      );
       setIsSigninModalOpen(false);
       // Here you would integrate with your authentication system
     } else {
-      alert('Please fill in all required fields');
+      alert("Please fill in all required fields");
     }
   };
 
   const handleSignupSubmit = (e) => {
     e.preventDefault();
     const { email, password, confirmPassword, employeeId } = signupData;
-    
+
     if (!email || !password || !confirmPassword || !employeeId) {
-      alert('Please fill in all required fields');
+      alert("Please fill in all required fields");
       return;
     }
-    
+
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      alert("Passwords do not match");
       return;
     }
-    
-    console.log('Signup attempt:', signupData);
-    alert(`Signup successful with:\nEmail: ${email}\nEmployee ID: ${employeeId}`);
+
+    console.log("Signup attempt:", signupData);
+    alert(
+      `Signup successful with:\nEmail: ${email}\nEmployee ID: ${employeeId}`
+    );
     setIsSignupModalOpen(false);
     // Here you would integrate with your authentication system
   };
@@ -116,16 +123,22 @@ const Hero = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Navigation */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        navShadow ? 'shadow-lg' : ''
-      } backdrop-blur-lg bg-white/95 border-b border-gray-200`}>
+      <nav
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+          navShadow ? "shadow-lg" : ""
+        } backdrop-blur-lg bg-white/95 border-b border-gray-200`}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                <svg
+                  className="w-5 h-5 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                 </svg>
               </div>
               <span className="text-xl font-bold text-gray-900">PER Entry</span>
@@ -133,16 +146,25 @@ const Hero = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#about" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium">
+              <Link
+                to="/about"
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              >
                 About
-              </a>
-              <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium">
+              </Link>
+              <Link
+                to="/contact"
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              >
                 Contact
-              </a>
-              <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium">
+              </Link>
+              <Link
+                to="/pricing"
+                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+              >
                 Pricing
-              </a>
-              <button 
+              </Link>
+              <button
                 onClick={openSigninModal}
                 className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
@@ -152,14 +174,15 @@ const Hero = () => {
 
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <button 
+              <button
                 onClick={toggleMobileMenu}
                 className="text-gray-700 hover:text-blue-600 focus:outline-none transition-transform duration-300"
               >
-                {isMobileMenuOpen ? 
-                  <X className="w-6 h-6 transform rotate-90 animate-in zoom-in duration-200" /> : 
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6 transform rotate-90 animate-in zoom-in duration-200" />
+                ) : (
                   <Menu className="w-6 h-6 transform animate-in zoom-in duration-200" />
-                }
+                )}
               </button>
             </div>
           </div>
@@ -168,16 +191,25 @@ const Hero = () => {
           {isMobileMenuOpen && (
             <div className="md:hidden pb-4 animate-in slide-in-from-top duration-300 backdrop-blur-md bg-white/90 rounded-xl mt-2 shadow-lg">
               <div className="flex flex-col space-y-3 p-3">
-                <a href="#about" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50">
+                <Link
+                  to="/about"
+                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50"
+                >
                   About
-                </a>
-                <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50">
+                </Link>
+                <Link
+                  to="/contact"
+                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50"
+                >
                   Contact
-                </a>
-                <a href="#pricing" className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50">
+                </Link>
+                <Link
+                  to="/pricing"
+                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50"
+                >
                   Pricing
-                </a>
-                <button 
+                </Link>
+                <button
                   onClick={openSigninModal}
                   className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 w-full transform hover:scale-[1.02]"
                 >
@@ -194,23 +226,30 @@ const Hero = () => {
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100 rounded-full opacity-30 animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-50 rounded-full opacity-20 animate-pulse" style={{animationDelay: '3s'}}></div>
-          <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-blue-75 rounded-full opacity-40 animate-pulse" style={{animationDelay: '1.5s'}}></div>
+          <div
+            className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-50 rounded-full opacity-20 animate-pulse"
+            style={{ animationDelay: "3s" }}
+          ></div>
+          <div
+            className="absolute top-1/2 left-1/4 w-64 h-64 bg-blue-75 rounded-full opacity-40 animate-pulse"
+            style={{ animationDelay: "1.5s" }}
+          ></div>
         </div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="animate-in fade-in slide-in-from-bottom duration-1000">
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-              Manage Your{' '}
+              Manage Your{" "}
               <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                PER 
+                PER
               </span>
               <br />
               Effortlessly
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Streamline your PER Entries with our powerful, intuitive platform. 
-              Track, monitor, and optimize your resources with cutting-edge technology.
+              Streamline your PER Entries with our powerful, intuitive platform.
+              Track, monitor, and optimize your resources with cutting-edge
+              technology.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button className="bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-blue-500/25 min-w-[200px]">
@@ -233,20 +272,20 @@ const Hero = () => {
       {isSigninModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
           {/* Backdrop with blur effect */}
-          <div 
+          <div
             className="absolute inset-0 backdrop-blur-md bg-gray-900/30"
             onClick={closeSigninModal}
           ></div>
-          
+
           {/* Modal content */}
-          <div 
+          <div
             className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 animate-in zoom-in-95 relative z-10"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
-              <button 
+              <button
                 onClick={closeSigninModal}
                 className="text-gray-400 hover:text-gray-600 transition-colors transform hover:rotate-90 duration-300"
               >
@@ -259,13 +298,16 @@ const Hero = () => {
               <div className="space-y-6">
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Email Address
                   </label>
-                  <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
                     required
                     value={formData.email}
                     onChange={handleInputChange}
@@ -276,29 +318,33 @@ const Hero = () => {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Password
                   </label>
                   <div className="relative">
-                    <input 
+                    <input
                       type={showPassword ? "text" : "password"}
-                      id="password" 
-                      name="password" 
+                      id="password"
+                      name="password"
                       required
                       value={formData.password}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12"
                       placeholder="Enter your password"
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     >
-                      {showPassword ? 
-                        <EyeOff className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" /> : 
+                      {showPassword ? (
+                        <EyeOff className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
+                      ) : (
                         <Eye className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
-                      }
+                      )}
                     </button>
                   </div>
                 </div>
@@ -306,25 +352,31 @@ const Hero = () => {
                 {/* Remember Me & Forgot Password */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <input 
-                      type="checkbox" 
-                      id="remember" 
+                    <input
+                      type="checkbox"
+                      id="remember"
                       name="remember"
                       checked={formData.remember}
                       onChange={handleInputChange}
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
-                    <label htmlFor="remember" className="ml-2 text-sm text-gray-700">
+                    <label
+                      htmlFor="remember"
+                      className="ml-2 text-sm text-gray-700"
+                    >
                       Remember me
                     </label>
                   </div>
-                  <a href="#" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  <a
+                    href="#"
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
                     Forgot password?
                   </a>
                 </div>
 
                 {/* Submit Button */}
-                <button 
+                <button
                   onClick={handleSubmit}
                   className="w-full cursor-pointer bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200 transform hover:scale-[1.02]"
                 >
@@ -338,34 +390,19 @@ const Hero = () => {
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                  <span className="px-2 bg-white text-gray-500">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
               {/* Social Login */}
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <button className="flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  <span className="ml-2 text-sm font-medium text-gray-700">Google</span>
-                </button>
-                <button className="flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  <span className="ml-2 text-sm font-medium text-gray-700">Facebook</span>
-                </button>
-              </div>
 
               {/* Sign Up Link */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
-                  Don't have an account?{' '}
-                  <button 
+                  Don't have an account?{" "}
+                  <button
                     onClick={openSignupModal}
                     className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
                   >
@@ -382,20 +419,22 @@ const Hero = () => {
       {isSignupModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
           {/* Backdrop with blur effect */}
-          <div 
+          <div
             className="absolute inset-0 backdrop-blur-md bg-gray-900/30"
             onClick={closeSignupModal}
           ></div>
-          
+
           {/* Modal content */}
-          <div 
+          <div
             className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 animate-in zoom-in-95 relative z-10"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
-              <button 
+              <h2 className="text-2xl font-bold text-gray-900">
+                Create Account
+              </h2>
+              <button
                 onClick={closeSignupModal}
                 className="text-gray-400 hover:text-gray-600 transition-colors transform hover:rotate-90 duration-300"
               >
@@ -408,13 +447,16 @@ const Hero = () => {
               <form onSubmit={handleSignupSubmit} className="space-y-5">
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="signup-email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Email Address <span className="text-red-500">*</span>
                   </label>
-                  <input 
-                    type="email" 
-                    id="signup-email" 
-                    name="email" 
+                  <input
+                    type="email"
+                    id="signup-email"
+                    name="email"
                     required
                     value={signupData.email}
                     onChange={handleSignupInputChange}
@@ -425,13 +467,16 @@ const Hero = () => {
 
                 {/* Employee ID Field */}
                 <div className="space-y-2">
-                  <label htmlFor="employeeId" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="employeeId"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Employee ID <span className="text-red-500">*</span>
                   </label>
-                  <input 
-                    type="text" 
-                    id="employeeId" 
-                    name="employeeId" 
+                  <input
+                    type="text"
+                    id="employeeId"
+                    name="employeeId"
                     required
                     value={signupData.employeeId}
                     onChange={handleSignupInputChange}
@@ -442,59 +487,71 @@ const Hero = () => {
 
                 {/* Password Field */}
                 <div className="space-y-2">
-                  <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="signup-password"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Password <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <input 
+                    <input
                       type={showSignupPassword ? "text" : "password"}
-                      id="signup-password" 
-                      name="password" 
+                      id="signup-password"
+                      name="password"
                       required
                       value={signupData.password}
                       onChange={handleSignupInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12"
                       placeholder="Create a password"
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setShowSignupPassword(!showSignupPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     >
-                      {showSignupPassword ? 
-                        <EyeOff className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" /> : 
+                      {showSignupPassword ? (
+                        <EyeOff className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
+                      ) : (
                         <Eye className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
-                      }
+                      )}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Password must be at least 8 characters</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Password must be at least 8 characters
+                  </p>
                 </div>
 
                 {/* Confirm Password Field */}
                 <div className="space-y-2">
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Confirm Password <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <input 
+                    <input
                       type={showConfirmPassword ? "text" : "password"}
-                      id="confirmPassword" 
-                      name="confirmPassword" 
+                      id="confirmPassword"
+                      name="confirmPassword"
                       required
                       value={signupData.confirmPassword}
                       onChange={handleSignupInputChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12"
                       placeholder="Confirm your password"
                     />
-                    <button 
-                      type="button" 
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     >
-                      {showConfirmPassword ? 
-                        <EyeOff className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" /> : 
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
+                      ) : (
                         <Eye className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
-                      }
+                      )}
                     </button>
                   </div>
                 </div>
@@ -511,13 +568,26 @@ const Hero = () => {
                   </div>
                   <div className="ml-3 text-sm">
                     <label htmlFor="terms" className="text-gray-600">
-                      I agree to the <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Terms of Service</a> and <a href="#" className="text-blue-600 hover:text-blue-700 font-medium">Privacy Policy</a>
+                      I agree to the{" "}
+                      <a
+                        href="#"
+                        className="text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        Terms of Service
+                      </a>{" "}
+                      and{" "}
+                      <a
+                        href="#"
+                        className="text-blue-600 hover:text-blue-700 font-medium"
+                      >
+                        Privacy Policy
+                      </a>
                     </label>
                   </div>
                 </div>
 
                 {/* Submit Button */}
-                <button 
+                <button
                   type="submit"
                   className="w-full cursor-pointer bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200 transform hover:scale-[1.02]"
                 >
@@ -531,34 +601,17 @@ const Hero = () => {
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or sign up with</span>
+                  <span className="px-2 bg-white text-gray-500">
+                    Or sign up with
+                  </span>
                 </div>
-              </div>
-
-              {/* Social Signup */}
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <button className="flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  <span className="ml-2 text-sm font-medium text-gray-700">Google</span>
-                </button>
-                <button className="flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  <span className="ml-2 text-sm font-medium text-gray-700">Facebook</span>
-                </button>
               </div>
 
               {/* Sign In Link */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
-                  Already have an account?{' '}
-                  <button 
+                  Already have an account?{" "}
+                  <button
                     onClick={openSigninModal}
                     className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
                   >
