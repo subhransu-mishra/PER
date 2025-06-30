@@ -1,10 +1,10 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
     <footer className="bg-blue-50 text-slate-600 px-6 py-12 border-t border-blue-100">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-        
         {/* Section 1: Brand */}
         <div className="text-center sm:text-left">
           <h2 className="text-2xl font-bold text-blue-700 mb-2">PER System</h2>
@@ -15,12 +15,30 @@ const Footer = () => {
 
         {/* Section 2: Quick Links */}
         <div className="text-center sm:text-left">
-          <h3 className="text-md font-semibold text-blue-600 mb-3">Quick Links</h3>
+          <h3 className="text-md font-semibold text-blue-600 mb-3">
+            Quick Links
+          </h3>
           <ul className="space-y-2 text-sm">
-            <li><a href="#home" className="hover:text-blue-500">Home</a></li>
-            <li><a href="#features" className="hover:text-blue-500">Features</a></li>
-            <li><a href="#pricing" className="hover:text-blue-500">Pricing</a></li>
-            <li><a href="#faq" className="hover:text-blue-500">FAQs</a></li>
+            <li>
+              <Link to="/" className="hover:text-blue-500">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/about" className="hover:text-blue-500">
+                About
+              </Link>
+            </li>
+            <li>
+              <Link to="/pricing" className="hover:text-blue-500">
+                Pricing
+              </Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:text-blue-500">
+                Contact
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -28,8 +46,18 @@ const Footer = () => {
         <div className="text-center sm:text-left">
           <h3 className="text-md font-semibold text-blue-600 mb-3">Support</h3>
           <ul className="space-y-2 text-sm">
-            <li>Email: <a href="mailto:support@per.com" className="text-blue-500 hover:underline">support@per.com</a></li>
-            <li>Phone: <span className="text-slate-600">+91-9876543210</span></li>
+            <li>
+              Email:{" "}
+              <a
+                href="mailto:support@per.com"
+                className="text-blue-500 hover:underline"
+              >
+                support@per.com
+              </a>
+            </li>
+            <li>
+              Phone: <span className="text-slate-600">+91-9876543210</span>
+            </li>
             <li>Hours: Mon–Fri, 9AM–6PM</li>
           </ul>
         </div>
@@ -38,8 +66,16 @@ const Footer = () => {
         <div className="text-center sm:text-left">
           <h3 className="text-md font-semibold text-blue-600 mb-3">Legal</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href="#terms" className="hover:text-blue-500">Terms of Service</a></li>
-            <li><a href="#privacy" className="hover:text-blue-500">Privacy Policy</a></li>
+            <li>
+              <a href="#terms" className="hover:text-blue-500">
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <a href="#privacy" className="hover:text-blue-500">
+                Privacy Policy
+              </a>
+            </li>
           </ul>
         </div>
       </div>
