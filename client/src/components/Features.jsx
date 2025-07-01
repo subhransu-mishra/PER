@@ -13,48 +13,56 @@ import { Link } from "react-router-dom";
 const Features = () => {
   const featureCards = [
     {
+      id:"petty-cash",
       icon: <DollarSign className="w-10 h-10 text-blue-600" />,
       title: "Petty Cash Management",
       description:
         "Track and manage petty cash transactions with ease. Record deposits, withdrawals, and reconcile balances in real-time.",
     },
     {
+      id:"expense-tracking",
       icon: <TrendingUp className="w-10 h-10 text-indigo-600" />,
       title: "Expense Tracking",
       description:
         "Categorize and monitor all expenses. Attach receipts, set budgets, and get alerts when approaching limits.",
     },
     {
+      id:"income-management",
       icon: <BarChart3 className="w-10 h-10 text-green-600" />,
       title: "Income Management",
       description:
         "Record and track all income sources. Generate detailed income reports and forecasts based on historical data.",
     },
     {
+      id:"visual-reports",
       icon: <PieChart className="w-10 h-10 text-purple-600" />,
       title: "Visual Reports",
       description:
         "Transform your financial data into intuitive visualizations. Get actionable insights with customizable dashboards.",
     },
     {
+      id:"multi-user-system",
       icon: <Users className="w-10 h-10 text-orange-600" />,
       title: "Multi-User System",
       description:
         "Collaborate with your team through role-based access controls. Define permissions for different user roles.",
     },
     {
+      id:"document-management",
       icon: <FileText className="w-10 h-10 text-red-600" />,
       title: "Document Management",
       description:
         "Store and organize all financial documents securely. Quick search and retrieve documents when needed.",
     },
     {
+      id:"audit-ready-reports",
       icon: <Shield className="w-10 h-10 text-cyan-600" />,
       title: "Audit-Ready Reports",
       description:
         "Generate comprehensive reports that are audit-ready. Keep track of approval workflows and compliance.",
     },
     {
+      id:"real-time-statistics",
       icon: <Clock className="w-10 h-10 text-amber-600" />,
       title: "Real-Time Statistics",
       description:
@@ -105,7 +113,7 @@ const Features = () => {
               </p>
               <div className="mt-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                 <Link
-                  to="/about"
+                  to={`/about#${feature.id}`} //Dynamic anchor link to the feature section
                   className="text-blue-600 font-medium hover:text-blue-800 flex items-center"
                 >
                   Learn more
