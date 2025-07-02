@@ -8,7 +8,10 @@ import About from "./pages/About";
 import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/Dashboard";
-
+import PettyCash from "./components/Dashboard/PettyCash";
+import Revenue from "./components/Dashboard/Revenue";
+import Expenses from "./components/Dashboard/Expenses";
+import Reports from "./components/Dashboard/Reports";
 const App = () => {
   return (
     <>
@@ -29,7 +32,13 @@ const App = () => {
         <Route path="/about" element={<About />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/dashboard" element={<Dashboard/>}/>
+        <Route path="/dashboard" element={<Dashboard />}>
+          <Route index element={<div>Welcome to Dashboard</div>} />
+          <Route path="petty-cash" element={<PettyCash />} />
+          <Route path="revenue" element={<Revenue />} />
+          <Route path="expenses" element={<Expenses />} />
+          <Route path="reports" element={<Reports />} />
+        </Route>
       </Routes>
     </>
   );
