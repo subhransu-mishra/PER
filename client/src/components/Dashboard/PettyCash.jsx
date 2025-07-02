@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiEye, FiEdit, FiTrash2, FiFilter, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { FiEye, FiEdit, FiTrash2, FiFilter, FiCheckCircle, FiXCircle, FiPlus } from "react-icons/fi";
 
 const emptyVoucher = {
   id: "",
@@ -12,14 +12,14 @@ const emptyVoucher = {
 };
 
 const PettyCash = () => {
-  // Change this to "user" or "admin" for demo/testing
   const [role, setRole] = useState("admin"); // "user" or "admin"
   const [search, setSearch] = useState("");
   const [vouchers, setVouchers] = useState([]);
   const [form, setForm] = useState(emptyVoucher);
   const [isEditing, setIsEditing] = useState(false);
-  const [totalBalance, setTotalBalance] = useState(""); // Only admin can set
+  const [totalBalance, setTotalBalance] = useState("");
   const [balanceSet, setBalanceSet] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   // Filter vouchers based on search
   const filteredVouchers = vouchers.filter(
@@ -52,21 +52,23 @@ const PettyCash = () => {
     const amountNum = Number(form.amount);
 
     if (isEditing) {
-      // Only allow editing if not approved
       const oldVoucher = vouchers.find((v) => v.id === form.id);
       if (oldVoucher.status === "Approved") {
         alert("Approved vouchers cannot be edited.");
         return;
       }
       setVouchers((prev) =>
-        prev.map((v) => (v.id === form.id ? { ...form, amount: amountNum, status: "Pending" } : v))
+        prev.map((v) =>
+          v.id === form.id
+            ? { ...form, amount: amountNum }
+            : v
+        )
       );
     } else {
       if (vouchers.some((v) => v.id === form.id)) {
         alert("Voucher ID must be unique.");
         return;
       }
-      // For normal users, always set status to Pending
       const status = role === "admin" ? form.status : "Pending";
       setVouchers((prev) => [
         ...prev,
@@ -75,6 +77,7 @@ const PettyCash = () => {
     }
     setForm(emptyVoucher);
     setIsEditing(false);
+    setShowModal(false);
   };
 
   // Handle edit
@@ -140,8 +143,16 @@ const PettyCash = () => {
     alert("Export functionality not implemented yet.");
   };
 
-  // Start new voucher
+  // Open modal for user request
   const handleNewVoucher = () => {
+    setForm(emptyVoucher);
+    setIsEditing(false);
+    setShowModal(true);
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setShowModal(false);
     setForm(emptyVoucher);
     setIsEditing(false);
   };
@@ -166,18 +177,18 @@ const PettyCash = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="min-h-screen p-2 sm:p-4 md:p-6 bg-white">
       {/* DEMO: Role Switcher */}
-      <div className="mb-2">
+      <div className="mb-2 flex flex-wrap justify-end p-2 sm:p-4">
         <span className="mr-2 font-semibold">Role:</span>
         <button
-          className={`px-3 py-1 rounded-l ${role === "user" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          className={`px-3 py-1 rounded-l ${role === "user" ? "bg-gray-300" : ""}`}
           onClick={() => setRole("user")}
         >
           User
         </button>
         <button
-          className={`px-3 py-1 rounded-r ${role === "admin" ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+          className={`px-3 py-1 rounded-r ${role === "admin" ? "bg-gray-300" : ""}`}
           onClick={() => setRole("admin")}
         >
           Admin
@@ -185,28 +196,28 @@ const PettyCash = () => {
       </div>
 
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Petty Cash</h1>
-        <p className="text-gray-600 text-sm">
+      <div className="mb-4 md:mb-6 py-2 md:py-4 px-2 md:px-4 border-b">
+        <h1 className="text-2xl md:text-3xl font-bold">Petty Cash</h1>
+        <p className="text-gray-600 text-base md:text-lg mt-2">
           Manage your petty cash allocations and vouchers
         </p>
       </div>
 
       {/* Set Total Balance (admin only) */}
       {!balanceSet && role === "admin" && (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <form className="flex gap-4 items-center" onSubmit={handleSetBalance}>
+        <div className="bg-white border rounded-lg p-4 md:p-6 max-w-xl mx-auto mb-4 md:mb-6">
+          <form className="flex flex-col md:flex-row gap-2 md:gap-4 items-center" onSubmit={handleSetBalance}>
             <input
               type="number"
               placeholder="Enter total petty cash balance"
-              className="border rounded px-2 py-1"
+              className="border rounded px-2 py-2 flex-1"
               value={totalBalance}
               onChange={(e) => setTotalBalance(e.target.value)}
               min={0}
             />
             <button
               type="submit"
-              className="bg-blue-600 text-white rounded px-4 py-2"
+              className="bg-gray-800 text-white rounded px-4 md:px-6 py-2 font-semibold"
             >
               Set Balance
             </button>
@@ -216,127 +227,31 @@ const PettyCash = () => {
 
       {/* Info for users if balance not set */}
       {!balanceSet && role === "user" && (
-        <div className="bg-yellow-100 text-yellow-800 rounded p-4 mb-4">
+        <div className="bg-yellow-100 text-yellow-800 rounded p-4 mb-4 max-w-xl mx-auto border">
           The petty cash balance has not been set by the admin yet. Please contact your admin.
-        </div>
-      )}
-
-      {/* Add/Edit Voucher Form */}
-      {balanceSet && (
-        <div className="bg-white rounded-lg shadow p-4 mb-4">
-          <form className="grid grid-cols-1 md:grid-cols-3 gap-4" onSubmit={handleSubmit}>
-            <input
-              name="id"
-              type="text"
-              placeholder="Voucher No."
-              className="border rounded px-2 py-1"
-              value={form.id}
-              onChange={handleChange}
-              disabled={isEditing}
-            />
-            <input
-              name="date"
-              type="date"
-              className="border rounded px-2 py-1"
-              value={form.date}
-              onChange={handleChange}
-            />
-            <input
-              name="description"
-              type="text"
-              placeholder="Description"
-              className="border rounded px-2 py-1"
-              value={form.description}
-              onChange={handleChange}
-            />
-            <input
-              name="category"
-              type="text"
-              placeholder="Category"
-              className="border rounded px-2 py-1"
-              value={form.category}
-              onChange={handleChange}
-            />
-            <input
-              name="amount"
-              type="number"
-              placeholder="Amount"
-              className="border rounded px-2 py-1"
-              value={form.amount}
-              onChange={handleChange}
-              min={1}
-              max={totalBalance}
-              disabled={role === "user"} // User cannot set amount
-            />
-            <input
-              name="requestedBy"
-              type="text"
-              placeholder="Requested By"
-              className="border rounded px-2 py-1"
-              value={form.requestedBy}
-              onChange={handleChange}
-            />
-            {/* Only admin can set status on creation, user always requests */}
-            {role === "admin" && (
-              <select
-                name="status"
-                className="border rounded px-2 py-1"
-                value={form.status}
-                onChange={handleChange}
-              >
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-            )}
-            <button
-              type="submit"
-              className="bg-blue-600 text-white rounded px-4 py-2 col-span-1 md:col-span-2"
-            >
-              {isEditing ? "Update Request" : role === "admin" ? "Add Voucher" : "Request Voucher"}
-            </button>
-            {isEditing && (
-              <button
-                type="button"
-                className="bg-gray-300 text-gray-800 rounded px-4 py-2"
-                onClick={handleNewVoucher}
-              >
-                Cancel
-              </button>
-            )}
-            {role === "admin" && (
-              <button
-                type="button"
-                className="bg-red-500 text-white rounded px-4 py-2"
-                onClick={handleResetBalance}
-              >
-                Reset Balance
-              </button>
-            )}
-          </form>
         </div>
       )}
 
       {/* Top Summary Cards */}
       {balanceSet && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-lg font-semibold text-gray-600">Total Balance</p>
-            <h2 className="text-2xl font-bold text-gray-900 mt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto mb-4 md:mb-6">
+          <div className="bg-white border rounded-lg p-4 md:p-6">
+            <p className="text-base md:text-lg font-semibold text-gray-600">Total Balance</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">
               ₹{totalBalance}
             </h2>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-lg font-semibold text-gray-600">This Month</p>
-            <h2 className="text-2xl font-bold text-gray-900 mt-2">
+          <div className="bg-white border rounded-lg p-4 md:p-6">
+            <p className="text-base md:text-lg font-semibold text-gray-600">This Month</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">
               ₹{vouchers
                 .filter((v) => new Date(v.date).getMonth() === new Date().getMonth() && v.status === "Approved")
                 .reduce((sum, v) => sum + Number(v.amount), 0)}
             </h2>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-lg font-semibold text-gray-600">Pending Requests</p>
-            <h2 className="text-2xl font-bold text-gray-900 mt-2">
+          <div className="bg-white border rounded-lg p-4 md:p-6">
+            <p className="text-base md:text-lg font-semibold text-gray-600">Pending Requests</p>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">
               {vouchers.filter((v) => v.status === "Pending").length}
             </h2>
           </div>
@@ -345,54 +260,312 @@ const PettyCash = () => {
 
       {/* Search + Buttons */}
       {balanceSet && (
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex flex-1 items-center w-full sm:max-w-md bg-white rounded-md border border-gray-300 px-3 py-2 shadow-sm">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 md:gap-4 max-w-6xl mx-auto mb-4 md:mb-6">
+          <div className="flex flex-1 items-center w-full sm:max-w-md bg-white rounded-md border border-gray-300 px-2 md:px-3 py-2 shadow-sm">
             <input
               type="text"
               placeholder="Search vouchers, descriptions, or requestor..."
-              className="w-full outline-none text-sm text-gray-700"
+              className="w-full outline-none text-sm text-gray-700 bg-transparent"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <button
-              className="flex items-center gap-2 px-4 py-2 border rounded-md shadow-sm bg-white hover:bg-gray-100 text-gray-800 text-sm"
+              className="flex items-center gap-2 px-3 md:px-4 py-2 border rounded-md shadow-sm bg-white hover:bg-gray-100 text-gray-800 text-sm"
               onClick={() => alert("Advanced filter not implemented")}
             >
               <FiFilter className="w-4 h-4" />
               Advanced
             </button>
             <button
-              className="px-4 py-2 bg-white border rounded-md shadow-sm hover:bg-gray-100 text-sm font-medium"
+              className="px-3 md:px-4 py-2 bg-white border rounded-md shadow-sm hover:bg-gray-100 text-sm font-medium"
               onClick={handleExport}
             >
               Export
             </button>
+            {role === "user" && (
+              <button
+                className="bg-gray-800 text-white px-3 md:px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+                onClick={handleNewVoucher}
+              >
+                <FiPlus /> Request Voucher
+              </button>
+            )}
+            {role === "admin" && (
+              <button
+                className="bg-gray-800 text-white px-3 md:px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+                onClick={handleNewVoucher}
+              >
+                <FiPlus /> New Voucher
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal Form for user only */}
+      {showModal && role === "user" && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+          style={{ overflow: "hidden" }}
+        >
+          <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-4 md:p-8 w-full max-w-md relative">
             <button
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium shadow-sm"
-              onClick={handleNewVoucher}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+              onClick={closeModal}
             >
-              {role === "admin" ? "+ New Voucher" : "+ Request Voucher"}
+              &times;
             </button>
+            <h2 className="text-2xl font-bold mb-1">Request Voucher</h2>
+            <p className="mb-6 text-gray-600 text-sm">
+              Enter the details for your new petty cash request.
+            </p>
+            <form
+              onSubmit={(e) => {
+                handleSubmit(e);
+                if (
+                  form.id &&
+                  form.date &&
+                  form.description &&
+                  form.category &&
+                  form.amount &&
+                  form.requestedBy
+                ) {
+                  setShowModal(false);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                  <label className="block mb-1 text-sm">Voucher No.</label>
+                  <input
+                    name="id"
+                    type="text"
+                    placeholder="Voucher No."
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.id}
+                    onChange={handleChange}
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm">Date</label>
+                  <input
+                    name="date"
+                    type="date"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.date}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-1 text-sm">Description</label>
+                  <input
+                    name="description"
+                    type="text"
+                    placeholder="e.g., Office supplies"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.description}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm">Category</label>
+                  <input
+                    name="category"
+                    type="text"
+                    placeholder="e.g., Office, Refreshments"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.category}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm">Amount (₹)</label>
+                  <input
+                    name="amount"
+                    type="number"
+                    placeholder="0.00"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.amount}
+                    onChange={handleChange}
+                    min={1}
+                    max={totalBalance}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-1 text-sm">Requested By</label>
+                  <input
+                    name="requestedBy"
+                    type="text"
+                    placeholder="Your Name"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.requestedBy}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="submit"
+                  className="flex-1 rounded-lg py-2 font-semibold bg-gray-800 text-white hover:bg-gray-900"
+                >
+                  Request Voucher
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 rounded-lg py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  onClick={closeModal}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Form for admin */}
+      {showModal && role === "admin" && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+          style={{ overflow: "hidden" }}
+        >
+          <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-4 md:p-8 w-full max-w-md relative">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
+              onClick={closeModal}
+            >
+              &times;
+            </button>
+            <h2 className="text-2xl font-bold mb-1">{isEditing ? "Update Voucher" : "Add Voucher"}</h2>
+            <p className="mb-6 text-gray-600 text-sm">
+              Enter the details for your new petty cash voucher.
+            </p>
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                  <label className="block mb-1 text-sm">Voucher No.</label>
+                  <input
+                    name="id"
+                    type="text"
+                    placeholder="Voucher No."
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.id}
+                    onChange={handleChange}
+                    autoFocus
+                    disabled={isEditing}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm">Date</label>
+                  <input
+                    name="date"
+                    type="date"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.date}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-1 text-sm">Description</label>
+                  <input
+                    name="description"
+                    type="text"
+                    placeholder="e.g., Office supplies"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.description}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm">Category</label>
+                  <input
+                    name="category"
+                    type="text"
+                    placeholder="e.g., Office, Refreshments"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.category}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm">Amount (₹)</label>
+                  <input
+                    name="amount"
+                    type="number"
+                    placeholder="0.00"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.amount}
+                    onChange={handleChange}
+                    min={1}
+                    max={totalBalance}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-1 text-sm">Requested By</label>
+                  <input
+                    name="requestedBy"
+                    type="text"
+                    placeholder="Requested By"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
+                    value={form.requestedBy}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block mb-1 text-sm">Status</label>
+                  <select
+                    name="status"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900"
+                    value={form.status}
+                    onChange={handleChange}
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Rejected">Rejected</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="submit"
+                  className="flex-1 rounded-lg py-2 font-semibold bg-gray-800 text-white hover:bg-gray-900"
+                >
+                  {isEditing ? "Update Request" : "Add Voucher"}
+                </button>
+                <button
+                  type="button"
+                  className="flex-1 rounded-lg py-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  onClick={closeModal}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
       {/* Voucher Table */}
       {balanceSet && (
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
+        <div className="bg-white border rounded-lg overflow-x-auto max-w-full md:max-w-6xl mx-auto">
+          <table className="w-full text-xs md:text-sm text-left">
+            <thead className="bg-gray-100 text-gray-700 uppercase text-xs">
               <tr>
-                <th className="px-6 py-3">Voucher No.</th>
-                <th className="px-6 py-3">Date</th>
-                <th className="px-6 py-3">Description</th>
-                <th className="px-6 py-3">Category</th>
-                <th className="px-6 py-3">Amount</th>
-                <th className="px-6 py-3">Requested By</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Actions</th>
+                <th className="px-2 md:px-6 py-3">Voucher No.</th>
+                <th className="px-2 md:px-6 py-3">Date</th>
+                <th className="px-2 md:px-6 py-3">Description</th>
+                <th className="px-2 md:px-6 py-3">Category</th>
+                <th className="px-2 md:px-6 py-3">Amount</th>
+                <th className="px-2 md:px-6 py-3">Requested By</th>
+                <th className="px-2 md:px-6 py-3">Status</th>
+                <th className="px-2 md:px-6 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -404,32 +577,45 @@ const PettyCash = () => {
                 </tr>
               ) : (
                 filteredVouchers.map((voucher) => (
-                  <tr key={voucher.id} className="border-t text-gray-700">
-                    <td className="px-6 py-4 font-medium">{voucher.id}</td>
-                    <td className="px-6 py-4">{voucher.date}</td>
-                    <td className="px-6 py-4">{voucher.description}</td>
-                    <td className="px-6 py-4">{voucher.category}</td>
-                    <td className="px-6 py-4">₹{voucher.amount}</td>
-                    <td className="px-6 py-4">{voucher.requestedBy}</td>
-                    <td className="px-6 py-4">
+                  <tr key={voucher.id} className="border-t text-gray-700 hover:bg-gray-100 transition">
+                    <td className="px-2 md:px-6 py-4 font-medium break-all">{voucher.id}</td>
+                    <td className="px-2 md:px-6 py-4">{voucher.date}</td>
+                    <td className="px-2 md:px-6 py-4 break-all">{voucher.description}</td>
+                    <td className="px-2 md:px-6 py-4">{voucher.category}</td>
+                    <td className="px-2 md:px-6 py-4">₹{voucher.amount}</td>
+                    <td className="px-2 md:px-6 py-4">{voucher.requestedBy}</td>
+                    <td className="px-2 md:px-6 py-4">
                       <span
-                        className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                          voucher.status === "Approved"
-                            ? "bg-green-100 text-green-700"
-                            : voucher.status === "Pending"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
+                        className={`text-xs font-semibold px-2 py-1 rounded-full border`}
+                        style={{
+                          background:
+                            voucher.status === "Approved"
+                              ? "#e6ffe6"
+                              : voucher.status === "Pending"
+                              ? "#fffbe6"
+                              : "#ffe6e6",
+                          color:
+                            voucher.status === "Approved"
+                              ? "#166534"
+                              : voucher.status === "Pending"
+                              ? "#92400e"
+                              : "#991b1b",
+                          borderColor:
+                            voucher.status === "Approved"
+                              ? "#22c55e"
+                              : voucher.status === "Pending"
+                              ? "#facc15"
+                              : "#ef4444",
+                        }}
                       >
                         {voucher.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 flex gap-3">
+                    <td className="px-2 md:px-6 py-4 flex gap-2 md:gap-3">
                       <FiEye
                         className="w-5 h-5 cursor-pointer text-gray-600 hover:text-blue-600"
                         onClick={() => handleView(voucher.id)}
                       />
-                      {/* Only admin can approve/reject or delete */}
                       {role === "admin" && voucher.status === "Pending" && (
                         <>
                           <FiCheckCircle
@@ -444,7 +630,6 @@ const PettyCash = () => {
                           />
                         </>
                       )}
-                      {/* Only allow edit/delete if not approved */}
                       {voucher.status !== "Approved" && (
                         <>
                           <FiEdit
