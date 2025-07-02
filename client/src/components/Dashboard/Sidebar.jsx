@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   FiHome,
   FiDollarSign,
@@ -17,22 +17,14 @@ const sections = [
 ];
 
 const Sidebar = () => {
-  const [open, setOpen] = useState(true);
-
   return (
-    <div
-      className={`h-full flex flex-col bg-white transition-all duration-300 ease-in-out
-        ${open ? "w-64" : "w-20"} shadow-md relative z-20`}
-    >
+    <div className="fixed top-0 left-0 h-screen flex flex-col bg-white shadow-md z-20 w-64">
       {/* Logo + Company Name */}
       <div className="flex items-center gap-3 px-4 py-5">
         <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold">
           MP
         </div>
-        <span
-          className={`text-xl font-semibold text-gray-800 transition-all origin-left duration-200
-            ${open ? "opacity-100" : "opacity-0 w-0 overflow-hidden"}`}
-        >
+        <span className="text-xl font-semibold text-gray-800">
           MudraPanel
         </span>
       </div>
@@ -43,17 +35,10 @@ const Sidebar = () => {
           <Link
             key={section.name}
             to={section.path}
-            className={`flex items-center gap-4 px-4 py-3 cursor-pointer rounded-lg transition-all duration-200 group
-              hover:bg-blue-100 text-gray-700 font-medium
-              ${open ? "justify-start" : "justify-center"}`}
+            className="flex items-center gap-4 px-4 py-3 cursor-pointer rounded-lg transition-all duration-200 group hover:bg-blue-100 text-gray-700 font-medium"
           >
             <div className="text-blue-600">{section.icon}</div>
-            <span
-              className={`transition-all duration-200 origin-left
-                ${open ? "opacity-100" : "opacity-0 w-0 overflow-hidden"}`}
-            >
-              {section.name}
-            </span>
+            <span>{section.name}</span>
           </Link>
         ))}
       </nav>
