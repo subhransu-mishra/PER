@@ -3,11 +3,11 @@ import DashNavbar from "../components/Dashboard/DashNavbar";
 import Sidebar from "../components/Dashboard/Sidebar";
 
 const Dashboard = () => {
-  return (
+  return ( 
     <div className="flex h-screen">
       <aside className="w-64 bg-gray-100 border-r">
         <Sidebar />
-      </aside>
+      </aside>   
       <div className="flex-1 flex flex-col">
         <header className="h-16 flex items-center">
           <DashNavbar />
@@ -22,3 +22,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+ 
