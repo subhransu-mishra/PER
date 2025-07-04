@@ -14,6 +14,11 @@ const userSchema = mongoose.Schema({
     required: true,
     unique: true,
   },
+  tenantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Tenant",
+    required: false, // Admin users might not have a tenantId
+  },
   role: {
     type: String,
     required: true,

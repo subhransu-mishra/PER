@@ -32,6 +32,7 @@ const Navbar = () => {
     password: "",
     confirmPassword: "",
     employeeId: "",
+    companyName: "",
   });
   const navigate = useNavigate();
   const [navShadow, setNavShadow] = useState(false);
@@ -112,8 +113,15 @@ const Navbar = () => {
 
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
-    const { email, password, confirmPassword, employeeId } = signupData;
-    if (!email || !password || !confirmPassword || !employeeId) {
+    const { email, password, confirmPassword, employeeId, companyName } =
+      signupData;
+    if (
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !employeeId ||
+      !companyName
+    ) {
       alert("Please fill in all required fields");
       return;
     }
@@ -129,17 +137,16 @@ const Navbar = () => {
           email,
           password,
           employeeId,
+          companyName,
         }
       );
-      console.log("Signup successful:", response.data);
       toast.success("Signup successful!");
       setIsSignupModalOpen(false);
+      setUser(response.data.data.user);
+      localStorage.setItem("user", JSON.stringify(response.data.data.user));
+      localStorage.setItem("token", response.data.data.token);
       navigate("/dashboard");
     } catch (error) {
-      console.error(
-        "Signup error:",
-        error.response ? error.response.data : error.message
-      );
       toast.error(
         (error.response && error.response.data.message) ||
           "An unknown error occurred."
@@ -179,14 +186,6 @@ const Navbar = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     toast.info("Logged out successfully");
-  };
-
-  const handleDashboardClick = () => {
-    if (user) {
-      navigate("/dashboard");
-    } else {
-      openSigninModal();
-    }
   };
 
   return (
@@ -601,6 +600,26 @@ const Navbar = () => {
                   onChange={handleSignupInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
                   placeholder="Enter your employee ID"
+                />
+              </div>
+
+              {/* Company Name Field */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="companyName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Company Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="companyName"
+                  name="companyName"
+                  required
+                  value={signupData.companyName}
+                  onChange={handleSignupInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  placeholder="Enter your company name"
                 />
               </div>
 

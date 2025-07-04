@@ -1,8 +1,16 @@
-import React, { useState } from "react";
-import { FiEye, FiEdit, FiTrash2, FiFilter, FiCheckCircle, FiXCircle, FiPlus } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import {
+  FiEye,
+  FiEdit,
+  FiTrash2,
+  FiFilter,
+  FiCheckCircle,
+  FiXCircle,
+  FiPlus,
+} from "react-icons/fi";
+import axios from "axios";
 
 const emptyVoucher = {
-  id: "",
   date: "",
   description: "",
   category: "",
@@ -12,7 +20,6 @@ const emptyVoucher = {
 };
 
 const PettyCash = () => {
-  const [role, setRole] = useState("admin"); // "user" or "admin"
   const [search, setSearch] = useState("");
   const [vouchers, setVouchers] = useState([]);
   const [form, setForm] = useState(emptyVoucher);
@@ -20,13 +27,46 @@ const PettyCash = () => {
   const [totalBalance, setTotalBalance] = useState("");
   const [balanceSet, setBalanceSet] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [user] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  // Get role from user data, fallback to demo role switcher
+  const [demoRole, setDemoRole] = useState("admin");
+  const role = user?.role || demoRole;
+
+  // If user is system admin, show access restriction message
+  if (user?.role === "admin") {
+    return (
+      <div className="min-h-screen p-4 bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
+          <div className="text-red-500 text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Access Restricted
+          </h1>
+          <p className="text-gray-600 mb-6">
+            System administrators cannot access petty cash management. This
+            feature is for company users only.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please log in with a company user account to manage petty cash
+            vouchers.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Filter vouchers based on search
   const filteredVouchers = vouchers.filter(
     (v) =>
-      v.id.toLowerCase().includes(search.toLowerCase()) ||
-      v.description.toLowerCase().includes(search.toLowerCase()) ||
-      v.requestedBy.toLowerCase().includes(search.toLowerCase())
+      (v._id && v._id.toLowerCase().includes(search.toLowerCase())) ||
+      (v.id && v.id.toLowerCase().includes(search.toLowerCase())) ||
+      (v.description &&
+        v.description.toLowerCase().includes(search.toLowerCase())) ||
+      (v.requestedBy &&
+        v.requestedBy.toLowerCase().includes(search.toLowerCase()))
   );
 
   // Handle form input changes
@@ -35,72 +75,91 @@ const PettyCash = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  useEffect(() => {
+    if (!user) return;
+    const fetchVouchers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("http://localhost:3000/api/petty-cash", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setVouchers(res.data.data);
+      } catch (err) {
+        console.error("Error fetching vouchers:", err);
+        setVouchers([]);
+      }
+    };
+    fetchVouchers();
+  }, [user]);
+
   // Handle add or edit submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (
-      !form.id ||
       !form.date ||
       !form.description ||
       !form.category ||
       !form.amount ||
       !form.requestedBy
     ) {
-      alert("Please fill all fields.");
+      alert("Please fill all required fields.");
       return;
     }
     const amountNum = Number(form.amount);
-
-    if (isEditing) {
-      const oldVoucher = vouchers.find((v) => v.id === form.id);
-      if (oldVoucher.status === "Approved") {
-        alert("Approved vouchers cannot be edited.");
-        return;
-      }
-      setVouchers((prev) =>
-        prev.map((v) =>
-          v.id === form.id
-            ? { ...form, amount: amountNum }
-            : v
-        )
+    try {
+      const token = localStorage.getItem("token");
+      // Only send fields required by backend
+      const payload = {
+        amount: amountNum,
+        description: form.description,
+        date: form.date,
+        category: form.category,
+        requestedBy: form.requestedBy,
+      };
+      const res = await axios.post(
+        "http://localhost:3000/api/petty-cash",
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
-    } else {
-      if (vouchers.some((v) => v.id === form.id)) {
-        alert("Voucher ID must be unique.");
-        return;
-      }
-      const status = role === "admin" ? form.status : "Pending";
-      setVouchers((prev) => [
-        ...prev,
-        { ...form, amount: amountNum, status }
-      ]);
+      setVouchers((prev) => [res.data.data, ...prev]);
+      setForm(emptyVoucher);
+      setIsEditing(false);
+      setShowModal(false);
+    } catch (err) {
+      // Show backend error message if available
+      alert(err.response?.data?.message || "Failed to submit voucher");
+      console.error(
+        "Error submitting voucher:",
+        err.response?.data || err.message
+      );
     }
-    setForm(emptyVoucher);
-    setIsEditing(false);
-    setShowModal(false);
   };
 
   // Handle edit
   const handleEdit = (id) => {
-    const voucher = vouchers.find((v) => v.id === id);
-    if (voucher.status === "Approved") {
+    const voucher = vouchers.find((v) => v._id === id);
+    if (voucher && voucher.status === "Approved") {
       alert("Approved vouchers cannot be edited.");
       return;
     }
-    setForm(voucher);
-    setIsEditing(true);
+    if (voucher) {
+      setForm(voucher);
+      setIsEditing(true);
+    }
   };
 
   // Handle delete
   const handleDelete = (id) => {
-    const voucher = vouchers.find((v) => v.id === id);
-    if (voucher.status === "Approved") {
+    const voucher = vouchers.find((v) => v._id === id);
+    if (voucher && voucher.status === "Approved") {
       alert("Approved vouchers cannot be deleted.");
       return;
     }
     if (window.confirm("Are you sure you want to delete this voucher?")) {
-      setVouchers((prev) => prev.filter((v) => v.id !== id));
-      if (isEditing && form.id === id) {
+      setVouchers((prev) => prev.filter((v) => v._id !== id));
+      if (isEditing && form._id === id) {
         setForm(emptyVoucher);
         setIsEditing(false);
       }
@@ -109,22 +168,22 @@ const PettyCash = () => {
 
   // Handle view (simple alert for now)
   const handleView = (id) => {
-    const voucher = vouchers.find((v) => v.id === id);
-    alert(JSON.stringify(voucher, null, 2));
+    const voucher = vouchers.find((v) => v._id === id);
+    if (voucher) {
+      alert(JSON.stringify(voucher, null, 2));
+    }
   };
 
   // Admin: Approve voucher
   const handleApprove = (id) => {
-    const voucher = vouchers.find((v) => v.id === id);
-    if (voucher.status !== "Pending") return;
+    const voucher = vouchers.find((v) => v._id === id);
+    if (!voucher || voucher.status !== "Pending") return;
     if (Number(voucher.amount) > Number(totalBalance)) {
       alert("Not enough balance to approve this voucher.");
       return;
     }
     setVouchers((prev) =>
-      prev.map((v) =>
-        v.id === id ? { ...v, status: "Approved" } : v
-      )
+      prev.map((v) => (v._id === id ? { ...v, status: "Approved" } : v))
     );
     setTotalBalance((prev) => String(Number(prev) - Number(voucher.amount)));
   };
@@ -132,9 +191,7 @@ const PettyCash = () => {
   // Admin: Reject voucher
   const handleReject = (id) => {
     setVouchers((prev) =>
-      prev.map((v) =>
-        v.id === id ? { ...v, status: "Rejected" } : v
-      )
+      prev.map((v) => (v._id === id ? { ...v, status: "Rejected" } : v))
     );
   };
 
@@ -160,7 +217,11 @@ const PettyCash = () => {
   // Handle setting the initial balance (admin only)
   const handleSetBalance = (e) => {
     e.preventDefault();
-    if (!totalBalance || isNaN(Number(totalBalance)) || Number(totalBalance) < 0) {
+    if (
+      !totalBalance ||
+      isNaN(Number(totalBalance)) ||
+      Number(totalBalance) < 0
+    ) {
       alert("Please enter a valid amount.");
       return;
     }
@@ -168,32 +229,38 @@ const PettyCash = () => {
   };
 
   // Optionally allow resetting the balance (admin only)
-  const handleResetBalance = () => {
-    setBalanceSet(false);
-    setTotalBalance("");
-    setVouchers([]);
-    setForm(emptyVoucher);
-    setIsEditing(false);
-  };
+  // const handleResetBalance = () => {
+  //   setBalanceSet(false);
+  //   setTotalBalance("");
+  //   setVouchers([]);
+  //   setForm(emptyVoucher);
+  //   setIsEditing(false);
+  // };
 
   return (
     <div className="min-h-screen p-2 sm:p-4 md:p-6 bg-white">
-      {/* DEMO: Role Switcher */}
-      <div className="mb-2 flex flex-wrap justify-end p-2 sm:p-4">
-        <span className="mr-2 font-semibold">Role:</span>
-        <button
-          className={`px-3 py-1 rounded-l ${role === "user" ? "bg-gray-300" : ""}`}
-          onClick={() => setRole("user")}
-        >
-          User
-        </button>
-        <button
-          className={`px-3 py-1 rounded-r ${role === "admin" ? "bg-gray-300" : ""}`}
-          onClick={() => setRole("admin")}
-        >
-          Admin
-        </button>
-      </div>
+      {/* DEMO: Role Switcher - only show if no real user role */}
+      {!user?.role && (
+        <div className="mb-2 flex flex-wrap justify-end p-2 sm:p-4">
+          <span className="mr-2 font-semibold">Role:</span>
+          <button
+            className={`px-3 py-1 rounded-l ${
+              demoRole === "user" ? "bg-gray-300" : ""
+            }`}
+            onClick={() => setDemoRole("user")}
+          >
+            User
+          </button>
+          <button
+            className={`px-3 py-1 rounded-r ${
+              demoRole === "admin" ? "bg-gray-300" : ""
+            }`}
+            onClick={() => setDemoRole("admin")}
+          >
+            Admin
+          </button>
+        </div>
+      )}
 
       {/* Header */}
       <div className="mb-4 md:mb-6 py-2 md:py-4 px-2 md:px-4 border-b">
@@ -206,7 +273,10 @@ const PettyCash = () => {
       {/* Set Total Balance (admin only) */}
       {!balanceSet && role === "admin" && (
         <div className="bg-white border rounded-lg p-4 md:p-6 max-w-xl mx-auto mb-4 md:mb-6">
-          <form className="flex flex-col md:flex-row gap-2 md:gap-4 items-center" onSubmit={handleSetBalance}>
+          <form
+            className="flex flex-col md:flex-row gap-2 md:gap-4 items-center"
+            onSubmit={handleSetBalance}
+          >
             <input
               type="number"
               placeholder="Enter total petty cash balance"
@@ -228,7 +298,8 @@ const PettyCash = () => {
       {/* Info for users if balance not set */}
       {!balanceSet && role === "user" && (
         <div className="bg-yellow-100 text-yellow-800 rounded p-4 mb-4 max-w-xl mx-auto border">
-          The petty cash balance has not been set by the admin yet. Please contact your admin.
+          The petty cash balance has not been set by the admin yet. Please
+          contact your admin.
         </div>
       )}
 
@@ -236,21 +307,38 @@ const PettyCash = () => {
       {balanceSet && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto mb-4 md:mb-6">
           <div className="bg-white border rounded-lg p-4 md:p-6">
-            <p className="text-base md:text-lg font-semibold text-gray-600">Total Balance</p>
+            <p className="text-base md:text-lg font-semibold text-gray-600">
+              Total Balance
+            </p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">
               ₹{totalBalance}
             </h2>
           </div>
           <div className="bg-white border rounded-lg p-4 md:p-6">
-            <p className="text-base md:text-lg font-semibold text-gray-600">This Month</p>
+            <p className="text-base md:text-lg font-semibold text-gray-600">
+              This Month
+            </p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">
-              ₹{vouchers
-                .filter((v) => new Date(v.date).getMonth() === new Date().getMonth() && v.status === "Approved")
-                .reduce((sum, v) => sum + Number(v.amount), 0)}
+              ₹
+              {vouchers
+                .filter((v) => {
+                  try {
+                    return (
+                      v.date &&
+                      new Date(v.date).getMonth() === new Date().getMonth() &&
+                      v.status === "Approved"
+                    );
+                  } catch {
+                    return false;
+                  }
+                })
+                .reduce((sum, v) => sum + Number(v.amount || 0), 0)}
             </h2>
           </div>
           <div className="bg-white border rounded-lg p-4 md:p-6">
-            <p className="text-base md:text-lg font-semibold text-gray-600">Pending Requests</p>
+            <p className="text-base md:text-lg font-semibold text-gray-600">
+              Pending Requests
+            </p>
             <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">
               {vouchers.filter((v) => v.status === "Pending").length}
             </h2>
@@ -321,36 +409,9 @@ const PettyCash = () => {
             <p className="mb-6 text-gray-600 text-sm">
               Enter the details for your new petty cash request.
             </p>
-            <form
-              onSubmit={(e) => {
-                handleSubmit(e);
-                if (
-                  form.id &&
-                  form.date &&
-                  form.description &&
-                  form.category &&
-                  form.amount &&
-                  form.requestedBy
-                ) {
-                  setShowModal(false);
-                }
-              }}
-              className="space-y-4"
-            >
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label className="block mb-1 text-sm">Voucher No.</label>
-                  <input
-                    name="id"
-                    type="text"
-                    placeholder="Voucher No."
-                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
-                    value={form.id}
-                    onChange={handleChange}
-                    autoFocus
-                  />
-                </div>
-                <div>
+                <div className="md:col-span-2">
                   <label className="block mb-1 text-sm">Date</label>
                   <input
                     name="date"
@@ -358,6 +419,7 @@ const PettyCash = () => {
                     className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
                     value={form.date}
                     onChange={handleChange}
+                    autoFocus
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -440,29 +502,15 @@ const PettyCash = () => {
             >
               &times;
             </button>
-            <h2 className="text-2xl font-bold mb-1">{isEditing ? "Update Voucher" : "Add Voucher"}</h2>
+            <h2 className="text-2xl font-bold mb-1">
+              {isEditing ? "Update Voucher" : "Add Voucher"}
+            </h2>
             <p className="mb-6 text-gray-600 text-sm">
               Enter the details for your new petty cash voucher.
             </p>
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-4"
-            >
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div>
-                  <label className="block mb-1 text-sm">Voucher No.</label>
-                  <input
-                    name="id"
-                    type="text"
-                    placeholder="Voucher No."
-                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
-                    value={form.id}
-                    onChange={handleChange}
-                    autoFocus
-                    disabled={isEditing}
-                  />
-                </div>
-                <div>
+                <div className="md:col-span-2">
                   <label className="block mb-1 text-sm">Date</label>
                   <input
                     name="date"
@@ -470,6 +518,7 @@ const PettyCash = () => {
                     className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 text-gray-900 placeholder-gray-400"
                     value={form.date}
                     onChange={handleChange}
+                    autoFocus
                   />
                 </div>
                 <div className="md:col-span-2">
@@ -577,13 +626,30 @@ const PettyCash = () => {
                 </tr>
               ) : (
                 filteredVouchers.map((voucher) => (
-                  <tr key={voucher.id} className="border-t text-gray-700 hover:bg-gray-100 transition">
-                    <td className="px-2 md:px-6 py-4 font-medium break-all">{voucher.id}</td>
-                    <td className="px-2 md:px-6 py-4">{voucher.date}</td>
-                    <td className="px-2 md:px-6 py-4 break-all">{voucher.description}</td>
-                    <td className="px-2 md:px-6 py-4">{voucher.category}</td>
-                    <td className="px-2 md:px-6 py-4">₹{voucher.amount}</td>
-                    <td className="px-2 md:px-6 py-4">{voucher.requestedBy}</td>
+                  <tr
+                    key={voucher._id}
+                    className="border-t text-gray-700 hover:bg-gray-100 transition"
+                  >
+                    <td className="px-2 md:px-6 py-4 font-medium break-all">
+                      {voucher._id || voucher.id || "N/A"}
+                    </td>
+                    <td className="px-2 md:px-6 py-4">
+                      {voucher.date
+                        ? new Date(voucher.date).toLocaleDateString()
+                        : "N/A"}
+                    </td>
+                    <td className="px-2 md:px-6 py-4 break-all">
+                      {voucher.description || "N/A"}
+                    </td>
+                    <td className="px-2 md:px-6 py-4">
+                      {voucher.category || "N/A"}
+                    </td>
+                    <td className="px-2 md:px-6 py-4">
+                      ₹{voucher.amount || 0}
+                    </td>
+                    <td className="px-2 md:px-6 py-4">
+                      {voucher.requestedBy || "N/A"}
+                    </td>
                     <td className="px-2 md:px-6 py-4">
                       <span
                         className={`text-xs font-semibold px-2 py-1 rounded-full border`}
@@ -608,25 +674,25 @@ const PettyCash = () => {
                               : "#ef4444",
                         }}
                       >
-                        {voucher.status}
+                        {voucher.status || "Pending"}
                       </span>
                     </td>
                     <td className="px-2 md:px-6 py-4 flex gap-2 md:gap-3">
                       <FiEye
                         className="w-5 h-5 cursor-pointer text-gray-600 hover:text-blue-600"
-                        onClick={() => handleView(voucher.id)}
+                        onClick={() => handleView(voucher._id)}
                       />
                       {role === "admin" && voucher.status === "Pending" && (
                         <>
                           <FiCheckCircle
                             title="Approve"
                             className="w-5 h-5 cursor-pointer text-green-600 hover:text-green-800"
-                            onClick={() => handleApprove(voucher.id)}
+                            onClick={() => handleApprove(voucher._id)}
                           />
                           <FiXCircle
                             title="Reject"
                             className="w-5 h-5 cursor-pointer text-red-600 hover:text-red-800"
-                            onClick={() => handleReject(voucher.id)}
+                            onClick={() => handleReject(voucher._id)}
                           />
                         </>
                       )}
@@ -634,11 +700,11 @@ const PettyCash = () => {
                         <>
                           <FiEdit
                             className="w-5 h-5 cursor-pointer text-gray-600 hover:text-yellow-500"
-                            onClick={() => handleEdit(voucher.id)}
+                            onClick={() => handleEdit(voucher._id)}
                           />
                           <FiTrash2
                             className="w-5 h-5 cursor-pointer text-gray-600 hover:text-red-600"
-                            onClick={() => handleDelete(voucher.id)}
+                            onClick={() => handleDelete(voucher._id)}
                           />
                         </>
                       )}
