@@ -32,31 +32,10 @@ const PettyCash = () => {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Get role from user data, fallback to demo role switcher
-  const [demoRole, setDemoRole] = useState("admin");
-  const role = user?.role || demoRole;
+  // Get role from user data
+  const role = user?.role || "user";
 
-  // If user is system admin, show access restriction message
-  if (user?.role === "admin") {
-    return (
-      <div className="min-h-screen p-4 bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
-          <div className="text-red-500 text-6xl mb-4">🚫</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Access Restricted
-          </h1>
-          <p className="text-gray-600 mb-6">
-            System administrators cannot access petty cash management. This
-            feature is for company users only.
-          </p>
-          <p className="text-sm text-gray-500">
-            Please log in with a company user account to manage petty cash
-            vouchers.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Role based permissions are handled by backend automatically based on organization ID
 
   // Filter vouchers based on search
   const filteredVouchers = vouchers.filter(
@@ -239,28 +218,7 @@ const PettyCash = () => {
 
   return (
     <div className="min-h-screen p-2 sm:p-4 md:p-6 bg-white">
-      {/* DEMO: Role Switcher - only show if no real user role */}
-      {!user?.role && (
-        <div className="mb-2 flex flex-wrap justify-end p-2 sm:p-4">
-          <span className="mr-2 font-semibold">Role:</span>
-          <button
-            className={`px-3 py-1 rounded-l ${
-              demoRole === "user" ? "bg-gray-300" : ""
-            }`}
-            onClick={() => setDemoRole("user")}
-          >
-            User
-          </button>
-          <button
-            className={`px-3 py-1 rounded-r ${
-              demoRole === "admin" ? "bg-gray-300" : ""
-            }`}
-            onClick={() => setDemoRole("admin")}
-          >
-            Admin
-          </button>
-        </div>
-      )}
+      {/* Access control is handled by backend based on organization ID */}
 
       {/* Header */}
       <div className="mb-4 md:mb-6 py-2 md:py-4 px-2 md:px-4 border-b">

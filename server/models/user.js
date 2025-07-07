@@ -1,5 +1,10 @@
 const mongoose = require("mongoose");
-const userSchema = mongoose.Schema({
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
   email: {
     type: String,
     required: true,
@@ -9,26 +14,25 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  employeeId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  tenantId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Tenant",
-    required: false, // Admin users might not have a tenantId
-  },
   role: {
     type: String,
-    required: true,
     enum: ["admin", "accountant"],
     default: "accountant",
+  },
+  isCompanyOwner: {
+    type: Boolean,
+    default: false,
+  },
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Organization",
+    required: true,
   },
   createdAt: {
     type: Date,
     default: Date.now,
-  },
+  }
 });
 
 module.exports = mongoose.model("User", userSchema);
+

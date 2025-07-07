@@ -19,20 +19,32 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSigninModalOpen, setIsSigninModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCreateUserPassword, setShowCreateUserPassword] = useState(false);
+  const [showCreateUserConfirmPassword, setShowCreateUserConfirmPassword] =
+    useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     remember: false,
   });
   const [signupData, setSignupData] = useState({
+    companyName: "",
+    ownerName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    employeeId: "",
-    companyName: "",
+    phone: "",
+  });
+  const [createUserData, setCreateUserData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "accountant",
   });
   const navigate = useNavigate();
   const [navShadow, setNavShadow] = useState(false);
@@ -63,7 +75,7 @@ const Navbar = () => {
 
   // Prevent body scroll when modal is open
   useEffect(() => {
-    if (isSigninModalOpen || isSignupModalOpen) {
+    if (isSigninModalOpen || isSignupModalOpen || isCreateUserModalOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
@@ -71,7 +83,7 @@ const Navbar = () => {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isSigninModalOpen, isSignupModalOpen]);
+  }, [isSigninModalOpen, isSignupModalOpen, isCreateUserModalOpen]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -84,6 +96,14 @@ const Navbar = () => {
   const handleSignupInputChange = (e) => {
     const { name, value } = e.target;
     setSignupData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCreateUserInputChange = (e) => {
+    const { name, value } = e.target;
+    setCreateUserData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -113,46 +133,101 @@ const Navbar = () => {
 
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
-    const { email, password, confirmPassword, employeeId, companyName } =
+    const { companyName, ownerName, email, password, confirmPassword, phone } =
       signupData;
+
     if (
+      !companyName ||
+      !ownerName ||
       !email ||
       !password ||
       !confirmPassword ||
-      !employeeId ||
-      !companyName
+      !phone
     ) {
-      alert("Please fill in all required fields");
+      toast.error("Please fill in all required fields");
       return;
     }
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
+
     setSignupLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/auth/register",
+        "http://localhost:3000/api/auth/register-company",
         {
+          companyName,
+          ownerName,
           email,
           password,
-          employeeId,
-          companyName,
+          phone,
         }
       );
-      toast.success("Signup successful!");
+
+      toast.success("Company registered successfully!");
       setIsSignupModalOpen(false);
-      setUser(response.data.data.user);
-      localStorage.setItem("user", JSON.stringify(response.data.data.user));
-      localStorage.setItem("token", response.data.data.token);
+      setUser(response.data.user);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("token", response.data.token);
       navigate("/dashboard");
     } catch (error) {
       toast.error(
-        (error.response && error.response.data.message) ||
-          "An unknown error occurred."
+        error.response?.data?.message || "An error occurred during registration"
       );
     } finally {
       setSignupLoading(false);
+    }
+  };
+
+  const handleCreateUserSubmit = async (e) => {
+    e.preventDefault();
+    const { name, email, password, confirmPassword, role } = createUserData;
+
+    if (!name || !email || !password || !confirmPassword || !role) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "http://localhost:3000/api/user/create",
+        {
+          name,
+          email,
+          password,
+          role,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success("User created successfully!");
+      setIsCreateUserModalOpen(false);
+      setCreateUserData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        role: "accountant",
+      });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error creating user");
     }
   };
 
@@ -171,14 +246,24 @@ const Navbar = () => {
   };
 
   const openSignupModal = () => {
-    if (user && user.role === "admin") {
-      setIsSignupModalOpen(true);
-      setIsSigninModalOpen(false);
-    }
+    setIsSignupModalOpen(true);
+    setIsSigninModalOpen(false);
+    setIsMobileMenuOpen(false);
   };
 
   const closeSignupModal = () => {
     setIsSignupModalOpen(false);
+  };
+
+  const openCreateUserModal = () => {
+    setIsCreateUserModalOpen(true);
+    setIsSignupModalOpen(false);
+    setIsSigninModalOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+
+  const closeCreateUserModal = () => {
+    setIsCreateUserModalOpen(false);
   };
 
   const handleLogout = () => {
@@ -260,7 +345,7 @@ const Navbar = () => {
                         {user.role === "admin" && (
                           <li>
                             <button
-                              onClick={openSignupModal}
+                              onClick={openCreateUserModal}
                               className="cursor-pointer flex items-center w-full px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                             >
                               <FiUserPlus className="mr-2 w-5 h-5 text-green-600" />
@@ -512,15 +597,17 @@ const Navbar = () => {
               </div>
             </div>
 
+            {/* Sign In Modal Body Bottom Section */}
             <div className="mt-6 text-center">
-              {user && user.role === "admin" && (
+              <p className="text-sm text-gray-600">
+                Don't have an account?{" "}
                 <button
                   onClick={openSignupModal}
                   className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
                 >
-                  Sign up here
+                  Register your company
                 </button>
-              )}
+              </p>
             </div>
           </div>
         </div>
@@ -586,20 +673,20 @@ const Navbar = () => {
               {/* Employee ID Field */}
               <div className="space-y-2">
                 <label
-                  htmlFor="employeeId"
+                  htmlFor="ownerName"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Employee ID <span className="text-red-500">*</span>
+                  Owner Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  id="employeeId"
-                  name="employeeId"
+                  id="ownerName"
+                  name="ownerName"
                   required
-                  value={signupData.employeeId}
+                  value={signupData.ownerName}
                   onChange={handleSignupInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
-                  placeholder="Enter your employee ID"
+                  placeholder="Enter your owner name"
                 />
               </div>
 
@@ -620,6 +707,26 @@ const Navbar = () => {
                   onChange={handleSignupInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
                   placeholder="Enter your company name"
+                />
+              </div>
+
+              {/* Phone Number Field */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Phone Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  required
+                  value={signupData.phone}
+                  onChange={handleSignupInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  placeholder="Enter your phone number"
                 />
               </div>
 
@@ -760,6 +867,195 @@ const Navbar = () => {
                 </button>
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Create User Modal with Blur Effect */}
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-500 ${
+          isCreateUserModalOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        style={{
+          backdropFilter: isCreateUserModalOpen ? "blur(8px)" : "none",
+          background: isCreateUserModalOpen
+            ? "rgba(30,41,59,0.3)"
+            : "transparent",
+        }}
+        aria-modal="true"
+        tabIndex={-1}
+      >
+        {/* Modal content */}
+        <div
+          className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 ${
+            isCreateUserModalOpen
+              ? "scale-100 translate-y-0"
+              : "scale-95 -translate-y-10"
+          } my-8`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Modal Header */}
+          <div className="flex justify-between items-center p-6 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Create New User
+            </h2>
+            <button
+              onClick={closeCreateUserModal}
+              className="text-gray-400 hover:text-gray-600 transition-colors transform hover:rotate-90 duration-300"
+            >
+              <X className="cursor-pointer w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Modal Body */}
+          <div className="p-6">
+            <form onSubmit={handleCreateUserSubmit} className="space-y-5">
+              {/* Full Name Field */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="create-name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="create-name"
+                  name="name"
+                  required
+                  value={createUserData.name}
+                  onChange={handleCreateUserInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  placeholder="Enter user's full name"
+                />
+              </div>
+
+              {/* Email Field */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="create-email"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="create-email"
+                  name="email"
+                  required
+                  value={createUserData.email}
+                  onChange={handleCreateUserInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  placeholder="Enter user's email"
+                />
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="create-role"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Role <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="create-role"
+                  name="role"
+                  required
+                  value={createUserData.role}
+                  onChange={handleCreateUserInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                >
+                  <option value="accountant">Accountant</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="create-password"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCreateUserPassword ? "text" : "password"}
+                    id="create-password"
+                    name="password"
+                    required
+                    value={createUserData.password}
+                    onChange={handleCreateUserInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12"
+                    placeholder="Create a password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowCreateUserPassword(!showCreateUserPassword)
+                    }
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showCreateUserPassword ? (
+                      <EyeOff className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
+                    ) : (
+                      <Eye className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Password must be at least 8 characters
+                </p>
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="create-confirmPassword"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Confirm Password <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCreateUserConfirmPassword ? "text" : "password"}
+                    id="create-confirmPassword"
+                    name="confirmPassword"
+                    required
+                    value={createUserData.confirmPassword}
+                    onChange={handleCreateUserInputChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12"
+                    placeholder="Confirm password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowCreateUserConfirmPassword(
+                        !showCreateUserConfirmPassword
+                      )
+                    }
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showCreateUserConfirmPassword ? (
+                      <EyeOff className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
+                    ) : (
+                      <Eye className="w-5 h-5 cursor-pointer animate-in zoom-in duration-200" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="flex items-center justify-center w-full cursor-pointer bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-200 transform hover:scale-[1.02]"
+              >
+                Create User
+              </button>
+            </form>
           </div>
         </div>
       </div>

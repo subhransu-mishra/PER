@@ -11,68 +11,60 @@ const createPettyCash = async (req, res) => {
       });
     }
 
-    // Check if user is system admin
-    if (req.user.userId === "admin" || req.user.role === "admin") {
-      return res.status(403).json({
-        success: false,
-        message:
-          "System admin cannot create petty cash vouchers. Please use a company user account.",
-      });
-    }
-
-    if (!req.user || !req.user.userId || !req.user.tenantId) {
+    if (!req.user || !req.user.organizationId) {
       return res.status(400).json({
         success: false,
-        message: "User or tenant information missing in token.",
+        message: "User or organization information missing in token.",
       });
     }
-    const userId = req.user.userId;
-    const tenantId = req.user.tenantId;
 
     const pettyCash = new PettyCash({
-      tenantId,
-      userId,
+      organizationId: req.user.organizationId,
+      userId: req.user._id,
       amount,
       description,
       category,
       requestedBy,
-      date: date ? date : undefined,
+      date: date ? new Date(date) : new Date(),
+      status: "pending",
     });
 
     await pettyCash.save();
 
     res.status(201).json({ success: true, data: pettyCash });
   } catch (err) {
-    res
-      .status(500)
-      .json({ success: false, message: "Server error: " + err.message });
+    console.error("Error creating petty cash:", err);
+    res.status(500).json({
+      success: false,
+      message: "Error creating petty cash entry",
+    });
   }
 };
 
 const getPettyCash = async (req, res) => {
   try {
-    // Check if user is system admin
-    if (req.user.userId === "admin" || req.user.role === "admin") {
-      return res.status(403).json({
+    if (!req.user || !req.user.organizationId) {
+      return res.status(400).json({
         success: false,
-        message:
-          "System admin cannot view petty cash vouchers. Please use a company user account.",
+        message: "User or organization information missing in token.",
       });
     }
 
-    if (!req.user || !req.user.tenantId) {
-      return res.status(400).json({
-        success: false,
-        message: "Tenant information missing in token.",
-      });
-    }
-    const tenantId = req.user.tenantId;
-    const pettyCashList = await PettyCash.find({ tenantId });
-    res.status(200).json({ success: true, data: pettyCashList });
+    // Find all petty cash entries for the user's organization
+    const pettyCashEntries = await PettyCash.find({
+      organizationId: req.user.organizationId,
+    }).sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: pettyCashEntries,
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({ success: false, message: "Server error: " + err.message });
+    console.error("Error fetching petty cash entries:", err);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching petty cash entries",
+    });
   }
 };
 

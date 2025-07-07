@@ -11,33 +11,22 @@ const createExpense = async (req, res) => {
       });
     }
 
-    // Check if user is system admin
-    if (req.user.userId === "admin" || req.user.role === "admin") {
-      return res.status(403).json({
-        success: false,
-        message:
-          "System admin cannot create expenses. Please use a company user account.",
-      });
-    }
-
-    if (!req.user || !req.user.userId || !req.user.tenantId) {
+    if (!req.user || !req.user.organizationId) {
       return res.status(400).json({
         success: false,
-        message: "User or tenant information missing in token.",
+        message: "User or organization information missing in token.",
       });
     }
 
-    const userId = req.user.userId;
-    const tenantId = req.user.tenantId;
-
     const expense = new Expense({
-      tenantId,
-      userId,
+      organizationId: req.user.organizationId,
+      userId: req.user._id,
       amount,
       description,
       category,
       receiptUrl,
-      date: date ? new Date(date) : undefined,
+      date: date ? new Date(date) : new Date(),
+      status: "pending",
     });
 
     await expense.save();
@@ -47,45 +36,37 @@ const createExpense = async (req, res) => {
       data: expense,
     });
   } catch (err) {
+    console.error("Error creating expense:", err);
     res.status(500).json({
       success: false,
-      message: "Server error: " + err.message,
+      message: "Error creating expense",
     });
   }
 };
 
 const getExpenses = async (req, res) => {
   try {
-    // Check if user is system admin
-    if (req.user.userId === "admin" || req.user.role === "admin") {
-      return res.status(403).json({
-        success: false,
-        message:
-          "System admin cannot view expenses. Please use a company user account.",
-      });
-    }
-
-    if (!req.user || !req.user.tenantId) {
+    if (!req.user || !req.user.organizationId) {
       return res.status(400).json({
         success: false,
-        message: "Tenant information missing in token.",
+        message: "User or organization information missing in token.",
       });
     }
 
-    const tenantId = req.user.tenantId;
-    const expenses = await Expense.find({ tenantId })
-      .populate("userId", "email employeeId")
-      .populate("approvedBy", "email employeeId")
-      .sort({ createdAt: -1 });
+    // Find all expenses for the user's organization
+    const expenses = await Expense.find({
+      organizationId: req.user.organizationId,
+    }).sort({ date: -1 });
 
     res.status(200).json({
       success: true,
       data: expenses,
     });
   } catch (err) {
+    console.error("Error fetching expenses:", err);
     res.status(500).json({
       success: false,
-      message: "Server error: " + err.message,
+      message: "Error fetching expenses",
     });
   }
 };

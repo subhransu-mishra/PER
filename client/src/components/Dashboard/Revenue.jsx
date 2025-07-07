@@ -29,6 +29,19 @@ const Revenue = () => {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const fetchRevenues = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:3000/api/revenues", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRevenues(res.data.data);
+    } catch (err) {
+      console.error("Error fetching revenues:", err);
+      setRevenues([]);
+    }
+  };
+
   // Filter revenues based on search
   const filteredRevenues = revenues.filter(
     (revenue) =>
@@ -49,39 +62,7 @@ const Revenue = () => {
     fetchRevenues();
   }, [user]);
 
-  // If user is system admin, show access restriction message
-  if (user?.role === "admin") {
-    return (
-      <div className="min-h-screen p-4 bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md text-center">
-          <div className="text-red-500 text-6xl mb-4">🚫</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Access Restricted
-          </h1>
-          <p className="text-gray-600 mb-6">
-            System administrators cannot access revenue management. This feature
-            is for company users only.
-          </p>
-          <p className="text-sm text-gray-500">
-            Please log in with a company user account to manage revenue entries.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const fetchRevenues = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:3000/api/revenues", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRevenues(res.data.data);
-    } catch (err) {
-      console.error("Error fetching revenues:", err);
-      setRevenues([]);
-    }
-  };
+  // User's company data is automatically filtered by the backend based on their organization ID
 
   // Handle add revenue
   const handleSubmit = async (e) => {

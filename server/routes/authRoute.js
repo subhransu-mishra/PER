@@ -1,23 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const {
-  loginUser,
-  register,
-  createUserByAdmin,
-  getAllTenants,
-  getTenantUsers,
-} = require("../controllers/authController");
-const auth = require("../middlewares/auth");
+const { registerCompany, loginUser } = require("../controllers/authController");
 
-// POST /api/auth/login
+// @route   POST /api/auth/register
+// @desc    Register a new company and default owner/admin user
+// @access  Public
+router.post("/register-company", registerCompany);
+
+// @route   POST /api/auth/login
+// @desc    Login for any user (owner, admin, accountant)
+// @access  Public
 router.post("/login", loginUser);
 
-// POST /api/auth/register
-router.post("/register", register);
-
-// Admin only routes
-router.post("/admin/create-user", auth, createUserByAdmin);
-router.get("/admin/tenants", auth, getAllTenants);
-router.get("/admin/tenants/:tenantId/users", auth, getTenantUsers);
 
 module.exports = router;

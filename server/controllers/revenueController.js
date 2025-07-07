@@ -12,34 +12,23 @@ const createRevenue = async (req, res) => {
       });
     }
 
-    // Check if user is system admin
-    if (req.user.userId === "admin" || req.user.role === "admin") {
-      return res.status(403).json({
-        success: false,
-        message:
-          "System admin cannot create revenue entries. Please use a company user account.",
-      });
-    }
-
-    if (!req.user || !req.user.userId || !req.user.tenantId) {
+    if (!req.user || !req.user.organizationId) {
       return res.status(400).json({
         success: false,
-        message: "User or tenant information missing in token.",
+        message: "User or organization information missing in token.",
       });
     }
 
-    const userId = req.user.userId;
-    const tenantId = req.user.tenantId;
-
     const revenue = new Revenue({
-      tenantId,
-      userId,
+      organizationId: req.user.organizationId,
+      userId: req.user._id,
       amount,
       description,
       source,
       clientName,
       invoiceNumber,
-      date: date ? new Date(date) : undefined,
+      date: date ? new Date(date) : new Date(),
+      status: "pending",
     });
 
     await revenue.save();
@@ -49,44 +38,37 @@ const createRevenue = async (req, res) => {
       data: revenue,
     });
   } catch (err) {
+    console.error("Error creating revenue:", err);
     res.status(500).json({
       success: false,
-      message: "Server error: " + err.message,
+      message: "Error creating revenue",
     });
   }
 };
 
 const getRevenues = async (req, res) => {
   try {
-    // Check if user is system admin
-    if (req.user.userId === "admin" || req.user.role === "admin") {
-      return res.status(403).json({
-        success: false,
-        message:
-          "System admin cannot view revenues. Please use a company user account.",
-      });
-    }
-
-    if (!req.user || !req.user.tenantId) {
+    if (!req.user || !req.user.organizationId) {
       return res.status(400).json({
         success: false,
-        message: "Tenant information missing in token.",
+        message: "User or organization information missing in token.",
       });
     }
 
-    const tenantId = req.user.tenantId;
-    const revenues = await Revenue.find({ tenantId })
-      .populate("userId", "email employeeId")
-      .sort({ createdAt: -1 });
+    // Find all revenues for the user's organization
+    const revenues = await Revenue.find({
+      organizationId: req.user.organizationId,
+    }).sort({ date: -1 });
 
     res.status(200).json({
       success: true,
       data: revenues,
     });
   } catch (err) {
+    console.error("Error fetching revenues:", err);
     res.status(500).json({
       success: false,
-      message: "Server error: " + err.message,
+      message: "Error fetching revenues",
     });
   }
 };
@@ -111,8 +93,10 @@ const updateRevenueStatus = async (req, res) => {
       });
     }
 
-    // Check if user belongs to the same tenant
-    if (revenue.tenantId.toString() !== req.user.tenantId.toString()) {
+    // Check if user belongs to the same organization
+    if (
+      revenue.organizationId.toString() !== req.user.organizationId.toString()
+    ) {
       return res.status(403).json({
         success: false,
         message: "Access denied.",
