@@ -325,6 +325,14 @@ const Navbar = () => {
               >
                 Pricing
               </Link>
+              {user && (
+                <Link
+                  to="/dashboard"
+                  className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  Dashboard
+                </Link>
+              )}
               {user ? (
                 <div className="flex items-center space-x-4 relative group">
                   <UserCircle className="w-7 h-7 text-blue-600" />
