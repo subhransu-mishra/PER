@@ -11,7 +11,7 @@ const DashNavbar = () => {
   }, []);
 
   return (
-    <div className="w-full h-16 px-6 bg-white border-b flex items-center justify-between shadow-sm">
+    <div className="w-full h-16 px-6 bg-white  flex items-center justify-between shadow-sm">
       {/* Left side - Home button */}
       <Link
         to="/"
