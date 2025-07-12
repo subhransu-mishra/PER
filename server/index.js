@@ -7,8 +7,9 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 const path = require("path");
 const userRoute = require("./routes/userRoute");
-const pettyCashRoutes = require("./routes/pettyCashRoute"); // 👈 your petty cash API
-
+const pettyCashRoutes = require("./routes/pettyCashRoute"); 
+const contactRoutes = require("./routes/contactRoute");
+const expenseRoutes = require("./routes/expenseRoute");
 // Connect to database
 connectDB();
 
@@ -26,7 +27,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoute);
 app.use("/api/pettycash", pettyCashRoutes);
-
+app.use("/api/contact" , contactRoutes);
+app.use("/api/expense", expenseRoutes);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

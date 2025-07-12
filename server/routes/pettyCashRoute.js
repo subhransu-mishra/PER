@@ -8,6 +8,7 @@ const {
   rejectPettyCash,
   getPettyCashStats,
   getNextVoucherNumber,
+  getMonthlyPettyCashSummary
 } = require("../controllers/pettyCashController");
 
 const authMiddleware = require("../middlewares/auth");
@@ -38,5 +39,6 @@ router.patch("/:id/approve", authMiddleware, approvePettyCash);
 
 // Reject petty cash entry
 router.patch("/:id/reject", authMiddleware, rejectPettyCash);
+router.get("/monthly-pettycash-summary", authMiddleware, getMonthlyPettyCashSummary);
 
 module.exports = router;

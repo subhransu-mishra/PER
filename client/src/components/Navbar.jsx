@@ -623,7 +623,7 @@ const Navbar = () => {
 
       {/* Sign Up Modal with Blur Effect */}
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-500 ${
+        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-500 overflow-y-auto ${
           isSignupModalOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -637,15 +637,15 @@ const Navbar = () => {
       >
         {/* Modal content */}
         <div
-          className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 ${
+          className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 my-4 ${
             isSignupModalOpen
               ? "scale-100 translate-y-0"
               : "scale-95 -translate-y-10"
-          } my-8`}
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Header */}
-          <div className="flex justify-between items-center p-6 border-b border-gray-200">
+          <div className="sticky top-0 z-10 flex justify-between items-center p-6 border-b border-gray-200 bg-white/95 backdrop-blur-sm rounded-t-2xl">
             <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
             <button
               onClick={closeSignupModal}
@@ -656,7 +656,7 @@ const Navbar = () => {
           </div>
 
           {/* Modal Body */}
-          <div className="p-6">
+          <div className="p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
             <form onSubmit={handleSignupSubmit} className="space-y-5">
               {/* Email Field */}
               <div className="space-y-2">

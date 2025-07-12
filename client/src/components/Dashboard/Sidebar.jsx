@@ -11,8 +11,8 @@ const sections = [
     icon: <MdOutlinePayments size={22} />,
     path: "petty-cash",
   },
-  { name: "Revenue", icon: <FiDollarSign size={22} />, path: "revenue" },
   { name: "Expenses", icon: <FiBarChart2 size={22} />, path: "expenses" },
+  { name: "Revenue", icon: <FiDollarSign size={22} />, path: "revenue" },
   { name: "Reports", icon: <FiFileText size={22} />, path: "reports" },
 ];
 

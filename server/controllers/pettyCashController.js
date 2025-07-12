@@ -324,6 +324,38 @@ const getNextVoucherNumber = async (req, res) => {
   }
 };
 
+const getMonthlyPettyCashSummary = async (req, res) => {
+  try {
+    const orgId = req.user.organizationId;
+
+    // Get current month range
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    // Filter entries for current month
+    const entries = await PettyCash.find({
+      organizationId: orgId,
+      date: { $gte: firstDay, $lte: lastDay },
+    });
+
+    const totalSpending = entries.reduce((sum, e) => sum + e.amount, 0);
+    const totalVouchers = entries.length;
+    const pendingVouchers = entries.filter(
+      (e) => e.status === "pending"
+    ).length;
+
+    res.status(200).json({
+      totalSpending,
+      totalVouchers,
+      pendingVouchers,
+    });
+  } catch (error) {
+    console.error("Monthly summary error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   createPettyCash,
   getPettyCash,
@@ -332,4 +364,5 @@ module.exports = {
   rejectPettyCash,
   getPettyCashStats,
   getNextVoucherNumber,
+  getMonthlyPettyCashSummary
 };

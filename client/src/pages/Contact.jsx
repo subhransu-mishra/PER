@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import Layout from "../components/Layout";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
+    FullName: "",
+    Email: "",
+    Subject: "",
+    Message: "",
   });
 
   const handleInputChange = (e) => {
@@ -17,17 +19,69 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    if (!formData.FullName.trim()) {
+      toast.error("Full name is required");
+      return false;
+    }
+    if (!formData.Email.trim()) {
+      toast.error("Email is required");
+      return false;
+    }
+    if (!formData.Subject.trim()) {
+      toast.error("Subject is required");
+      return false;
+    }
+    if (!formData.Message.trim()) {
+      toast.error("Message is required");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-    });
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await axios.post(
+        "http://localhost:3000/api/contact/new-contact",
+        {
+          FullName: formData.FullName.trim(),
+          Email: formData.Email.trim(),
+          Subject: formData.Subject.trim(),
+          Message: formData.Message.trim(),
+        },
+        config
+      );
+
+      if (response.data) {
+        console.log("Form submitted:", response.data);
+        toast.success("Message sent successfully!");
+        setFormData({
+          FullName: "",
+          Email: "",
+          Subject: "",
+          Message: "",
+        });
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to send message. Please try again.";
+      toast.error(errorMessage);
+    }
   };
 
   return (
@@ -54,16 +108,16 @@ const Contact = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label
-                    htmlFor="name"
+                    htmlFor="FullName"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     Full Name
                   </label>
                   <input
                     type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
+                    id="FullName"
+                    name="FullName"
+                    value={formData.FullName}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -73,16 +127,16 @@ const Contact = () => {
 
                 <div>
                   <label
-                    htmlFor="email"
+                    htmlFor="Email"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     Email Address
                   </label>
                   <input
                     type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
+                    id="Email"
+                    name="Email"
+                    value={formData.Email}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -92,16 +146,16 @@ const Contact = () => {
 
                 <div>
                   <label
-                    htmlFor="subject"
+                    htmlFor="Subject"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     Subject
                   </label>
                   <input
                     type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
+                    id="Subject"
+                    name="Subject"
+                    value={formData.Subject}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -111,15 +165,15 @@ const Contact = () => {
 
                 <div>
                   <label
-                    htmlFor="message"
+                    htmlFor="Message"
                     className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     Message
                   </label>
                   <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
+                    id="Message"
+                    name="Message"
+                    value={formData.Message}
                     onChange={handleInputChange}
                     required
                     rows={6}
@@ -130,7 +184,7 @@ const Contact = () => {
 
                 <button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                  className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
                 >
                   Send Message
                 </button>
