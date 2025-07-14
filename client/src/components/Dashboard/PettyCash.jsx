@@ -4,6 +4,8 @@ import { toast } from "react-hot-toast";
 import { format } from "date-fns";
 import { FaPlus } from "react-icons/fa6";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 const emptyVoucher = {
   voucherNumber: "",
   date: format(new Date(), "yyyy-MM-dd"),
@@ -23,6 +25,12 @@ const PettyCash = () => {
   const [showModal, setShowModal] = useState(false);
   const [receiptFile, setReceiptFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [monthlyApproved, setMonthlyApproved] = useState({
+    totalApproved: 0,
+    count: 0,
+    month: "",
+    year: "",
+  });
   // Get current month's start and end dates
   const getCurrentMonthDates = () => {
     const now = new Date();
@@ -85,7 +93,7 @@ const PettyCash = () => {
         });
 
         const res = await axios.get(
-          `http://localhost:3000/api/pettycash?${queryParams}`,
+          `${API_BASE_URL}/api/pettycash?${queryParams}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -110,21 +118,133 @@ const PettyCash = () => {
         });
 
         const res = await axios.get(
-          `http://localhost:3000/api/pettycash/stats?${queryParams}`,
+          `${API_BASE_URL}/api/pettycash/stats?${queryParams}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        setStats(res.data.stats);
+        if (res.data.success) {
+          setStats(res.data.stats);
+        } else {
+          console.error("Failed to fetch statistics:", res.data.message);
+        }
       } catch (err) {
         console.error("Error fetching statistics:", err);
       }
     };
 
-    fetchVouchers();
-    fetchStats();
+    const fetchMonthlyApprovedTotal = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `${API_BASE_URL}/api/pettycash/monthly-approved-total`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (response.data.success) {
+          setMonthlyApproved(response.data.data);
+        } else {
+          console.error(
+            "Failed to fetch monthly approved total:",
+            response.data.message
+          );
+          setMonthlyApproved({
+            totalApproved: 0,
+            count: 0,
+            month: format(new Date(), "MMMM"),
+            year: new Date().getFullYear(),
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching monthly approved total:", error);
+        setMonthlyApproved({
+          totalApproved: 0,
+          count: 0,
+          month: format(new Date(), "MMMM"),
+          year: new Date().getFullYear(),
+        });
+      }
+    };
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([
+          fetchVouchers(),
+          fetchStats(),
+          fetchMonthlyApprovedTotal(),
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [filters, search, user]);
+
+  // Make these functions available outside the useEffect
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const queryParams = new URLSearchParams({
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+      });
+
+      const res = await axios.get(
+        `${API_BASE_URL}/api/pettycash/stats?${queryParams}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (res.data.success) {
+        setStats(res.data.stats);
+      } else {
+        console.error("Failed to fetch statistics:", res.data.message);
+      }
+    } catch (err) {
+      console.error("Error fetching statistics:", err);
+    }
+  };
+
+  const fetchMonthlyApprovedTotal = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${API_BASE_URL}/api/pettycash/monthly-approved-total`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.data.success) {
+        setMonthlyApproved(response.data.data);
+      } else {
+        console.error(
+          "Failed to fetch monthly approved total:",
+          response.data.message
+        );
+        setMonthlyApproved({
+          totalApproved: 0,
+          count: 0,
+          month: format(new Date(), "MMMM"),
+          year: new Date().getFullYear(),
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching monthly approved total:", error);
+      setMonthlyApproved({
+        totalApproved: 0,
+        count: 0,
+        month: format(new Date(), "MMMM"),
+        year: new Date().getFullYear(),
+      });
+    }
+  };
 
   // Handle filter changes
   const handleFilterChange = (e) => {
@@ -178,7 +298,7 @@ const PettyCash = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:3000/api/pettycash/next-voucher",
+        `${API_BASE_URL}/api/pettycash/next-voucher`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -226,7 +346,7 @@ const PettyCash = () => {
       }
 
       const res = await axios.post(
-        "http://localhost:3000/api/pettycash/create",
+        `${API_BASE_URL}/api/pettycash/create`,
         formData,
         {
           headers: {
@@ -256,18 +376,28 @@ const PettyCash = () => {
   const handleApprove = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.patch(
-        `http://localhost:3000/api/pettycash/${id}/approve`,
+      const response = await axios.patch(
+        `${API_BASE_URL}/api/pettycash/${id}/approve`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      setVouchers((prev) =>
-        prev.map((v) => (v._id === id ? { ...v, status: "approved" } : v))
-      );
-      toast.success("Voucher approved successfully");
+      if (response.data.success) {
+        // Update the voucher in the local state
+        setVouchers((prev) =>
+          prev.map((v) => (v._id === id ? { ...v, status: "approved" } : v))
+        );
+
+        // Refresh statistics to update counts and totals
+        fetchStats();
+        fetchMonthlyApprovedTotal();
+
+        toast.success("Voucher approved successfully");
+      } else {
+        toast.error(response.data.message || "Failed to approve voucher");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to approve voucher");
       console.error("Error approving voucher:", err);
@@ -277,18 +407,27 @@ const PettyCash = () => {
   const handleReject = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.patch(
-        `http://localhost:3000/api/pettycash/${id}/reject`,
+      const response = await axios.patch(
+        `${API_BASE_URL}/api/pettycash/${id}/reject`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      setVouchers((prev) =>
-        prev.map((v) => (v._id === id ? { ...v, status: "rejected" } : v))
-      );
-      toast.success("Voucher rejected successfully");
+      if (response.data.success) {
+        // Update the voucher in the local state
+        setVouchers((prev) =>
+          prev.map((v) => (v._id === id ? { ...v, status: "rejected" } : v))
+        );
+
+        // Refresh statistics to update counts and totals
+        fetchStats();
+
+        toast.success("Voucher rejected successfully");
+      } else {
+        toast.error(response.data.message || "Failed to reject voucher");
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to reject voucher");
       console.error("Error rejecting voucher:", err);
@@ -316,33 +455,48 @@ const PettyCash = () => {
   return (
     <div className="p-6">
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">
-            This Month's Total
+            Total pettycash spend
           </h3>
           <p className="text-2xl font-bold text-red-600">
-            ₹{stats.totalAmount.toLocaleString()}
+            ₹{(stats.totalAmount || 0).toLocaleString()}
           </p>
           <span className="text-sm text-gray-500">
-            Total amount for {format(new Date(), "MMMM yyyy")}
+             {format(new Date(), "MMMM yyyy")} includes all vouchers 
           </span>
         </div>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-sm font-medium text-gray-500">
+            Approved pettycash This Month
+          </h3>
+          <p className="text-2xl font-bold text-green-600">
+            ₹{monthlyApproved.totalApproved.toLocaleString()}
+          </p>
+          <span className="text-sm text-gray-500">
+            {monthlyApproved.count} approved vouchers in {monthlyApproved.month}{" "}
+            {monthlyApproved.year}
+          </span>
+        </div>
+        
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">
             Pending Vouchers
           </h3>
           <p className="text-2xl font-bold text-yellow-600">
-            {stats.pendingCount} vouchers
+            {stats.pendingCount || 0} vouchers
           </p>
           <span className="text-sm text-gray-500">
-            ₹{stats.pendingAmount.toLocaleString()} pending approval
+            ₹{(stats.pendingAmount || 0).toLocaleString()} pending approval
           </span>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">Total Vouchers</h3>
           <p className="text-2xl font-bold text-blue-600">
-            {stats.pendingCount + stats.approvedCount + stats.rejectedCount}{" "}
+            {(stats.pendingCount || 0) +
+              (stats.approvedCount || 0) +
+              (stats.rejectedCount || 0)}{" "}
             vouchers
           </p>
           <span className="text-sm text-gray-500">

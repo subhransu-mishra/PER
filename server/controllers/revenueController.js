@@ -21,7 +21,7 @@ const createRevenue = async (req, res) => {
 
     const revenue = new Revenue({
       organizationId: req.user.organizationId,
-      userId: req.user._id,
+      userId: req.user.id,
       amount,
       description,
       source,
@@ -39,9 +39,21 @@ const createRevenue = async (req, res) => {
     });
   } catch (err) {
     console.error("Error creating revenue:", err);
+
+    if (err.name === "ValidationError") {
+      const validationErrors = Object.values(err.errors).map(
+        (error) => error.message
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: validationErrors,
+      });
+    }
+
     res.status(500).json({
       success: false,
-      message: "Error creating revenue",
+      message: "Error creating revenue: " + (err.message || "Unknown error"),
     });
   }
 };
@@ -68,7 +80,8 @@ const getRevenues = async (req, res) => {
     console.error("Error fetching revenues:", err);
     res.status(500).json({
       success: false,
-      message: "Error fetching revenues",
+      message:
+        "Error fetching revenues: " + (err.message || "Database timeout"),
     });
   }
 };
@@ -111,9 +124,22 @@ const updateRevenueStatus = async (req, res) => {
       data: revenue,
     });
   } catch (err) {
+    console.error("Error updating revenue status:", err);
+
+    if (err.name === "ValidationError") {
+      const validationErrors = Object.values(err.errors).map(
+        (error) => error.message
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: validationErrors,
+      });
+    }
+
     res.status(500).json({
       success: false,
-      message: "Server error: " + err.message,
+      message: "Server error: " + (err.message || "Unknown error"),
     });
   }
 };

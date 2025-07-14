@@ -8,13 +8,24 @@ const {
   rejectPettyCash,
   getPettyCashStats,
   getNextVoucherNumber,
-  getMonthlyPettyCashSummary
+  getMonthlyPettyCashSummary,
+  getMonthlyApprovedTotal,
 } = require("../controllers/pettyCashController");
 
 const authMiddleware = require("../middlewares/auth");
 const upload = require("../middlewares/upload");
 
-// Create new petty cash entry
+// Static routes first
+router.get("/monthly-approved-total", authMiddleware, getMonthlyApprovedTotal);
+router.get(
+  "/monthly-pettycash-summary",
+  authMiddleware,
+  getMonthlyPettyCashSummary
+);
+router.get("/next-voucher", authMiddleware, getNextVoucherNumber);
+router.get("/stats", authMiddleware, getPettyCashStats);
+
+// Create route
 router.post(
   "/create",
   authMiddleware,
@@ -22,23 +33,12 @@ router.post(
   createPettyCash
 );
 
-// Get the next voucher number
-router.get("/next-voucher", authMiddleware, getNextVoucherNumber);
-
-// Get organization statistics
-router.get("/stats", authMiddleware, getPettyCashStats);
-
-// Get all petty cash entries with pagination and filters
+// Main listing route
 router.get("/", authMiddleware, getPettyCash);
 
-// Get single petty cash entry
+// Dynamic parameter routes last
 router.get("/:id", authMiddleware, getPettyCashById);
-
-// Approve petty cash entry
 router.patch("/:id/approve", authMiddleware, approvePettyCash);
-
-// Reject petty cash entry
 router.patch("/:id/reject", authMiddleware, rejectPettyCash);
-router.get("/monthly-pettycash-summary", authMiddleware, getMonthlyPettyCashSummary);
 
 module.exports = router;

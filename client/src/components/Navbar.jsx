@@ -52,7 +52,12 @@ const Navbar = () => {
   const [user, setUser] = useState(() => {
     // Try to load user from localStorage on mount
     const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
+    try {
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage:", error);
+      return null;
+    }
   });
   const [loading, setLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
@@ -897,11 +902,11 @@ const Navbar = () => {
       >
         {/* Modal content */}
         <div
-          className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 ${
+          className={`bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-500 my-8 ${
             isCreateUserModalOpen
               ? "scale-100 translate-y-0"
               : "scale-95 -translate-y-10"
-          } my-8`}
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Header */}

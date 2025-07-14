@@ -7,7 +7,7 @@ const {
 } = require("../controllers/revenueController");
 const auth = require("../middlewares/auth");
 
-router.post("/revenues", auth, createRevenue);
+router.post("/create", auth, createRevenue);
 router.get("/revenues", auth, getRevenues);
 router.patch("/revenues/:id/status", auth, updateRevenueStatus);
 
