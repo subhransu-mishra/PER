@@ -12,6 +12,8 @@ import PettyCash from "./components/Dashboard/PettyCash";
 import Revenue from "./components/Dashboard/Revenue";
 import Expenses from "./components/Dashboard/Expenses";
 import Reports from "./components/Dashboard/Reports";
+import DashboardHome from "./components/Dashboard/DashboardHome";
+import { Settings } from "lucide-react";
 const App = () => {
   return (
     <>
@@ -33,11 +35,12 @@ const App = () => {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/dashboard" element={<Dashboard />}>
-          <Route index element={<div>Welcome to Dashboard</div>} />
+          <Route index element={<DashboardHome />} />
           <Route path="petty-cash" element={<PettyCash />} />
           <Route path="revenue" element={<Revenue />} />
           <Route path="expenses" element={<Expenses />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </>

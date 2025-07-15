@@ -391,7 +391,7 @@ const About = () => {
         </div>
 
         {/* Team Section */}
-        <div id="team" className="max-w-7xl mx-auto">
+        {/* <div id="team" className="max-w-7xl mx-auto">
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
             Our Team
           </h2>
@@ -430,7 +430,7 @@ const About = () => {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </Layout>
   );

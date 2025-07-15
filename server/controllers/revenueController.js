@@ -1,151 +1,146 @@
-const Revenue = require("../models/revenue");
+const Revenue = require("../models/Revenue");
 
-const createRevenue = async (req, res) => {
+const addRevenue = async (req, res) => {
   try {
-    const { amount, description, source, clientName, invoiceNumber, date } =
-      req.body;
-
-    if (!amount || !description || !source) {
-      return res.status(400).json({
-        success: false,
-        message: "Amount, description, and source are required.",
-      });
-    }
-
-    if (!req.user || !req.user.organizationId) {
-      return res.status(400).json({
-        success: false,
-        message: "User or organization information missing in token.",
-      });
-    }
-
-    const revenue = new Revenue({
-      organizationId: req.user.organizationId,
-      userId: req.user.id,
-      amount,
-      description,
-      source,
+    const {
+      date,
       clientName,
-      invoiceNumber,
-      date: date ? new Date(date) : new Date(),
+      companyName,
+      amount,
+      source,
+      receivedThrough,
+      paymentMethod, // Add paymentMethod from request body
+      description,
+      billUrl, // Add billUrl from request body
+    } = req.body;
+
+    console.log("Revenue request body:", req.body);
+
+    // Use paymentMethod as receivedThrough if receivedThrough is not provided
+    const effectiveReceivedThrough = receivedThrough || paymentMethod || "bank";
+
+    const invoiceUrl = req.file ? req.file.path : billUrl || "";
+
+    const revenue = await Revenue.create({
+      date,
+      clientName,
+      companyName,
+      amount,
+      source,
+      receivedThrough: effectiveReceivedThrough,
+      paymentMethod,
+      invoiceUrl,
+      billUrl,
+      description,
+      createdBy: req.user.id,
+      organizationId: req.user.organizationId || req.user.tenantId,
       status: "pending",
     });
 
-    await revenue.save();
-
     res.status(201).json({
-      success: true,
-      data: revenue,
+      message: "Revenue added successfully",
+      revenue,
     });
-  } catch (err) {
-    console.error("Error creating revenue:", err);
-
-    if (err.name === "ValidationError") {
-      const validationErrors = Object.values(err.errors).map(
-        (error) => error.message
-      );
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors: validationErrors,
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Error creating revenue: " + (err.message || "Unknown error"),
-    });
+  } catch (error) {
+    console.error("Revenue error:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
 const getRevenues = async (req, res) => {
   try {
-    if (!req.user || !req.user.organizationId) {
-      return res.status(400).json({
-        success: false,
-        message: "User or organization information missing in token.",
-      });
-    }
-
-    // Find all revenues for the user's organization
     const revenues = await Revenue.find({
-      organizationId: req.user.organizationId,
+      organizationId: req.user.organizationId || req.user.tenantId,
     }).sort({ date: -1 });
 
-    res.status(200).json({
-      success: true,
-      data: revenues,
-    });
-  } catch (err) {
-    console.error("Error fetching revenues:", err);
-    res.status(500).json({
-      success: false,
-      message:
-        "Error fetching revenues: " + (err.message || "Database timeout"),
-    });
+    res.status(200).json(revenues);
+  } catch (error) {
+    console.error("Fetch revenues error:", error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
-const updateRevenueStatus = async (req, res) => {
+const updateRevenue = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status } = req.body;
+    const {
+      date,
+      clientName,
+      companyName,
+      amount,
+      source,
+      description,
+      paymentMethod,
+      invoiceNumber,
+    } = req.body;
 
-    if (!["received", "overdue"].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Status must be either 'received' or 'overdue'.",
-      });
+    const revenueId = req.params.id;
+
+    // Use paymentMethod as receivedThrough if receivedThrough is not provided
+    const effectiveReceivedThrough = paymentMethod || "bank";
+
+    // Check if there's a new file upload
+    const invoiceUrl = req.file ? req.file.path : undefined;
+
+    // Build update object
+    const updateData = {
+      date,
+      clientName,
+      amount: Number(amount),
+      source,
+      description,
+      paymentMethod,
+      receivedThrough: effectiveReceivedThrough,
+      invoiceNumber,
+    };
+
+    // Only add invoiceUrl if a new file was uploaded
+    if (invoiceUrl) {
+      updateData.invoiceUrl = invoiceUrl;
     }
 
-    const revenue = await Revenue.findById(id);
-    if (!revenue) {
-      return res.status(404).json({
-        success: false,
-        message: "Revenue not found.",
-      });
-    }
+    const updatedRevenue = await Revenue.findByIdAndUpdate(
+      revenueId,
+      updateData,
+      { new: true }
+    );
 
-    // Check if user belongs to the same organization
-    if (
-      revenue.organizationId.toString() !== req.user.organizationId.toString()
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied.",
-      });
+    if (!updatedRevenue) {
+      return res.status(404).json({ message: "Revenue not found" });
     }
-
-    revenue.status = status;
-    await revenue.save();
 
     res.status(200).json({
-      success: true,
-      data: revenue,
+      message: "Revenue updated successfully",
+      revenue: updatedRevenue,
     });
-  } catch (err) {
-    console.error("Error updating revenue status:", err);
-
-    if (err.name === "ValidationError") {
-      const validationErrors = Object.values(err.errors).map(
-        (error) => error.message
-      );
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors: validationErrors,
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Server error: " + (err.message || "Unknown error"),
-    });
+  } catch (error) {
+    console.error("Update revenue error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
-module.exports = {
-  createRevenue,
-  getRevenues,
-  updateRevenueStatus,
+const getRevenueById = async (req, res) => {
+  try {
+    const revenue = await Revenue.findById(req.params.id);
+
+    if (!revenue) {
+      return res.status(404).json({ message: "Revenue not found" });
+    }
+
+    // Check if user has permission to access this revenue
+    if (
+      revenue.organizationId.toString() !==
+      (req.user.organizationId || req.user.tenantId).toString()
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to access this revenue" });
+    }
+
+    res.status(200).json(revenue);
+  } catch (error) {
+    console.error("Get revenue by ID error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
 };
+
+module.exports = { addRevenue, getRevenues, updateRevenue, getRevenueById };
