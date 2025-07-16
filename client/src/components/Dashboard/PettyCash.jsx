@@ -453,76 +453,78 @@ const PettyCash = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500">
             Total pettycash spend
           </h3>
-          <p className="text-2xl font-bold text-red-600">
+          <p className="text-xl sm:text-2xl font-bold text-red-600">
             ₹{(stats.totalAmount || 0).toLocaleString()}
           </p>
-          <span className="text-sm text-gray-500">
-             {format(new Date(), "MMMM yyyy")} includes all vouchers 
+          <span className="text-xs text-gray-500">
+            {format(new Date(), "MMMM yyyy")} includes all vouchers
           </span>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500">
             Approved pettycash This Month
           </h3>
-          <p className="text-2xl font-bold text-green-600">
+          <p className="text-xl sm:text-2xl font-bold text-green-600">
             ₹{monthlyApproved.totalApproved.toLocaleString()}
           </p>
-          <span className="text-sm text-gray-500">
+          <span className="text-xs text-gray-500">
             {monthlyApproved.count} approved vouchers in {monthlyApproved.month}{" "}
             {monthlyApproved.year}
           </span>
         </div>
-        
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">
+
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500">
             Pending Vouchers
           </h3>
-          <p className="text-2xl font-bold text-yellow-600">
+          <p className="text-xl sm:text-2xl font-bold text-yellow-600">
             {stats.pendingCount || 0} vouchers
           </p>
-          <span className="text-sm text-gray-500">
+          <span className="text-xs text-gray-500">
             ₹{(stats.pendingAmount || 0).toLocaleString()} pending approval
           </span>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Total Vouchers</h3>
-          <p className="text-2xl font-bold text-blue-600">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500">
+            Total Vouchers
+          </h3>
+          <p className="text-xl sm:text-2xl font-bold text-blue-600">
             {(stats.pendingCount || 0) +
               (stats.approvedCount || 0) +
               (stats.rejectedCount || 0)}{" "}
             vouchers
           </p>
-          <span className="text-sm text-gray-500">
+          <span className="text-xs text-gray-500">
             Issued in {format(new Date(), "MMMM yyyy")}
           </span>
         </div>
       </div>
 
       {/* Header with Filters */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4 md:mb-0">
+      <div className="bg-white p-3 sm:p-4 rounded-lg shadow mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-0">
             Petty Cash Management
           </h1>
           <button
             onClick={handleNewVoucher}
-            className="px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base flex items-center justify-center"
           >
             <FaPlus className="inline-block mr-1" />
             New Entry
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Start Date
             </label>
             <input
@@ -530,11 +532,11 @@ const PettyCash = () => {
               name="startDate"
               value={filters.startDate}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full text-xs sm:text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-1.5 sm:py-2"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               End Date
             </label>
             <input
@@ -542,18 +544,18 @@ const PettyCash = () => {
               name="endDate"
               value={filters.endDate}
               onChange={handleFilterChange}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full text-xs sm:text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-1.5 sm:py-2"
             />
           </div>
           <div>
-            <label className="cursor-pointer block text-sm font-medium text-gray-700 mb-1">
+            <label className="cursor-pointer block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
             <select
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="w-full cursor-pointer rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full text-xs sm:text-sm cursor-pointer rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-1.5 sm:py-2"
             >
               <option value="" className="cursor-pointer">
                 All
@@ -570,7 +572,7 @@ const PettyCash = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Search
             </label>
             <input
@@ -578,7 +580,7 @@ const PettyCash = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search vouchers..."
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full text-xs sm:text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-1.5 sm:py-2"
             />
           </div>
         </div>
@@ -590,25 +592,25 @@ const PettyCash = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Voucher Number
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Voucher #
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Description
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -616,35 +618,35 @@ const PettyCash = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center">
+                  <td colSpan="7" className="px-3 sm:px-6 py-4 text-center">
                     Loading...
                   </td>
                 </tr>
               ) : vouchers.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center">
+                  <td colSpan="7" className="px-3 sm:px-6 py-4 text-center">
                     No entries found
                   </td>
                 </tr>
               ) : (
                 vouchers.map((voucher) => (
                   <tr key={voucher._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                       {voucher.voucherNumber}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                       {new Date(voucher.date).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                       {voucher.categoryType}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-3 sm:px-6 py-2 sm:py-4 text-xs sm:text-sm text-gray-900 max-w-[120px] sm:max-w-none truncate">
                       {voucher.description}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                       ₹{voucher.amount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap hidden sm:table-cell">
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                     ${
@@ -659,33 +661,33 @@ const PettyCash = () => {
                           voucher.status.slice(1)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex space-x-2">
+                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                      <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-1 sm:space-y-0">
                         {voucher.receipt && (
                           <a
                             href={voucher.receipt}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm"
                           >
                             View Receipt
                           </a>
                         )}
                         {role === "admin" && voucher.status === "pending" && (
-                          <>
+                          <div className="flex space-x-2">
                             <button
                               onClick={() => handleApprove(voucher._id)}
-                              className="text-green-600 cursor-pointer hover:text-green-800"
+                              className="text-green-600 cursor-pointer hover:text-green-800 text-xs sm:text-sm"
                             >
                               Approve
                             </button>
                             <button
                               onClick={() => handleReject(voucher._id)}
-                              className="text-red-600 cursor-pointer hover:text-red-800"
+                              className="text-red-600 cursor-pointer hover:text-red-800 text-xs sm:text-sm"
                             >
                               Reject
                             </button>
-                          </>
+                          </div>
                         )}
                       </div>
                     </td>
@@ -698,25 +700,16 @@ const PettyCash = () => {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
-            <div className="flex-1 flex justify-between sm:hidden">
+          <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-t border-gray-200">
+            <div className="flex-1 flex justify-between">
               <button
                 onClick={() => handlePageChange(filters.page - 1)}
                 disabled={filters.page === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="relative inline-flex items-center px-2 sm:px-4 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
               >
                 Previous
               </button>
-              <button
-                onClick={() => handlePageChange(filters.page + 1)}
-                disabled={!pagination.hasMore}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
+              <div className="hidden sm:flex items-center">
                 <p className="text-sm text-gray-700">
                   Showing{" "}
                   <span className="font-medium">
@@ -730,25 +723,13 @@ const PettyCash = () => {
                   results
                 </p>
               </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                  <button
-                    onClick={() => handlePageChange(filters.page - 1)}
-                    disabled={filters.page === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  {/* Add page numbers here if needed */}
-                  <button
-                    onClick={() => handlePageChange(filters.page + 1)}
-                    disabled={!pagination.hasMore}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </nav>
-              </div>
+              <button
+                onClick={() => handlePageChange(filters.page + 1)}
+                disabled={!pagination.hasMore}
+                className="relative inline-flex items-center px-2 sm:px-4 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              >
+                Next
+              </button>
             </div>
           </div>
         )}
@@ -756,12 +737,12 @@ const PettyCash = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-2xl font-bold mb-4">
+        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg p-4 sm:p-6 w-full max-w-md shadow-xl">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4">
               {isEditing ? "Edit Petty Cash Entry" : "New Petty Cash Entry"}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Voucher Number
@@ -771,7 +752,7 @@ const PettyCash = () => {
                   name="voucherNumber"
                   value={form.voucherNumber}
                   readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-not-allowed"
+                  className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-not-allowed text-sm"
                   required
                 />
               </div>
@@ -785,7 +766,7 @@ const PettyCash = () => {
                   name="date"
                   value={form.date}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                   required
                 />
               </div>
@@ -798,7 +779,7 @@ const PettyCash = () => {
                   name="transactionType"
                   value={form.transactionType}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                   required
                 >
                   <option value="cash">Cash</option>
@@ -816,7 +797,7 @@ const PettyCash = () => {
                   name="categoryType"
                   value={form.categoryType}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                   required
                 />
               </div>
@@ -829,7 +810,7 @@ const PettyCash = () => {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                   rows="3"
                   required
                 />
@@ -844,7 +825,7 @@ const PettyCash = () => {
                   name="amount"
                   value={form.amount}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
                   min="0"
                   step="0.01"
                   required
@@ -860,7 +841,7 @@ const PettyCash = () => {
                   name="receipt"
                   onChange={handleChange}
                   accept="image/*,.pdf"
-                  className="mt-1 cursor-pointer block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="mt-1 cursor-pointer block w-full text-xs sm:text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
               </div>
 
@@ -868,13 +849,13 @@ const PettyCash = () => {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 cursor-pointer py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 cursor-pointer"
                 >
                   {isEditing ? "Update" : "Create"}
                 </button>

@@ -361,10 +361,115 @@ const getNextSerialNumber = async (req, res) => {
   }
 };
 
+const generateExpenseReport = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.body;
+
+    if (!startDate || !endDate) {
+      return res
+        .status(400)
+        .json({ message: "Start date and end date are required" });
+    }
+
+    // Find all expenses within the date range for this organization
+    const expenses = await Expense.find({
+      organizationId: req.user.organizationId || req.user.tenantId,
+      date: {
+        $gte: new Date(startDate),
+        $lte: new Date(new Date(endDate).setHours(23, 59, 59, 999)),
+      },
+    }).sort({ date: 1 });
+
+    if (expenses.length === 0) {
+      return res
+        .status(404)
+        .json({
+          message: "No expense data found for the specified date range",
+        });
+    }
+
+    // In a real implementation, you would use a library like PDFKit to generate a PDF
+    // For this example, we'll simulate PDF generation by sending a text file
+
+    const fs = require("fs");
+    const path = require("path");
+
+    // Create a simple text representation of the data
+    let reportText = `Expense Report\n`;
+    reportText += `Date Range: ${new Date(
+      startDate
+    ).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}\n\n`;
+    reportText += `Total Expenses: ₹${expenses
+      .reduce((total, exp) => total + exp.amount, 0)
+      .toLocaleString()}\n\n`;
+    reportText += `Expenses by Category:\n`;
+
+    // Calculate expenses by category
+    const categories = {};
+    expenses.forEach((exp) => {
+      if (!categories[exp.category]) {
+        categories[exp.category] = 0;
+      }
+      categories[exp.category] += exp.amount;
+    });
+
+    for (const [category, amount] of Object.entries(categories)) {
+      reportText += `${category}: ₹${amount.toLocaleString()}\n`;
+    }
+
+    reportText += `\nTransactions:\n`;
+
+    expenses.forEach((exp) => {
+      reportText += `Date: ${new Date(exp.date).toLocaleDateString()}\n`;
+      reportText += `Serial: ${exp.serialNumber}\n`;
+      reportText += `Description: ${exp.description}\n`;
+      reportText += `Category: ${exp.category}\n`;
+      reportText += `Payee: ${exp.payee}\n`;
+      reportText += `Amount: ₹${exp.amount.toLocaleString()}\n`;
+      reportText += `Status: ${exp.status}\n\n`;
+    });
+
+    // Create a temporary file to simulate a PDF
+    const tempFilePath = path.join(
+      __dirname,
+      "..",
+      "temp",
+      `expense-report-${Date.now()}.txt`
+    );
+
+    // Ensure the temp directory exists
+    if (!fs.existsSync(path.join(__dirname, "..", "temp"))) {
+      fs.mkdirSync(path.join(__dirname, "..", "temp"), { recursive: true });
+    }
+
+    fs.writeFileSync(tempFilePath, reportText);
+
+    // Send the file
+    res.download(
+      tempFilePath,
+      `expense-report-${new Date().toISOString().split("T")[0]}.txt`,
+      (err) => {
+        // Delete the temporary file after sending
+        if (fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+        }
+
+        if (err && !res.headersSent) {
+          return res.status(500).json({ message: "Error generating report" });
+        }
+      }
+    );
+  } catch (error) {
+    console.error("Generate expense report error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
 module.exports = {
   createExpense,
   getExpenses,
   updateExpenseStatus,
   getExpenseStats,
   getNextSerialNumber,
+  generateExpenseReport,
 };

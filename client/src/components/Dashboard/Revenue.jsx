@@ -289,23 +289,27 @@ const Revenue = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
             Revenue Management
           </h1>
-          <p className="text-gray-600">Track and manage your company revenue</p>
+          <p className="text-sm sm:text-base text-gray-600">
+            Track and manage your company revenue
+          </p>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
           {/* This Month Revenue */}
-          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
-            <h3 className="text-gray-500 text-sm font-medium">This Month</h3>
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 border-l-4 border-blue-500">
+            <h3 className="text-gray-500 text-xs sm:text-sm font-medium">
+              This Month
+            </h3>
             <div className="flex items-center justify-between">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
                 ₹{calculateThisMonthRevenue().toLocaleString()}
               </p>
               <div className="p-2 bg-blue-100 rounded-full">
@@ -331,10 +335,12 @@ const Revenue = () => {
           </div>
 
           {/* This Week Revenue */}
-          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
-            <h3 className="text-gray-500 text-sm font-medium">This Week</h3>
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 border-l-4 border-green-500">
+            <h3 className="text-gray-500 text-xs sm:text-sm font-medium">
+              This Week
+            </h3>
             <div className="flex items-center justify-between">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
                 ₹{calculateThisWeekRevenue().toLocaleString()}
               </p>
               <div className="p-2 bg-green-100 rounded-full">
@@ -360,10 +366,12 @@ const Revenue = () => {
           </div>
 
           {/* Total Revenue */}
-          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
-            <h3 className="text-gray-500 text-sm font-medium">Total Revenue</h3>
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 border-l-4 border-purple-500">
+            <h3 className="text-gray-500 text-xs sm:text-sm font-medium">
+              Total Revenue
+            </h3>
             <div className="flex items-center justify-between">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">
                 ₹{calculateTotalRevenue().toLocaleString()}
               </p>
               <div className="p-2 bg-purple-100 rounded-full">
@@ -389,7 +397,7 @@ const Revenue = () => {
 
         {/* Enhanced Filters */}
         <div className="mb-6 bg-white rounded-lg shadow p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="col-span-1 md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Search
@@ -399,7 +407,7 @@ const Revenue = () => {
                 placeholder="Search revenues..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="col-span-1 md:col-span-1">
@@ -410,7 +418,7 @@ const Revenue = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="col-span-1 md:col-span-1">
@@ -421,13 +429,13 @@ const Revenue = () => {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="col-span-1 md:col-span-1 flex items-end">
               <button
                 onClick={resetDateFilters}
-                className="w-full py-2 px-4 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full py-1.5 sm:py-2 px-3 sm:px-4 text-xs sm:text-sm border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Reset Filters
               </button>
@@ -438,7 +446,7 @@ const Revenue = () => {
         {/* Controls */}
         <div className="mb-6 flex justify-end">
           <button
-            className="bg-green-600 cursor-pointer text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2 hover:bg-green-700"
+            className="bg-green-600 cursor-pointer text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2 hover:bg-green-700"
             onClick={handleNewRevenue}
           >
             <FiPlus /> Add Revenue
@@ -478,25 +486,25 @@ const Revenue = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                       Source
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                       Client
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Amount
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
                       Payment Method
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -504,24 +512,24 @@ const Revenue = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRevenues.map((revenue) => (
                     <tr key={revenue._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                         {revenue.date
                           ? new Date(revenue.date).toLocaleDateString()
                           : "-"}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 text-xs sm:text-sm text-gray-900">
                         {revenue.description || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                         {revenue.source || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden md:table-cell">
                         {revenue.clientName || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                         ₹{(revenue.amount || 0).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
                         {revenue.paymentMethod ? (
                           <span className="capitalize">
                             {revenue.paymentMethod}
@@ -530,14 +538,14 @@ const Revenue = () => {
                           "-"
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-right">
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditRevenue(revenue)}
                             className="text-blue-600 hover:text-blue-900"
                             title="Edit Revenue"
                           >
-                            <FiEdit className="w-5 h-5" />
+                            <FiEdit className="w-5 h-5 cursor-pointer" />
                           </button>
                           {revenue.invoiceUrl && (
                             <a
@@ -567,7 +575,7 @@ const Revenue = () => {
 
         {/* Add Revenue Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30 p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30 p-3 sm:p-4">
             <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
               <button
                 className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
@@ -595,7 +603,7 @@ const Revenue = () => {
                     name="date"
                     value={form.date}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
                     required
                   />
                 </div>

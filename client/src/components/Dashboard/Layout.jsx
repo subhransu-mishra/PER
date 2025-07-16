@@ -1,11 +1,21 @@
 import React, { useState } from "react";
-import { FiHome, FiDollarSign, FiBarChart2, FiFileText, FiMenu } from "react-icons/fi";
+import {
+  FiHome,
+  FiDollarSign,
+  FiBarChart2,
+  FiFileText,
+  FiMenu,
+} from "react-icons/fi";
 import { MdOutlinePayments } from "react-icons/md";
 import { Link } from "react-router-dom";
 
 const sections = [
   { name: "Dashboard", icon: <FiHome size={20} />, path: "." },
-  { name: "Petty Cash", icon: <MdOutlinePayments size={20} />, path: "petty-cash" },
+  {
+    name: "Petty Cash",
+    icon: <MdOutlinePayments size={20} />,
+    path: "petty-cash",
+  },
   { name: "Revenue", icon: <FiDollarSign size={20} />, path: "revenue" },
   { name: "Expenses", icon: <FiBarChart2 size={20} />, path: "expenses" },
   { name: "Reports", icon: <FiFileText size={20} />, path: "reports" },
@@ -30,8 +40,14 @@ export default function Layout({ children }) {
             </button>
             {/* Logo */}
             <Link to="/" className="flex items-center ms-2 md:me-24">
-              <img src="https://flowbite.com/docs/images/logo.svg" className="h-8 me-3" alt="Logo" />
-              <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">MudraPanel</span>
+              <img
+                src="https://flowbite.com/docs/images/logo.svg"
+                className="h-8 me-3"
+                alt="Logo"
+              />
+              <span className="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap">
+                Accrue
+              </span>
             </Link>
           </div>
           {/* User menu */}
@@ -54,7 +70,9 @@ export default function Layout({ children }) {
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform bg-white border-r border-gray-200
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0`}
+          ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } sm:translate-x-0`}
         aria-label="Sidebar"
       >
         <div className="h-full px-3 pb-4 overflow-y-auto bg-white">
@@ -66,7 +84,9 @@ export default function Layout({ children }) {
                   className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <span className="text-gray-500 group-hover:text-gray-900">{section.icon}</span>
+                  <span className="text-gray-500 group-hover:text-gray-900">
+                    {section.icon}
+                  </span>
                   <span className="ms-3">{section.name}</span>
                 </Link>
               </li>

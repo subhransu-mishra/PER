@@ -10,6 +10,7 @@ const {
   getNextVoucherNumber,
   getMonthlyPettyCashSummary,
   getMonthlyApprovedTotal,
+  generatePettyCashReport,
 } = require("../controllers/pettyCashController");
 
 const authMiddleware = require("../middlewares/auth");
@@ -35,6 +36,9 @@ router.post(
 
 // Main listing route
 router.get("/", authMiddleware, getPettyCash);
+
+// Report generation
+router.post("/report", authMiddleware, generatePettyCashReport);
 
 // Dynamic parameter routes last
 router.get("/:id", authMiddleware, getPettyCashById);

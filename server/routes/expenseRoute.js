@@ -6,6 +6,7 @@ const {
   updateExpenseStatus,
   getExpenseStats,
   getNextSerialNumber,
+  generateExpenseReport,
 } = require("../controllers/expenseController");
 
 const authMiddleware = require("../middlewares/auth");
@@ -25,5 +26,8 @@ router.post("/create", authMiddleware, upload.single("bill"), createExpense);
 
 // Update expense status
 router.patch("/:id/status", authMiddleware, updateExpenseStatus);
+
+// Generate expense report
+router.post("/report", authMiddleware, generateExpenseReport);
 
 module.exports = router;

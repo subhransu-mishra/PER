@@ -13,7 +13,7 @@ import Revenue from "./components/Dashboard/Revenue";
 import Expenses from "./components/Dashboard/Expenses";
 import Reports from "./components/Dashboard/Reports";
 import DashboardHome from "./components/Dashboard/DashboardHome";
-import { Settings } from "lucide-react";
+import Settings from "./components/Dashboard/Settings";
 const App = () => {
   return (
     <>
