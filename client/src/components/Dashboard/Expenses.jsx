@@ -27,6 +27,13 @@ const initialCategories = [
 ];
 
 const Expenses = () => {
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState({
+    open: false,
+    action: null, // 'approve' | 'reject'
+    expenseId: null,
+  });
+
   const [search, setSearch] = useState("");
   const [expenses, setExpenses] = useState([]);
   const [form, setForm] = useState(emptyExpense);
@@ -200,7 +207,7 @@ const Expenses = () => {
     }
   };
 
-  // Handle approve expense (admin only)
+  // Approve expense after confirmation
   const handleApprove = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -243,7 +250,7 @@ const Expenses = () => {
     }
   };
 
-  // Handle reject expense (admin only)
+  // Reject expense after confirmation
   const handleReject = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -491,142 +498,265 @@ const Expenses = () => {
           </p>
         </div>
         {/* Controls */}
-        <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
-          <div className="flex-1 max-w-md">
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
+          <div className="w-full">
             <input
               type="text"
               placeholder="Search expenses..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
-            <div className="flex gap-2">
+          
+          {/* Filters and Actions */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center">
+            {/* Date and Serial Filters */}
+            <div className="flex flex-col sm:flex-row gap-2 flex-1">
               <input
                 type="date"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
-                className="px-2 py-1 border border-gray-300 rounded"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                 placeholder="From date"
               />
               <input
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                className="px-2 py-1 border border-gray-300 rounded"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                 placeholder="To date"
               />
               <input
                 type="text"
                 value={serialFilter}
                 onChange={(e) => setSerialFilter(e.target.value)}
-                className="px-2 py-1 border border-gray-300 rounded"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                 placeholder="Serial Number"
               />
             </div>
+            
+            {/* New Expense Button */}
             <button
               onClick={handleNewExpense}
-              className="inline-flex cursor-pointer items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex cursor-pointer items-center justify-center px-4 py-3 sm:px-3 sm:py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 min-h-[44px] touch-manipulation"
             >
-              <FiPlus className="mr-2" /> New Expense
+              <FiPlus className="mr-2 h-4 w-4" /> New Expense
             </button>
           </div>
         </div>
         {/* Expenses Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Serial No.
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Payment Method
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {isLoading ? (
+          {/* Desktop Table */}
+          <div className="hidden lg:block">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
                   <tr>
-                    <td colSpan="8" className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center">
-                        <svg
-                          className="animate-spin h-5 w-5 mr-3 text-blue-500"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Loading expenses...
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Serial No.
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Payment
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan="8" className="px-6 py-8 text-center">
+                        <div className="flex items-center justify-center">
+                          <svg
+                            className="animate-spin h-5 w-5 mr-3 text-blue-500"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Loading expenses...
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredExpenses.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan="8"
+                        className="px-6 py-8 text-center text-gray-500"
+                      >
+                        No expenses found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredExpenses.map((expense) => (
+                      <tr key={expense._id} className="hover:bg-gray-50 transition-colors duration-150">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {expense.serialNumber || "-"}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {expense.date
+                            ? new Date(expense.date).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 max-w-xs truncate">
+                          {expense.description || "-"}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                          <span className="capitalize">{expense.category || "-"}</span>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                          ₹{(expense.amount || 0).toLocaleString()}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                          <span className="capitalize">{expense.paymentType || expense.paymentMethod || "-"}</span>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                              expense.status
+                            )}`}
+                          >
+                            {expense.status || "pending"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-3">
+                            {user?.role === "admin" &&
+                              expense.status === "pending" && (
+                                <>
+                                  <button
+                                    onClick={() => setConfirmModal({ open: true, action: 'approve', expenseId: expense._id })}
+                                    className="text-green-600 cursor-pointer hover:text-green-800 hover:bg-green-50 p-1 rounded transition-colors duration-200"
+                                    title="Approve"
+                                  >
+                                    <FiCheckCircle className="w-5 h-5" />
+                                  </button>
+                                  <button
+                                    onClick={() => setConfirmModal({ open: true, action: 'reject', expenseId: expense._id })}
+                                    className="text-red-600 cursor-pointer hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors duration-200"
+                                    title="Reject"
+                                  >
+                                    <FiXCircle className="w-5 h-5" />
+                                  </button>
+                                </>
+                              )}
+                            {(expense.billUrl || expense.receiptUrl) && (
+                              <a
+                                href={expense.billUrl || expense.receiptUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-1 rounded transition-colors duration-200"
+                                title="View Bill/Receipt"
+                              >
+                                <FiEye className="w-5 h-5" />
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Card Layout */}
+          <div className="lg:hidden">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <svg
+                  className="animate-spin h-6 w-6 mr-3 text-blue-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <span className="text-gray-600">Loading expenses...</span>
+              </div>
+            ) : filteredExpenses.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                No expenses found
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {filteredExpenses.map((expense) => (
+                  <div key={expense._id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-500">
+                            #{expense.serialNumber || "-"}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {expense.date
+                              ? new Date(expense.date).toLocaleDateString()
+                              : "-"}
+                          </span>
+                        </div>
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">
+                          {expense.description || "-"}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-2">
+                          <span className="capitalize bg-gray-100 px-2 py-1 rounded">
+                            {expense.category || "-"}
+                          </span>
+                          <span className="capitalize">
+                            {expense.paymentType || expense.paymentMethod || "-"}
+                          </span>
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                ) : filteredExpenses.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan="8"
-                      className="px-6 py-4 text-center text-gray-500"
-                    >
-                      No expenses found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredExpenses.map((expense) => (
-                    <tr key={expense._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.serialNumber || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.date
-                          ? new Date(expense.date).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {expense.description || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.category || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ₹{(expense.amount || 0).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {expense.paymentType || expense.paymentMethod || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    </div>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg font-bold text-gray-900">
+                          ₹{(expense.amount || 0).toLocaleString()}
+                        </span>
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                             expense.status
@@ -634,24 +764,25 @@ const Expenses = () => {
                         >
                           {expense.status || "pending"}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
                         {user?.role === "admin" &&
                           expense.status === "pending" && (
                             <>
                               <button
-                                onClick={() => handleApprove(expense._id)}
-                                className="text-green-600 hover:text-green-900"
+                                onClick={() => setConfirmModal({ open: true, action: 'approve', expenseId: expense._id })}
+                                className="text-green-600 cursor-pointer hover:text-green-800 hover:bg-green-50 p-2 rounded-full transition-colors duration-200 touch-manipulation"
                                 title="Approve"
                               >
-                                <FiCheckCircle className="w-5 cursor-pointer h-5" />
+                                <FiCheckCircle className="w-5 h-5" />
                               </button>
                               <button
-                                onClick={() => handleReject(expense._id)}
-                                className="text-red-600 hover:text-red-900"
+                                onClick={() => setConfirmModal({ open: true, action: 'reject', expenseId: expense._id })}
+                                className="text-red-600 cursor-pointer hover:text-red-800 hover:bg-red-50 p-2 rounded-full transition-colors duration-200 touch-manipulation"
                                 title="Reject"
                               >
-                                <FiXCircle className="w-5 cursor-pointer h-5" />
+                                <FiXCircle className="w-5 h-5" />
                               </button>
                             </>
                           )}
@@ -660,38 +791,40 @@ const Expenses = () => {
                             href={expense.billUrl || expense.receiptUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-colors duration-200 touch-manipulation"
                             title="View Bill/Receipt"
                           >
                             <FiEye className="w-5 h-5" />
                           </a>
                         )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         {/* Add Expense Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
-            <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-6 w-full max-w-md relative">
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50 p-4">
+            <div className="bg-white text-gray-900 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto relative">
               {/* <button
                 className="absolute top-4 right-4 cursor-pointer text-gray-400 hover:text-gray-700 text-xl"
                 onClick={closeModal}
               >
                 &times;
               </button> */}
-              <h3 className="text-lg font-semibold mb-4">Add New Expense</h3>
+              <div className="sticky top-0 bg-white p-6 pb-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Add New Expense</h3>
+              </div>
               <form
                 onSubmit={handleSubmit}
-                className="space-y-4"
+                className="p-6 pt-4 space-y-5"
                 id="expenseForm"
               >
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Serial Number *
                   </label>
                   <input
@@ -699,13 +832,13 @@ const Expenses = () => {
                     name="serialNumber"
                     value={form.serialNumber || "Auto-generated"}
                     readOnly
-                    className={`w-full px-3 py-2 ${
+                    className={`w-full px-4 py-3 text-base ${
                       serialNumberLoading ? "bg-gray-200" : "bg-gray-100"
                     } border border-gray-300 rounded-lg cursor-not-allowed`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Date *
                   </label>
                   <input
@@ -713,12 +846,12 @@ const Expenses = () => {
                     name="date"
                     value={form.date}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Expense Category *
                   </label>
                   {showNewCategoryInput ? (
@@ -763,7 +896,7 @@ const Expenses = () => {
                             }
                           }}
                           placeholder="Enter new category and press Enter"
-                          className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-3 text-base pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           autoFocus
                         />
                       </div>
@@ -791,7 +924,7 @@ const Expenses = () => {
                               toast.error("Category name cannot be empty");
                             }
                           }}
-                          className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          className="flex-1 px-4 py-3 text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 touch-manipulation"
                         >
                           Add
                         </button>
@@ -801,7 +934,7 @@ const Expenses = () => {
                             setShowNewCategoryInput(false);
                             setNewCategory("");
                           }}
-                          className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                          className="flex-1 px-4 py-3 text-base bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 touch-manipulation"
                         >
                           Cancel
                         </button>
@@ -812,7 +945,7 @@ const Expenses = () => {
                       name="category"
                       value={form.category}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     >
                       <option value="">Select category</option>
@@ -826,7 +959,7 @@ const Expenses = () => {
                   )}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Amount *
                   </label>
                   <input
@@ -837,19 +970,19 @@ const Expenses = () => {
                     placeholder="0.00"
                     min="0"
                     step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Payment Method *
                   </label>
                   <select
                     name="paymentType"
                     value={form.paymentType}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   >
                     <option value="">Select payment method</option>
@@ -860,7 +993,7 @@ const Expenses = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description *
                   </label>
                   <input
@@ -869,12 +1002,12 @@ const Expenses = () => {
                     value={form.description}
                     onChange={handleChange}
                     placeholder="Enter expense description"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium cursor-pointer text-gray-700 mb-1">
+                  <label className="block text-sm font-medium cursor-pointer text-gray-700 mb-2">
                     Upload Bill
                   </label>
                   <input
@@ -882,63 +1015,111 @@ const Expenses = () => {
                     name="billFile"
                     accept="image/*,application/pdf"
                     onChange={handleChange}
-                    className="w-full px-3 py-2 cursor-pointer border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 text-base cursor-pointer border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                 </div>
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="submit"
-                    disabled={formLoading}
-                    className="flex-1 rounded-lg cursor-pointer py-2 font-semibold bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center"
-                    onClick={() => {
-                      console.log("Submit button clicked");
-                      // The form's onSubmit should handle this, but as a fallback:
-                      if (!formLoading) {
-                        document.getElementById("expenseForm").requestSubmit();
-                      }
-                    }}
-                  >
-                    {formLoading ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Processing...
-                      </>
-                    ) : (
-                      "Add Expense"
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={formLoading}
-                    className="flex-1 rounded-lg py-2 cursor-pointer bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                    onClick={closeModal}
-                  >
-                    Cancel
-                  </button>
+                <div className="sticky bottom-0 bg-white pt-6 pb-6 border-t border-gray-200 -mx-6 px-6">
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={formLoading}
+                      className="flex-1 rounded-lg cursor-pointer py-4 text-base font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors duration-200 touch-manipulation min-h-[48px]"
+                      onClick={() => {
+                        console.log("Submit button clicked");
+                        // The form's onSubmit should handle this, but as a fallback:
+                        if (!formLoading) {
+                          document.getElementById("expenseForm").requestSubmit();
+                        }
+                      }}
+                    >
+                      {formLoading ? (
+                        <>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        "Add Expense"
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={formLoading}
+                      className="flex-1 rounded-lg py-4 text-base cursor-pointer bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 touch-manipulation min-h-[48px]"
+                      onClick={closeModal}
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
           </div>
         )}
+      {/* Status Change Confirmation Modal */}
+      {confirmModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => setConfirmModal({ open: false, action: null, expenseId: null })}
+                className="text-gray-400 hover:text-gray-600 text-2xl focus:outline-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="mb-4 flex flex-col items-center">
+              <div className={`mb-2 text-4xl ${confirmModal.action === 'approve' ? 'text-green-500' : 'text-red-500'}`}>{confirmModal.action === 'approve' ? <FiCheckCircle /> : <FiXCircle />}</div>
+              <h2 className="text-xl font-semibold mb-2 text-center">
+                {confirmModal.action === 'approve' ? 'Approve Expense?' : 'Reject Expense?'}
+              </h2>
+              <p className="text-gray-600 text-center">
+                Are you sure you want to {confirmModal.action} this expense? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-4 mt-4 w-full">
+              <button
+                className={`flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white ${confirmModal.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} transition-colors duration-200 focus:outline-none`}
+                onClick={async () => {
+                  if (confirmModal.action === 'approve') {
+                    await handleApprove(confirmModal.expenseId);
+                  } else {
+                    await handleReject(confirmModal.expenseId);
+                  }
+                  setConfirmModal({ open: false, action: null, expenseId: null });
+                }}
+              >
+                Confirm
+              </button>
+              <button
+                className="flex-1 py-3 cursor-pointer rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 focus:outline-none"
+                onClick={() => setConfirmModal({ open: false, action: null, expenseId: null })}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

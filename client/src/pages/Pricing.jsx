@@ -1,6 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Layout from "../components/Layout";
 import { Check } from "lucide-react";
+
+// Simple hook for reveal-on-scroll
+function useRevealOnScroll(options = {}) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const observer = new window.IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15, ...options }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [options]);
+  return [ref, visible];
+}
+
 
 const Pricing = () => {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -85,11 +108,18 @@ const Pricing = () => {
     return `${baseClasses} ${colorClass} ${popularClass}`;
   };
 
+  // Animations: fade/slide-in for hero and each card
+  const [heroRef, heroVisible] = useRevealOnScroll();
+  const cardRefs = plans.map(() => useRevealOnScroll());
+
   return (
     <Layout>
       <div className="bg-gradient-to-b from-white to-gray-50 py-16 px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
-        <div className="max-w-7xl mx-auto text-center mb-16">
+        <div
+          ref={heroRef}
+          className={`max-w-7xl mx-auto text-center mb-16 transition-all duration-1000 ease-out ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+        >
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl lg:text-6xl">
             Simple, Transparent Pricing
           </h1>
@@ -137,60 +167,51 @@ const Pricing = () => {
         {/* Pricing Cards */}
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {plans.map((plan, index) => (
-              <div
-                key={index}
-                className={`relative rounded-2xl border-2 p-8 ${
-                  plan.popular
-                    ? "border-purple-500 bg-white shadow-xl scale-105"
-                    : "border-gray-200 bg-white shadow-lg"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-purple-600 text-white">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
+            {plans.map((plan, index) => {
+  const [ref, visible] = cardRefs[index];
+  return (
+    <div
+      ref={ref}
+      key={index}
+      className={`relative rounded-2xl border-2 p-8 transition-all duration-1000 ease-out transform ${plan.popular ? "border-purple-500 bg-white shadow-xl scale-105" : "border-gray-200 bg-white shadow-lg"} ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'} hover:scale-105 hover:shadow-2xl`}
+    >
+      {plan.popular && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+          <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-purple-600 text-white">
+            Most Popular
+          </span>
+        </div>
+      )}
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
+        <p className="text-gray-600 mb-6">{plan.description}</p>
+        <div className="mb-8">
+          <div className="flex items-baseline justify-center">
+            <span className="text-4xl font-extrabold text-gray-900">₹{plan.price}</span>
+            <span className="text-gray-500 ml-1">/{plan.period}</span>
+          </div>
+          {isAnnual && (
+            <p className="text-sm text-gray-500 mt-1">Billed annually</p>
+          )}
+        </div>
+        <ul className="space-y-4 mb-8 text-left">
+          {plan.features.map((feature, featureIndex) => (
+            <li key={featureIndex} className="flex items-start">
+              <Check className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
+              <span className="text-gray-700">{feature}</span>
+            </li>
+          ))}
+        </ul>
+        <button
+          className={getButtonClasses(plan.color, plan.popular)}
+        >
+          Get Started
+        </button>
+      </div>
+    </div>
+  );
+})}
 
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    {plan.name}
-                  </h3>
-                  <p className="text-gray-600 mb-6">{plan.description}</p>
-
-                  <div className="mb-8">
-                    <div className="flex items-baseline justify-center">
-                      <span className="text-4xl font-extrabold text-gray-900">
-                        ₹{plan.price}
-                      </span>
-                      <span className="text-gray-500 ml-1">/{plan.period}</span>
-                    </div>
-                    {isAnnual && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        Billed annually
-                      </p>
-                    )}
-                  </div>
-
-                  <ul className="space-y-4 mb-8 text-left">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start">
-                        <Check className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    className={getButtonClasses(plan.color, plan.popular)}
-                  >
-                    Get Started
-                  </button>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 

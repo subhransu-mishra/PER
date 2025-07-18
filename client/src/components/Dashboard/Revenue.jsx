@@ -16,6 +16,12 @@ const emptyRevenue = {
 };
 
 const Revenue = () => {
+  // Confirmation modal state for edit
+  const [editConfirmModal, setEditConfirmModal] = useState({
+    open: false,
+    revenue: null,
+  });
+
   const [search, setSearch] = useState("");
   const [revenues, setRevenues] = useState([]);
   const [form, setForm] = useState(emptyRevenue);
@@ -453,115 +459,44 @@ const Revenue = () => {
           </button>
         </div>
 
-        {/* Revenues Table */}
+        {/* Revenues Table Responsive */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            {loading ? (
-              <div className="flex justify-center items-center py-20">
-                <div className="flex flex-col items-center">
-                  <svg
-                    className="animate-spin h-10 w-10 text-green-500 mb-3"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  <p className="text-gray-500">Loading revenues...</p>
-                </div>
-              </div>
-            ) : (
+          {/* Desktop Table */}
+          <div className="hidden lg:block">
+            <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
-                    </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                      Source
-                    </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
-                      Client
-                    </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Amount
-                    </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                      Payment Method
-                    </th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRevenues.map((revenue) => (
-                    <tr key={revenue._id} className="hover:bg-gray-50">
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                        {revenue.date
-                          ? new Date(revenue.date).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 text-xs sm:text-sm text-gray-900">
-                        {revenue.description || "-"}
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
-                        {revenue.source || "-"}
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden md:table-cell">
-                        {revenue.clientName || "-"}
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                        ₹{(revenue.amount || 0).toLocaleString()}
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
-                        {revenue.paymentMethod ? (
-                          <span className="capitalize">
-                            {revenue.paymentMethod}
-                          </span>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-right">
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEditRevenue(revenue)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="Edit Revenue"
-                          >
+                    <tr key={revenue._id} className="hover:bg-gray-50 transition-colors duration-150">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{revenue.date ? new Date(revenue.date).toLocaleDateString() : "-"}</td>
+                      <td className="px-4 py-4 text-sm text-gray-900 max-w-xs truncate">{revenue.description || "-"}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600"><span className="capitalize">{revenue.source || "-"}</span></td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{revenue.clientName || "-"}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">₹{(revenue.amount || 0).toLocaleString()}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600"><span className="capitalize">{revenue.paymentMethod || "-"}</span></td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center space-x-3">
+                          <button onClick={() => setEditConfirmModal({ open: true, revenue })} className="text-blue-600 cursor-pointer hover:text-blue-800 hover:bg-blue-50 p-1 rounded transition-colors duration-200" title="Edit Revenue">
                             <FiEdit className="w-5 h-5 cursor-pointer" />
                           </button>
                           {revenue.invoiceUrl && (
-                            <a
-                              href={revenue.invoiceUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-green-600 hover:text-green-900"
-                              title="View Invoice"
-                            >
+                            <a href={revenue.invoiceUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-800 hover:bg-green-50 p-1 rounded transition-colors duration-200" title="View Invoice">
                               <FiEye className="w-5 h-5" />
                             </a>
                           )}
                           {revenue.invoiceNumber && (
-                            <span className="text-blue-600 text-xs ml-2">
-                              #{revenue.invoiceNumber}
-                            </span>
+                            <span className="text-blue-600 text-xs ml-2">#{revenue.invoiceNumber}</span>
                           )}
                         </div>
                       </td>
@@ -569,29 +504,84 @@ const Revenue = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Mobile/Tablet Card Layout */}
+          <div className="lg:hidden">
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <svg className="animate-spin h-8 w-8 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-gray-600">Loading revenues...</span>
+              </div>
+            ) : filteredRevenues.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">No revenues found</div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {filteredRevenues.map((revenue) => (
+                  <div key={revenue._id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-gray-500">{revenue.date ? new Date(revenue.date).toLocaleDateString() : "-"}</span>
+                          {revenue.invoiceNumber && (
+                            <span className="text-blue-600 text-xs ml-2">#{revenue.invoiceNumber}</span>
+                          )}
+                        </div>
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">{revenue.description || "-"}</h3>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-2">
+                          <span className="capitalize bg-gray-100 px-2 py-1 rounded">{revenue.source || "-"}</span>
+                          <span className="capitalize">{revenue.paymentMethod || "-"}</span>
+                          {revenue.clientName && <span className="bg-blue-50 px-2 py-1 rounded">{revenue.clientName}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold text-gray-900">₹{(revenue.amount || 0).toLocaleString()}</span>
+                      <div className="flex items-center space-x-2">
+                        <button onClick={() => handleEditRevenue(revenue)} className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-colors duration-200 touch-manipulation" title="Edit Revenue">
+                          <FiEdit className="w-5 h-5" />
+                        </button>
+                        {revenue.invoiceUrl && (
+                          <a href={revenue.invoiceUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-800 hover:bg-green-50 p-2 rounded-full transition-colors duration-200 touch-manipulation" title="View Invoice">
+                            <FiEye className="w-5 h-5" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
 
         {/* Add Revenue Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30 p-3 sm:p-4">
-            <div className="bg-white text-gray-900 rounded-2xl shadow-lg p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
-              <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl"
-                onClick={closeModal}
-                disabled={submitting}
-              >
-                &times;
-              </button>
-
-              <h3 className="text-lg font-semibold mb-4 cursor-pointer ">
-                {editMode ? "Edit Revenue" : "Add New Revenue"}
-              </h3>
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/50 p-4">
+            <div className="bg-white text-gray-900 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto relative">
+              <div className="sticky top-0 bg-white p-6 pb-4 border-b border-gray-200 z-10">
+                <button
+                  className="absolute top-6 right-6 text-gray-400 hover:text-gray-700 text-2xl focus:outline-none"
+                  onClick={closeModal}
+                  disabled={submitting}
+                  aria-label="Close"
+                  type="button"
+                >
+                  &times;
+                </button>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {editMode ? "Edit Revenue" : "Add New Revenue"}
+                </h3>
+              </div>
 
               <form
                 onSubmit={handleSubmit}
-                className="space-y-4 grid grid-cols-1 sm:grid-cols-2 gap-4"
+                className="p-6 pt-4 space-y-5 grid grid-cols-1 sm:grid-cols-2 gap-4"
+                autoComplete="off"
               >
                 {/* Date field */}
                 <div className="sm:col-span-1">
@@ -775,6 +765,48 @@ const Revenue = () => {
             </div>
           </div>
         )}
+      {/* Edit Confirmation Modal */}
+      {editConfirmModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => setEditConfirmModal({ open: false, revenue: null })}
+                className="text-gray-400 hover:text-gray-600 text-2xl focus:outline-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="mb-4 flex flex-col items-center">
+              <div className="mb-2 text-4xl text-blue-500"><FiEdit /></div>
+              <h2 className="text-xl font-semibold mb-2 text-center">
+                Edit Revenue Entry?
+              </h2>
+              <p className="text-gray-600 text-center">
+                Are you sure you want to edit this revenue entry?
+              </p>
+            </div>
+            <div className="flex gap-4 mt-4 w-full">
+              <button
+                className="flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 focus:outline-none"
+                onClick={() => {
+                  handleEditRevenue(editConfirmModal.revenue);
+                  setEditConfirmModal({ open: false, revenue: null });
+                }}
+              >
+                Confirm
+              </button>
+              <button
+                className="flex-1 py-3 cursor-pointer rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 focus:outline-none"
+                onClick={() => setEditConfirmModal({ open: false, revenue: null })}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Layout from "../components/Layout";
-import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   DollarSign,
@@ -12,6 +11,29 @@ import {
   Shield,
   Clock,
 } from "lucide-react";
+
+// Simple hook for reveal-on-scroll
+function useRevealOnScroll(options = {}) {
+  const ref = useRef(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const observer = new window.IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.15, ...options }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [options]);
+  return [ref, visible];
+}
+
 
 const About = () => {
   const location = useLocation();
@@ -36,11 +58,21 @@ const About = () => {
     }
   }, [location]);
 
+  // Animations: fade/slide-in for each section
+  const [heroRef, heroVisible] = useRevealOnScroll();
+  const [missionRef, missionVisible] = useRevealOnScroll();
+  const [valuesRef, valuesVisible] = useRevealOnScroll();
+  const [featuresRef, featuresVisible] = useRevealOnScroll();
+
   return (
     <Layout>
       <div className="bg-gradient-to-b from-white to-gray-50 py-16 px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
-        <div id="hero" className="max-w-7xl mx-auto text-center mb-16">
+        <div
+          ref={heroRef}
+          id="hero"
+          className={`max-w-7xl mx-auto text-center mb-16 transition-all duration-1000 ease-out ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+        >
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
             About Accrue
           </h1>
@@ -52,8 +84,9 @@ const About = () => {
 
         {/* Mission Section */}
         <div
+          ref={missionRef}
           id="mission"
-          className="max-w-7xl mx-auto mb-16 px-4 sm:px-6 lg:px-8"
+          className={`max-w-7xl mx-auto mb-16 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ease-out ${missionVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
@@ -91,15 +124,17 @@ const About = () => {
 
         {/* Values Section */}
         <div
+          ref={valuesRef}
           id="values"
-          className="max-w-7xl mx-auto mb-16 px-4 sm:px-6 lg:px-8"
+          className={`max-w-7xl mx-auto mb-16 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ease-out ${valuesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
         >
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
             Our Values
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            {/* Each card gets a hover and reveal effect */}
+            <div className={`text-center transform transition-all duration-700 ${valuesVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} hover:scale-105 hover:shadow-xl bg-white rounded-xl py-6 px-4` }>
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
                 <svg
                   className="w-6 h-6 text-green-600"
                   fill="none"
@@ -122,8 +157,8 @@ const About = () => {
                 processes.
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <div className={`text-center transform transition-all duration-700 delay-100 ${valuesVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} hover:scale-105 hover:shadow-xl bg-white rounded-xl py-6 px-4` }>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4 animate-bounce">
                 <svg
                   className="w-6 h-6 text-blue-600"
                   fill="none"
@@ -145,8 +180,8 @@ const About = () => {
                 Streamlined processes that save time and reduce manual errors.
               </p>
             </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <div className={`text-center transform transition-all duration-700 delay-200 ${valuesVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'} hover:scale-105 hover:shadow-xl bg-white rounded-xl py-6 px-4` }>
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4 animate-spin-slow">
                 <svg
                   className="w-6 h-6 text-purple-600"
                   fill="none"
@@ -173,11 +208,14 @@ const About = () => {
 
         {/* Features Detail Section */}
         {/* Features Detailed Description Section */}
-        <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 space-y-16">
+        <div
+          ref={featuresRef}
+          className={`max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 space-y-16 transition-all duration-1000 ease-out ${featuresVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+        >
           {/* Petty Cash Management */}
           <div
             id="petty-cash"
-            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8 hover:shadow-2xl transition-shadow duration-500"
           >
             <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-4">

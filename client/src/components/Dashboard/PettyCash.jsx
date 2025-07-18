@@ -18,6 +18,13 @@ const emptyVoucher = {
 };
 
 const PettyCash = () => {
+  // Confirmation modal state for approve/reject
+  const [confirmModal, setConfirmModal] = useState({
+    open: false,
+    action: null, // 'approve' | 'reject'
+    voucherId: null,
+  });
+
   const [search, setSearch] = useState("");
   const [vouchers, setVouchers] = useState([]);
   const [form, setForm] = useState(emptyVoucher);
@@ -31,7 +38,7 @@ const PettyCash = () => {
     month: "",
     year: "",
   });
-  // Get current month's start and end dates
+  
   const getCurrentMonthDates = () => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -51,11 +58,13 @@ const PettyCash = () => {
     sortBy: "date",
     sortOrder: "desc",
   });
+  
   const [pagination, setPagination] = useState({
     total: 0,
     totalPages: 0,
     hasMore: false,
   });
+  
   const [stats, setStats] = useState({
     totalAmount: 0,
     pendingAmount: 0,
@@ -65,15 +74,14 @@ const PettyCash = () => {
     approvedCount: 0,
     rejectedCount: 0,
   });
+  
   const [user] = useState(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Get role from user data
   const role = user?.role || "user";
 
-  // Fetch data on mount and when filters change
   useEffect(() => {
     if (!user) return;
 
@@ -186,77 +194,15 @@ const PettyCash = () => {
     fetchData();
   }, [filters, search, user]);
 
-  // Make these functions available outside the useEffect
-  const fetchStats = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const queryParams = new URLSearchParams({
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-      });
-
-      const res = await axios.get(
-        `${API_BASE_URL}/api/pettycash/stats?${queryParams}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (res.data.success) {
-        setStats(res.data.stats);
-      } else {
-        console.error("Failed to fetch statistics:", res.data.message);
-      }
-    } catch (err) {
-      console.error("Error fetching statistics:", err);
-    }
-  };
-
-  const fetchMonthlyApprovedTotal = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(
-        `${API_BASE_URL}/api/pettycash/monthly-approved-total`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      if (response.data.success) {
-        setMonthlyApproved(response.data.data);
-      } else {
-        console.error(
-          "Failed to fetch monthly approved total:",
-          response.data.message
-        );
-        setMonthlyApproved({
-          totalApproved: 0,
-          count: 0,
-          month: format(new Date(), "MMMM"),
-          year: new Date().getFullYear(),
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching monthly approved total:", error);
-      setMonthlyApproved({
-        totalApproved: 0,
-        count: 0,
-        month: format(new Date(), "MMMM"),
-        year: new Date().getFullYear(),
-      });
-    }
-  };
-
-  // Handle filter changes
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({
       ...prev,
       [name]: value,
-      page: 1, // Reset to first page when filters change
+      page: 1,
     }));
   };
 
-  // Handle page change
   const handlePageChange = (newPage) => {
     setFilters((prev) => ({
       ...prev,
@@ -264,7 +210,6 @@ const PettyCash = () => {
     }));
   };
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === "file") {
@@ -274,26 +219,6 @@ const PettyCash = () => {
     }
   };
 
-  // Fetch vouchers on component mount
-  useEffect(() => {
-    if (!user) return;
-    const fetchVouchers = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/api/pettycash", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setVouchers(res.data.entries || []);
-      } catch (err) {
-        console.error("Error fetching vouchers:", err);
-        toast.error("Failed to fetch petty cash entries");
-        setVouchers([]);
-      }
-    };
-    fetchVouchers();
-  }, [user]);
-
-  // Fetch next voucher number
   const fetchNextVoucherNumber = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -313,7 +238,6 @@ const PettyCash = () => {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (
@@ -332,7 +256,6 @@ const PettyCash = () => {
       const token = localStorage.getItem("token");
       const formData = new FormData();
 
-      // Append all form fields to FormData
       formData.append("voucherNumber", form.voucherNumber);
       formData.append("date", form.date);
       formData.append("transactionType", form.transactionType);
@@ -340,7 +263,6 @@ const PettyCash = () => {
       formData.append("description", form.description);
       formData.append("amount", Number(form.amount));
 
-      // Append receipt file if exists
       if (receiptFile) {
         formData.append("receipt", receiptFile);
       }
@@ -372,7 +294,6 @@ const PettyCash = () => {
     }
   };
 
-  // Handle approve/reject actions
   const handleApprove = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -385,15 +306,17 @@ const PettyCash = () => {
       );
 
       if (response.data.success) {
-        // Update the voucher in the local state
         setVouchers((prev) =>
           prev.map((v) => (v._id === id ? { ...v, status: "approved" } : v))
         );
-
-        // Refresh statistics to update counts and totals
-        fetchStats();
+        setStats((prev) => ({
+          ...prev,
+          pendingAmount: prev.pendingAmount - response.data.entry.amount,
+          pendingCount: prev.pendingCount - 1,
+          approvedAmount: prev.approvedAmount + response.data.entry.amount,
+          approvedCount: prev.approvedCount + 1,
+        }));
         fetchMonthlyApprovedTotal();
-
         toast.success("Voucher approved successfully");
       } else {
         toast.error(response.data.message || "Failed to approve voucher");
@@ -416,14 +339,16 @@ const PettyCash = () => {
       );
 
       if (response.data.success) {
-        // Update the voucher in the local state
         setVouchers((prev) =>
           prev.map((v) => (v._id === id ? { ...v, status: "rejected" } : v))
         );
-
-        // Refresh statistics to update counts and totals
-        fetchStats();
-
+        setStats((prev) => ({
+          ...prev,
+          pendingAmount: prev.pendingAmount - response.data.entry.amount,
+          pendingCount: prev.pendingCount - 1,
+          rejectedAmount: prev.rejectedAmount + response.data.entry.amount,
+          rejectedCount: prev.rejectedCount + 1,
+        }));
         toast.success("Voucher rejected successfully");
       } else {
         toast.error(response.data.message || "Failed to reject voucher");
@@ -434,7 +359,6 @@ const PettyCash = () => {
     }
   };
 
-  // Modal handlers
   const handleNewVoucher = async () => {
     setForm({
       ...emptyVoucher,
@@ -453,76 +377,78 @@ const PettyCash = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6">
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-500">
+    <div className="px-0 py-2 sm:p-6 max-w-full">
+      {/* Stats Section - Responsive Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="bg-white p-2 sm:p-3 rounded-lg shadow">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
             Total pettycash spend
           </h3>
-          <p className="text-xl sm:text-2xl font-bold text-red-600">
+          <p className="text-lg sm:text-xl font-bold text-red-600">
             ₹{(stats.totalAmount || 0).toLocaleString()}
           </p>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 truncate">
             {format(new Date(), "MMMM yyyy")} includes all vouchers
           </span>
         </div>
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-500">
-            Approved pettycash This Month
+        
+        <div className="bg-white p-2 sm:p-3 rounded-lg shadow">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+            Approved this Month
           </h3>
-          <p className="text-xl sm:text-2xl font-bold text-green-600">
+          <p className="text-lg sm:text-xl font-bold text-green-600">
             ₹{monthlyApproved.totalApproved.toLocaleString()}
           </p>
-          <span className="text-xs text-gray-500">
-            {monthlyApproved.count} approved vouchers in {monthlyApproved.month}{" "}
+          <span className="text-xs text-gray-500 truncate">
+            {monthlyApproved.count} approved in {monthlyApproved.month}{" "}
             {monthlyApproved.year}
           </span>
         </div>
 
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-500">
+        <div className="bg-white p-2 sm:p-3 rounded-lg shadow">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
             Pending Vouchers
           </h3>
-          <p className="text-xl sm:text-2xl font-bold text-yellow-600">
+          <p className="text-lg sm:text-xl font-bold text-yellow-600">
             {stats.pendingCount || 0} vouchers
           </p>
-          <span className="text-xs text-gray-500">
-            ₹{(stats.pendingAmount || 0).toLocaleString()} pending approval
+          <span className="text-xs text-gray-500 truncate">
+            ₹{(stats.pendingAmount || 0).toLocaleString()} pending
           </span>
         </div>
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-500">
+        
+        <div className="bg-white p-2 sm:p-3 rounded-lg shadow">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
             Total Vouchers
           </h3>
-          <p className="text-xl sm:text-2xl font-bold text-blue-600">
+          <p className="text-lg sm:text-xl font-bold text-blue-600">
             {(stats.pendingCount || 0) +
               (stats.approvedCount || 0) +
               (stats.rejectedCount || 0)}{" "}
             vouchers
           </p>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 truncate">
             Issued in {format(new Date(), "MMMM yyyy")}
           </span>
         </div>
       </div>
 
       {/* Header with Filters */}
-      <div className="bg-white p-3 sm:p-4 rounded-lg shadow mb-4 sm:mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-0">
+      <div className="bg-white p-3 rounded-lg shadow mb-3 sm:mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
             Petty Cash Management
           </h1>
           <button
             onClick={handleNewVoucher}
-            className="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base flex items-center justify-center"
+            className="px-3 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium flex items-center justify-center gap-2 shadow-sm"
           >
-            <FaPlus className="inline-block mr-1" />
-            New Entry
+            <FaPlus className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span>New Entry</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Start Date
@@ -532,9 +458,10 @@ const PettyCash = () => {
               name="startDate"
               value={filters.startDate}
               onChange={handleFilterChange}
-              className="w-full text-xs sm:text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-1.5 sm:py-2"
+              className="w-full px-2 py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md shadow-sm"
             />
           </div>
+          
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               End Date
@@ -544,33 +471,27 @@ const PettyCash = () => {
               name="endDate"
               value={filters.endDate}
               onChange={handleFilterChange}
-              className="w-full text-xs sm:text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-1.5 sm:py-2"
+              className="w-full px-2 py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md shadow-sm"
             />
           </div>
+          
           <div>
-            <label className="cursor-pointer block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
             <select
               name="status"
               value={filters.status}
               onChange={handleFilterChange}
-              className="w-full text-xs sm:text-sm cursor-pointer rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-1.5 sm:py-2"
+              className="w-full px-2 py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md shadow-sm"
             >
-              <option value="" className="cursor-pointer">
-                All
-              </option>
-              <option value="pending" className="cursor-pointer">
-                Pending
-              </option>
-              <option value="approved" className="cursor-pointer">
-                Approved
-              </option>
-              <option value="rejected" className="cursor-pointer">
-                Rejected
-              </option>
+              <option value="">All</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
             </select>
           </div>
+          
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Search
@@ -580,171 +501,191 @@ const PettyCash = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search vouchers..."
-              className="w-full text-xs sm:text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 py-1.5 sm:py-2"
+              className="w-full px-2 py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md shadow-sm"
             />
           </div>
         </div>
       </div>
 
-      {/* Vouchers Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      {/* Vouchers Responsive List */}
+      {/* Desktop Table */}
+      <div className="bg-white rounded-lg shadow overflow-x-auto hidden lg:block">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voucher #</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
               <tr>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Voucher #
-                </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                  Category
-                </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                  Status
-                </th>
-                <th className="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <td colSpan="7" className="px-3 py-4 text-center text-sm">Loading...</td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                <tr>
-                  <td colSpan="7" className="px-3 sm:px-6 py-4 text-center">
-                    Loading...
+            ) : vouchers.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="px-3 py-4 text-center text-sm">No entries found</td>
+              </tr>
+            ) : (
+              vouchers.map((voucher) => (
+                <tr key={voucher._id} className="hover:bg-gray-50 transition-colors duration-150">
+                  <td className="px-3 py-3 whitespace-nowrap text-sm font-medium">{voucher.voucherNumber}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm">{new Date(voucher.date).toLocaleDateString('en-IN')}</td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm"><span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{voucher.categoryType}</span></td>
+                  <td className="px-3 py-3 text-sm max-w-[120px]"><div className="truncate" title={voucher.description}>{voucher.description}</div></td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm font-semibold">₹{voucher.amount.toLocaleString('en-IN')}</td>
+                  <td className="px-3 py-3 whitespace-nowrap"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${voucher.status === "approved" ? "bg-green-100 text-green-800" : voucher.status === "rejected" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}>{voucher.status.charAt(0).toUpperCase() + voucher.status.slice(1)}</span></td>
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      {voucher.receipt && (
+                        <a href={voucher.receipt} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-blue-700 bg-blue-100 hover:bg-blue-200">Receipt</a>
+                      )}
+                      {role === "admin" && voucher.status === "pending" && (
+                        <>
+                          <button onClick={() => setConfirmModal({ open: true, action: 'approve', voucherId: voucher._id })} className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-green-700 bg-green-100 hover:bg-green-200">Approve</button>
+                          <button onClick={() => setConfirmModal({ open: true, action: 'reject', voucherId: voucher._id })} className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-red-700 bg-red-100 hover:bg-red-200">Reject</button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
-              ) : vouchers.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="px-3 sm:px-6 py-4 text-center">
-                    No entries found
-                  </td>
-                </tr>
-              ) : (
-                vouchers.map((voucher) => (
-                  <tr key={voucher._id}>
-                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                      {voucher.voucherNumber}
-                    </td>
-                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                      {new Date(voucher.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 hidden sm:table-cell">
-                      {voucher.categoryType}
-                    </td>
-                    <td className="px-3 sm:px-6 py-2 sm:py-4 text-xs sm:text-sm text-gray-900 max-w-[120px] sm:max-w-none truncate">
-                      {voucher.description}
-                    </td>
-                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                      ₹{voucher.amount.toLocaleString()}
-                    </td>
-                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap hidden sm:table-cell">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    ${
-                      voucher.status === "approved"
-                        ? "bg-green-100 text-green-800"
-                        : voucher.status === "rejected"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                      >
-                        {voucher.status.charAt(0).toUpperCase() +
-                          voucher.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-3 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                      <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-1 sm:space-y-0">
-                        {voucher.receipt && (
-                          <a
-                            href={voucher.receipt}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-xs sm:text-sm"
-                          >
-                            View Receipt
-                          </a>
-                        )}
-                        {role === "admin" && voucher.status === "pending" && (
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleApprove(voucher._id)}
-                              className="text-green-600 cursor-pointer hover:text-green-800 text-xs sm:text-sm"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => handleReject(voucher._id)}
-                              className="text-red-600 cursor-pointer hover:text-red-800 text-xs sm:text-sm"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-t border-gray-200">
-            <div className="flex-1 flex justify-between">
-              <button
-                onClick={() => handlePageChange(filters.page - 1)}
-                disabled={filters.page === 1}
-                className="relative inline-flex items-center px-2 sm:px-4 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <div className="hidden sm:flex items-center">
-                <p className="text-sm text-gray-700">
-                  Showing{" "}
-                  <span className="font-medium">
-                    {(filters.page - 1) * filters.limit + 1}
-                  </span>{" "}
-                  to{" "}
-                  <span className="font-medium">
-                    {Math.min(filters.page * filters.limit, pagination.total)}
-                  </span>{" "}
-                  of <span className="font-medium">{pagination.total}</span>{" "}
-                  results
-                </p>
+      {/* Mobile/Tablet Card Layout */}
+      <div className="lg:hidden">
+        {loading ? (
+          <div className="flex justify-center items-center py-16">
+            <span className="text-gray-500">Loading...</span>
+          </div>
+        ) : vouchers.length === 0 ? (
+          <div className="text-center py-12 text-gray-500">No entries found</div>
+        ) : (
+          <div className="divide-y divide-gray-200">
+            {vouchers.map((voucher) => (
+              <div key={voucher._id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-gray-500">{voucher.voucherNumber}</span>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${voucher.status === "approved" ? "bg-green-100 text-green-800" : voucher.status === "rejected" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}>{voucher.status.charAt(0).toUpperCase() + voucher.status.slice(1)}</span>
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900 mb-1">{voucher.description}</div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-2">
+                      <span className="bg-blue-50 px-2 py-1 rounded">{voucher.categoryType}</span>
+                      <span>{new Date(voucher.date).toLocaleDateString('en-IN')}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="text-base font-bold text-gray-900">₹{voucher.amount.toLocaleString('en-IN')}</span>
+                  <div className="flex items-center gap-2">
+                    {voucher.receipt && (
+                      <a href={voucher.receipt} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-blue-700 bg-blue-100 hover:bg-blue-200 touch-manipulation">Receipt</a>
+                    )}
+                    {role === "admin" && voucher.status === "pending" && (
+                      <>
+                        <button onClick={() => setConfirmModal({ open: true, action: 'approve', voucherId: voucher._id })} className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-green-700 bg-green-100 hover:bg-green-200 touch-manipulation">Approve</button>
+                        <button onClick={() => setConfirmModal({ open: true, action: 'reject', voucherId: voucher._id })} className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-red-700 bg-red-100 hover:bg-red-200 touch-manipulation">Reject</button>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
-              <button
-                onClick={() => handlePageChange(filters.page + 1)}
-                disabled={!pagination.hasMore}
-                className="relative inline-flex items-center px-2 sm:px-4 py-2 border border-gray-300 text-xs sm:text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Modal */}
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="bg-white border-t border-gray-200 px-2 py-3 flex items-center justify-between">
+          <div className="flex-1 flex justify-between sm:hidden">
+            <button
+              onClick={() => handlePageChange(filters.page - 1)}
+              disabled={filters.page === 1}
+              className="relative cursor-pointer inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => handlePageChange(filters.page + 1)}
+              disabled={!pagination.hasMore}
+              className="ml-3 cursor-pointer relative inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white"
+            >
+              Next
+            </button>
+          </div>
+          
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <p className="text-xs text-gray-700">
+              Showing <span className="font-medium">{(filters.page - 1) * filters.limit + 1}</span> to{" "}
+              <span className="font-medium">
+                {Math.min(filters.page * filters.limit, pagination.total)}
+              </span> of <span className="font-medium">{pagination.total}</span> results
+            </p>
+            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+              <button
+                onClick={() => handlePageChange(filters.page - 1)}
+                disabled={filters.page === 1}
+                className="relative inline-flex items-center px-2 py-1 rounded-l-md border border-gray-300 bg-white text-xs"
+              >
+                Previous
+              </button>
+              <span className="relative inline-flex items-center px-3 py-1 border border-gray-300 bg-white text-xs">
+                Page {filters.page} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(filters.page + 1)}
+                disabled={!pagination.hasMore}
+                className="relative inline-flex items-center px-2 py-1 rounded-r-md border border-gray-300 bg-white text-xs"
+              >
+                Next
+              </button>
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Modal - Responsive Design */}
       {showModal && (
-        <div className="fixed inset-0 bg-transparent backdrop-blur-md flex items-center justify-center p-4 z-50">
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg p-4 sm:p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-xl sm:text-2xl font-bold mb-4">
-              {isEditing ? "Edit Petty Cash Entry" : "New Petty Cash Entry"}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 z-50">
+          <div className="bg-white rounded-lg p-4 w-full max-w-md mx-2 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-lg font-bold">
+                {isEditing ? "Edit Entry" : "New Entry"}
+              </h2>
+              <button
+                onClick={closeModal}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="Close"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   Voucher Number
                 </label>
                 <input
@@ -752,13 +693,13 @@ const PettyCash = () => {
                   name="voucherNumber"
                   value={form.voucherNumber}
                   readOnly
-                  className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 cursor-not-allowed text-sm"
+                  className="mt-1 block w-full rounded border-gray-300 bg-gray-50 text-xs sm:text-sm p-2"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   Date*
                 </label>
                 <input
@@ -766,20 +707,20 @@ const PettyCash = () => {
                   name="date"
                   value={form.date}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="mt-1 block w-full rounded border-gray-300 text-xs sm:text-sm p-2"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   Transaction Type*
                 </label>
                 <select
                   name="transactionType"
                   value={form.transactionType}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="mt-1 block w-full rounded border-gray-300 text-xs sm:text-sm p-2"
                   required
                 >
                   <option value="cash">Cash</option>
@@ -789,7 +730,7 @@ const PettyCash = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   Category Type*
                 </label>
                 <input
@@ -797,27 +738,27 @@ const PettyCash = () => {
                   name="categoryType"
                   value={form.categoryType}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="mt-1 block w-full rounded border-gray-300 text-xs sm:text-sm p-2"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   Description*
                 </label>
                 <textarea
                   name="description"
                   value={form.description}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                  rows="3"
+                  className="mt-1 block w-full rounded border-gray-300 text-xs sm:text-sm p-2"
+                  rows="2"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
                   Amount*
                 </label>
                 <input
@@ -825,7 +766,7 @@ const PettyCash = () => {
                   name="amount"
                   value={form.amount}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="mt-1 block w-full rounded border-gray-300 text-xs sm:text-sm p-2"
                   min="0"
                   step="0.01"
                   required
@@ -833,29 +774,29 @@ const PettyCash = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Receipt (Payment Proof)
+                <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                  Receipt
                 </label>
                 <input
                   type="file"
                   name="receipt"
                   onChange={handleChange}
                   accept="image/*,.pdf"
-                  className="mt-1 cursor-pointer block w-full text-xs sm:text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="mt-1 block w-full text-xs sm:text-sm text-gray-500"
                 />
               </div>
 
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className="flex justify-end gap-2 pt-3">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 cursor-pointer"
+                  className="px-3 cursor-pointer py-1.5 text-xs sm:text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 cursor-pointer"
+                  className="px-3 cursor-pointer py-1.5 text-xs sm:text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
                 >
                   {isEditing ? "Update" : "Create"}
                 </button>
@@ -864,8 +805,54 @@ const PettyCash = () => {
           </div>
         </div>
       )}
+      {/* Confirmation Modal for Approve/Reject */}
+      {confirmModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={() => setConfirmModal({ open: false, action: null, voucherId: null })}
+                className="text-gray-400 hover:text-gray-600 text-2xl focus:outline-none"
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="mb-4 flex flex-col items-center">
+              <div className={`mb-2 text-4xl ${confirmModal.action === 'approve' ? 'text-green-500' : 'text-red-500'}`}>{confirmModal.action === 'approve' ? '✔️' : '✖️'}</div>
+              <h2 className="text-xl font-semibold mb-2 text-center">
+                {confirmModal.action === 'approve' ? 'Approve Voucher?' : 'Reject Voucher?'}
+              </h2>
+              <p className="text-gray-600 text-center">
+                Are you sure you want to {confirmModal.action} this voucher? This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-4 mt-4 w-full">
+              <button
+                className={`flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white ${confirmModal.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} transition-colors duration-200 focus:outline-none`}
+                onClick={async () => {
+                  if (confirmModal.action === 'approve') {
+                    await handleApprove(confirmModal.voucherId);
+                  } else {
+                    await handleReject(confirmModal.voucherId);
+                  }
+                  setConfirmModal({ open: false, action: null, voucherId: null });
+                }}
+              >
+                Confirm
+              </button>
+              <button
+                className="flex-1 py-3 cursor-pointer rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 focus:outline-none"
+                onClick={() => setConfirmModal({ open: false, action: null, voucherId: null })}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default PettyCash;
