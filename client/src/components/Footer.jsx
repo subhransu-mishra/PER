@@ -16,10 +16,10 @@ const Footer = () => {
             <div className="lg:col-span-1">
               <div className="mb-6">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
-                  PER System
+                  Accrue
                 </h2>
                 <p className="text-slate-300 text-sm leading-relaxed max-w-sm">
-                  Revolutionizing financial management with smart petty cash, expense tracking, and revenue optimization solutions.
+                  Revolutionizing financial management easily and efficiently. Join us in transforming the way you handle your finances.
                 </p>
               </div>
               

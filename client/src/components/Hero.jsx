@@ -1,12 +1,24 @@
 import React from "react";
 import { ChevronDown } from "lucide-react";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
+// import { useAuth } from "../context/AuthContext";
 
 const Hero = () => {
+  // const navigate = useNavigate();
+  // const { isAuthenticated } = useAuth();
+
+  // const handleGetStarted = () => {
+  //   if (isAuthenticated) {
+  //     navigate("/dashboard");
+  //   } else {
+  //     navigate("/login");
+  //   }
+  // };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 pt-16">
+      <section className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200">
         {/* Background decorative elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-100 rounded-full opacity-30 animate-pulse"></div>
@@ -25,23 +37,29 @@ const Hero = () => {
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
               Manage Your{" "}
               <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                PER
+                Finances with Ease &
               </span>
               <br />
               Effortlessly
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Streamline your PER Entries with our powerful, intuitive platform.
+              Streamline your Finance Entries with our powerful, intuitive platform.
               Track, monitor, and optimize your resources with cutting-edge
               technology.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button className="bg-blue-600 cursor-pointer text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-blue-500/25 min-w-[200px]">
+              {/* <button
+                onClick={handleGetStarted}
+                className="bg-blue-600 cursor-pointer text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-blue-500/25 min-w-[200px]"
+              >
                 Get Started
-              </button>
-              <button className="border-2 cursor-pointer border-blue-600 text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-lg min-w-[200px]">
+              </button> */}
+              <Link
+                to="/how-to-use"
+                className="border-2 cursor-pointer border-blue-600 text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-lg min-w-[200px]"
+              >
                 Learn More
-              </button>
+              </Link>
             </div>
           </div>
         </div>

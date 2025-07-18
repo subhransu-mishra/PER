@@ -1,5 +1,5 @@
-import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 // Loading component
@@ -24,16 +24,24 @@ const ProtectedRoute = ({
     hasFeature,
     hasActiveSubscription,
   } = useAuth();
-  const location = useLocation();
+
+  // Trigger login modal when user is not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      // Create and dispatch a custom event that Navbar can listen for
+      const event = new CustomEvent("openLoginModal");
+      document.dispatchEvent(event);
+    }
+  }, [isLoading, isAuthenticated]);
 
   // Show loading spinner while checking authentication
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  // Redirect to login if not authenticated
+  // If not authenticated, redirect to home page and the useEffect above will trigger the login modal
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/" replace />;
   }
 
   // Check subscription status
@@ -61,20 +69,12 @@ const ProtectedRoute = ({
               />
             </svg>
           </div>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
+          <h3 className="mt-4 text-lg font-medium text-gray-900">
             Access Denied
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            You don't have permission to access this page.
+          <p className="mt-2 text-base text-gray-500">
+            You don't have the required role to access this page
           </p>
-          <div className="mt-6">
-            <button
-              onClick={() => window.history.back()}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-            >
-              Go Back
-            </button>
-          </div>
         </div>
       </div>
     );
@@ -85,82 +85,32 @@ const ProtectedRoute = ({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-yellow-100">
-            <svg
-              className="h-6 w-6 text-yellow-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
-          </div>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
-            Permission Required
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            You need the "{requiredPermission}" permission to access this page.
+          <h3 className="text-lg font-medium text-gray-900">Access Denied</h3>
+          <p className="mt-2 text-base text-gray-500">
+            You don't have the required permissions to access this page
           </p>
-          <div className="mt-6">
-            <button
-              onClick={() => window.history.back()}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-            >
-              Go Back
-            </button>
-          </div>
         </div>
       </div>
     );
   }
 
   // Check feature requirements
-  if (requiredFeature && hasFeature && !hasFeature(requiredFeature)) {
+  if (requiredFeature && !hasFeature(requiredFeature)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-purple-100">
-            <svg
-              className="h-6 w-6 text-purple-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-          </div>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
+          <h3 className="text-lg font-medium text-gray-900">
             Feature Not Available
           </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            The "{requiredFeature}" feature is not available in your current
-            plan.
+          <p className="mt-2 text-base text-gray-500">
+            This feature is not available in your current plan
           </p>
-          <div className="mt-6 space-x-3">
-            <button
-              onClick={() => window.history.back()}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Go Back
-            </button>
-            <Navigate to="/subscription" replace />
-          </div>
         </div>
       </div>
     );
   }
 
-  // All checks passed, render the protected component
+  // If all checks pass, render the protected content
   return children;
 };
 

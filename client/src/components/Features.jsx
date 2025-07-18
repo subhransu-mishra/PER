@@ -159,12 +159,6 @@ const Features = () => {
             >
               Get Started
             </Link>
-            <Link
-              to="#"
-              className="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-800 bg-opacity-60 hover:bg-opacity-70 transform hover:scale-105 transition-all duration-200 shadow-lg"
-            >
-              Request Demo
-            </Link>
           </div>
         </div>
       </div>

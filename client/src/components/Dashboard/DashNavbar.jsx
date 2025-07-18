@@ -2,24 +2,34 @@ import React from "react";
 import { UserCircle, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import { IoMdArrowRoundBack } from "react-icons/io";
+import { FiMenu } from "react-icons/fi";
 
-
-const DashNavbar = () => {
+const DashNavbar = ({ toggleSidebar }) => {
   const user = React.useMemo(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   }, []);
 
   return (
-    <div className="w-full h-16 px-6 bg-white  flex items-center justify-between shadow-sm">
-      {/* Left side - Home button */}
-      <Link
-        to="/"
-        className="flex font-bold items-center space-x-2 px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-      >
-        <IoMdArrowRoundBack className="w-5 h-5" />
-        <span className="font-medium">Home</span>
-      </Link>
+    <div className="w-full h-16 px-6 bg-white flex items-center justify-between shadow-sm">
+      {/* Left side - Home button and Menu button */}
+      <div className="flex items-center gap-2">
+        {/* Menu button for small/medium screens */}
+        <button
+          className="md:hidden mr-2 p-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+          onClick={toggleSidebar}
+          aria-label="Open sidebar"
+        >
+          <FiMenu className="w-6 h-6" />
+        </button>
+        <Link
+          to="/"
+          className="flex font-bold items-center space-x-2 px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+        >
+          <IoMdArrowRoundBack className="w-5 h-5" />
+          <span className="font-medium">Home</span>
+        </Link>
+      </div>
 
       {/* Right side - User info */}
       {user ? (

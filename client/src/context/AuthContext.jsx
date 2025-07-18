@@ -31,9 +31,9 @@ const AUTH_ACTIONS = {
 // Create context
 const AuthContext = createContext();
 
-// API base URL
+// API base URL (host + /api)
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  (import.meta.env.VITE_API_URL || "http://localhost:3000") + "/api";
 
 // Reducer
 const authReducer = (state, action) => {

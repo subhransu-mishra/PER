@@ -112,13 +112,13 @@ const DashboardHome = () => {
         },
         pettyCash: {
           balance: pettyCashRes.data.success
-            ? pettyCashRes.data.data?.balance || 0
+            ? pettyCashRes.data.stats?.totalAmount || 0
             : 0,
           pendingTransactions: pettyCashRes.data.success
-            ? pettyCashRes.data.data?.pendingCount || 0
+            ? pettyCashRes.data.stats?.pendingCount || 0
             : 0,
           currentMonthTotal: pettyCashRes.data.success
-            ? pettyCashRes.data.data?.currentMonthTotal || 0
+            ? pettyCashRes.data.stats?.totalAmount || 0
             : 0,
         },
       });
@@ -138,7 +138,7 @@ const DashboardHome = () => {
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 sm:p-6 mb-6 text-white">
         <h1 className="text-xl sm:text-2xl font-bold mb-2">
-          Welcome back, {user?.name || "User"}!
+         Hello {user?.name || "User"}!
         </h1>
         <p className="opacity-90 text-sm sm:text-base">
           Here's an overview of your business finances for{" "}

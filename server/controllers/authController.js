@@ -106,3 +106,32 @@ const loginUser = async (req, res) => {
   }
 };
 module.exports = { registerCompany, loginUser };
+// Get current authenticated user and organization
+const getCurrentUser = async (req, res) => {
+  try {
+    // req.user is set by auth middleware
+    const user = await User.findById(req.user.id)
+      .select("-password")
+      .populate("organizationId");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isCompanyOwner: user.isCompanyOwner,
+        organizationId: user.organizationId._id,
+        subscriptionStatus: user.organizationId.subscriptionStatus,
+      },
+      organization: user.organizationId,
+    });
+  } catch (err) {
+    console.error("Error loading current user:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+// Re-export with getCurrentUser
+module.exports = { registerCompany, loginUser, getCurrentUser };

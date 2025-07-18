@@ -13,7 +13,6 @@ import {
   Clock,
 } from "lucide-react";
 
-
 const About = () => {
   const location = useLocation();
 
@@ -42,8 +41,8 @@ const About = () => {
       <div className="bg-gradient-to-b from-white to-gray-50 py-16 px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div id="hero" className="max-w-7xl mx-auto text-center mb-16">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl lg:text-6xl">
-            About PER System
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+            About Accrue
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-500">
             We're revolutionizing the way organizations manage their petty cash
@@ -52,8 +51,11 @@ const About = () => {
         </div>
 
         {/* Mission Section */}
-        <div id="mission" className="max-w-7xl mx-auto mb-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div
+          id="mission"
+          className="max-w-7xl mx-auto mb-16 px-4 sm:px-6 lg:px-8"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">
                 Our Mission
@@ -88,11 +90,14 @@ const About = () => {
         </div>
 
         {/* Values Section */}
-        <div id="values" className="max-w-7xl mx-auto mb-20">
+        <div
+          id="values"
+          className="max-w-7xl mx-auto mb-16 px-4 sm:px-6 lg:px-8"
+        >
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
             Our Values
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <svg
@@ -168,195 +173,332 @@ const About = () => {
 
         {/* Features Detail Section */}
         {/* Features Detailed Description Section */}
-        <div className="max-w-7xl mx-auto py-20 px-4 sm:px-6 lg:px-8 space-y-20">
-
+        <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 space-y-16">
           {/* Petty Cash Management */}
-          <div id="petty-cash" className="bg-white shadow-md rounded-xl p-8">
-            <div className="flex items-center mb-4">
+          <div
+            id="petty-cash"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+          >
+            <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mr-4">
                 <DollarSign className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Petty Cash Management</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Petty Cash Management
+              </h2>
             </div>
 
             <p className="text-gray-700 mb-4">
-              Track and manage petty cash transactions with ease. Effortlessly record deposits and withdrawals,
-              and reconcile balances in real-time to maintain financial clarity.
+              Track and manage petty cash transactions with ease. Effortlessly
+              record deposits and withdrawals, and reconcile balances in
+              real-time to maintain financial clarity.
             </p>
 
             <p className="text-gray-700 mb-4">
-              Petty cash is essential for handling day-to-day operational expenses like office supplies, courier
-              charges, and staff reimbursements. Our PER system simplifies petty cash handling by providing a
-              streamlined, secure, and centralized module that enables you to:
+              Petty cash is essential for handling day-to-day operational
+              expenses like office supplies, courier charges, and staff
+              reimbursements. Our PER system simplifies petty cash handling by
+              providing a streamlined, secure, and centralized module that
+              enables you to:
             </p>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li><span className="text-green-600">✔</span> Record deposits and withdrawals with instant updates</li>
-              <li><span className="text-green-600">✔</span> Track spending patterns across departments or teams</li>
-              <li><span className="text-green-600">✔</span> Assign limits to prevent overspending</li>
-              <li><span className="text-green-600">✔</span> Enable approval workflows for transparency and accountability</li>
-              <li><span className="text-green-600">✔</span> Reconcile balances automatically to reduce human error</li>
+              <li>
+                <span className="text-green-600">✔</span> Record deposits and
+                withdrawals with instant updates
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Track spending
+                patterns across departments or teams
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Assign limits to
+                prevent overspending
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Enable approval
+                workflows for transparency and accountability
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Reconcile balances
+                automatically to reduce human error
+              </li>
             </ul>
 
             <p className="text-gray-700 mt-4">
-              With real-time tracking and built-in audit trails, you'll never lose sight of your small but critical transactions.
-              Whether you're a startup, NGO, or large organization, our tool ensures your petty cash fund is well-managed,
-              traceable, and audit-ready.
+              With real-time tracking and built-in audit trails, you'll never
+              lose sight of your small but critical transactions. Whether you're
+              a startup, NGO, or large organization, our tool ensures your petty
+              cash fund is well-managed, traceable, and audit-ready.
             </p>
 
             <p className="text-gray-700 mt-4">
-              Empower your team to handle small purchases without the chaos of spreadsheets or manual registers.
-              Our platform brings clarity and control to your financial flow—right from the smallest coin.
+              Empower your team to handle small purchases without the chaos of
+              spreadsheets or manual registers. Our platform brings clarity and
+              control to your financial flow—right from the smallest coin.
             </p>
           </div>
 
           {/* Expense Tracking */}
-          <div id="expense-tracking" className="bg-white shadow-md rounded-xl p-8">
-            <div className="flex items-center mb-4">
+          <div
+            id="expense-tracking"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+          >
+            <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mr-4">
                 <TrendingUp className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Expense Tracking</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Expense Tracking
+              </h2>
             </div>
 
             <p className="text-gray-700 mb-4">
-              Gain full control over your organizational spending. Our system allows you to log, categorize, and monitor every expense, whether it's recurring or one-time.
+              Gain full control over your organizational spending. Our system
+              allows you to log, categorize, and monitor every expense, whether
+              it's recurring or one-time.
             </p>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li><span className="text-green-600">✔</span> Categorize expenses for better insights and budgeting</li>
-              <li><span className="text-green-600">✔</span> Attach digital receipts and proofs for every entry</li>
-              <li><span className="text-green-600">✔</span> Set budget limits and receive alerts when nearing thresholds</li>
-              <li><span className="text-green-600">✔</span> Analyze trends with visual dashboards</li>
+              <li>
+                <span className="text-green-600">✔</span> Categorize expenses
+                for better insights and budgeting
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Attach digital
+                receipts and proofs for every entry
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Set budget limits and
+                receive alerts when nearing thresholds
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Analyze trends with
+                visual dashboards
+              </li>
             </ul>
 
             <p className="text-gray-700 mt-4">
-              Eliminate guesswork from your spending habits and foster accountability across departments with clear and concise expense records.
+              Eliminate guesswork from your spending habits and foster
+              accountability across departments with clear and concise expense
+              records.
             </p>
           </div>
 
-
           {/* Income Management */}
-          <div id="income-management" className="bg-white shadow-md rounded-xl p-8">
-            <div className="flex items-center mb-4">
+          <div
+            id="income-management"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+          >
+            <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center mr-4">
                 <BarChart3 className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Income Management</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Income Management
+              </h2>
             </div>
 
             <p className="text-gray-700 mb-4">
-              Keep a clear record of all your income sources and revenue streams. Our module makes it simple to log income, generate reports, and forecast future trends.
+              Keep a clear record of all your income sources and revenue
+              streams. Our module makes it simple to log income, generate
+              reports, and forecast future trends.
             </p>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li><span className="text-green-600">✔</span> Record income by source with custom tags</li>
-              <li><span className="text-green-600">✔</span> Monitor recurring vs. one-time income</li>
-              <li><span className="text-green-600">✔</span> Generate income reports with filtering options</li>
-              <li><span className="text-green-600">✔</span> Forecast future cash flow based on historical data</li>
+              <li>
+                <span className="text-green-600">✔</span> Record income by
+                source with custom tags
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Monitor recurring vs.
+                one-time income
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Generate income
+                reports with filtering options
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Forecast future cash
+                flow based on historical data
+              </li>
             </ul>
 
             <p className="text-gray-700 mt-4">
-              Whether you're tracking donations, grants, sales, or services, PER helps ensure you never miss a cent.
+              Whether you're tracking donations, grants, sales, or services, PER
+              helps ensure you never miss a cent.
             </p>
           </div>
 
-
           {/* Visual Reports */}
-          <div id="visual-reports" className="bg-white shadow-md rounded-xl p-8">
-            <div className="flex items-center mb-4">
+          <div
+            id="visual-reports"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+          >
+            <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center mr-4">
                 <PieChart className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Visual Reports</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Visual Reports
+              </h2>
             </div>
 
             <p className="text-gray-700 mb-4">
-              Transform your raw financial data into beautiful, actionable charts and dashboards. Visualize trends, spot anomalies, and make informed decisions.
+              Transform your raw financial data into beautiful, actionable
+              charts and dashboards. Visualize trends, spot anomalies, and make
+              informed decisions.
             </p>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li><span className="text-green-600">✔</span> Generate pie charts, bar graphs, and line charts instantly</li>
-              <li><span className="text-green-600">✔</span> Interactive dashboards with filtering options</li>
-              <li><span className="text-green-600">✔</span> Export visuals for reports and presentations</li>
-              <li><span className="text-green-600">✔</span> Drill down into categories and timeframes</li>
+              <li>
+                <span className="text-green-600">✔</span> Generate pie charts,
+                bar graphs, and line charts instantly
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Interactive dashboards
+                with filtering options
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Export visuals for
+                reports and presentations
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Drill down into
+                categories and timeframes
+              </li>
             </ul>
 
             <p className="text-gray-700 mt-4">
-              Bring data to life and gain financial clarity with insights that go beyond spreadsheets.
+              Bring data to life and gain financial clarity with insights that
+              go beyond spreadsheets.
             </p>
           </div>
 
-
           {/* Multi-User System */}
-          <div id="multi-user-system" className="bg-white shadow-md rounded-xl p-8">
-            <div className="flex items-center mb-4">
+          <div
+            id="multi-user-system"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+          >
+            <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center mr-4">
                 <Users className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Multi-User System</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Multi-User System
+              </h2>
             </div>
 
             <p className="text-gray-700 mb-4">
-              Collaborate with your entire team while maintaining control. The multi-user system is built to scale with your organization.
+              Collaborate with your entire team while maintaining control. The
+              multi-user system is built to scale with your organization.
             </p>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li><span className="text-green-600">✔</span> Role-based access for admins, accountants, and team members</li>
-              <li><span className="text-green-600">✔</span> Set permissions and manage user activity logs</li>
-              <li><span className="text-green-600">✔</span> Collaborate on reports and transactions in real-time</li>
-              <li><span className="text-green-600">✔</span> Secure login with session management</li>
+              <li>
+                <span className="text-green-600">✔</span> Role-based access for
+                admins, accountants, and team members
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Set permissions and
+                manage user activity logs
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Collaborate on reports
+                and transactions in real-time
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Secure login with
+                session management
+              </li>
             </ul>
 
             <p className="text-gray-700 mt-4">
-              No more sharing passwords or risking data leaks—just seamless and secure teamwork.
+              No more sharing passwords or risking data leaks—just seamless and
+              secure teamwork.
             </p>
           </div>
 
-
           {/* Document Management */}
-          <div id="document-management" className="bg-white shadow-md rounded-xl p-8">
-            <div className="flex items-center mb-4">
+          <div
+            id="document-management"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+          >
+            <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-4">
                 <FileText className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Document Management</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Document Management
+              </h2>
             </div>
 
             <p className="text-gray-700 mb-4">
-              Keep all financial documents organized and secure in one place. Our document system is built for convenience and compliance.
+              Keep all financial documents organized and secure in one place.
+              Our document system is built for convenience and compliance.
             </p>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li><span className="text-green-600">✔</span> Upload and tag invoices, receipts, and approvals</li>
-              <li><span className="text-green-600">✔</span> Smart search with filters and metadata</li>
-              <li><span className="text-green-600">✔</span> Encrypted storage for security and compliance</li>
-              <li><span className="text-green-600">✔</span> Download or share documents with access control</li>
+              <li>
+                <span className="text-green-600">✔</span> Upload and tag
+                invoices, receipts, and approvals
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Smart search with
+                filters and metadata
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Encrypted storage for
+                security and compliance
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Download or share
+                documents with access control
+              </li>
             </ul>
 
             <p className="text-gray-700 mt-4">
-              Say goodbye to missing receipts or overflowing file cabinets—access documents from anywhere, anytime.
+              Say goodbye to missing receipts or overflowing file
+              cabinets—access documents from anywhere, anytime.
             </p>
           </div>
 
           {/* Audit-Ready Reports */}
-          <div id="audit-ready-reports" className="bg-white shadow-md rounded-xl p-8">
-            <div className="flex items-center mb-4">
+          <div
+            id="audit-ready-reports"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+          >
+            <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-cyan-100 text-cyan-600 rounded-lg flex items-center justify-center mr-4">
                 <Shield className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Audit-Ready Reports</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Audit-Ready Reports
+              </h2>
             </div>
 
             <p className="text-gray-700 mb-4">
-              Stay ready for audits at any time with our transparent and traceable financial reporting features.
+              Stay ready for audits at any time with our transparent and
+              traceable financial reporting features.
             </p>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li><span className="text-green-600">✔</span> Generate compliant reports instantly</li>
-              <li><span className="text-green-600">✔</span> Include approvals, attachments, and notes</li>
-              <li><span className="text-green-600">✔</span> Time-stamped activity logs for every transaction</li>
-              <li><span className="text-green-600">✔</span> Export in audit formats (PDF, CSV, XLSX)</li>
+              <li>
+                <span className="text-green-600">✔</span> Generate compliant
+                reports instantly
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Include approvals,
+                attachments, and notes
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Time-stamped activity
+                logs for every transaction
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Export in audit
+                formats (PDF, CSV, XLSX)
+              </li>
             </ul>
 
             <p className="text-gray-700 mt-4">
@@ -365,27 +507,46 @@ const About = () => {
           </div>
 
           {/* Real-Time Statistics */}
-          <div id="real-time-statistics" className="bg-white shadow-md rounded-xl p-8">
-            <div className="flex items-center mb-4">
+          <div
+            id="real-time-statistics"
+            className="bg-white shadow-md rounded-xl p-6 sm:p-8"
+          >
+            <div className="flex flex-col sm:flex-row items-center mb-4">
               <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center mr-4">
                 <Clock className="w-6 h-6" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Real-Time Statistics</h2>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Real-Time Statistics
+              </h2>
             </div>
 
             <p className="text-gray-700 mb-4">
-              Make fast, data-driven decisions with real-time access to key financial metrics across your operations.
+              Make fast, data-driven decisions with real-time access to key
+              financial metrics across your operations.
             </p>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li><span className="text-green-600">✔</span> Live dashboards that auto-refresh with latest data</li>
-              <li><span className="text-green-600">✔</span> Monitor cash flow, expense trends, and balances instantly</li>
-              <li><span className="text-green-600">✔</span> Get alerted on threshold breaches or unusual activity</li>
-              <li><span className="text-green-600">✔</span> Customize which KPIs matter most to your team</li>
+              <li>
+                <span className="text-green-600">✔</span> Live dashboards that
+                auto-refresh with latest data
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Monitor cash flow,
+                expense trends, and balances instantly
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Get alerted on
+                threshold breaches or unusual activity
+              </li>
+              <li>
+                <span className="text-green-600">✔</span> Customize which KPIs
+                matter most to your team
+              </li>
             </ul>
 
             <p className="text-gray-700 mt-4">
-              Stay ahead of problems and seize opportunities—powered by live financial intelligence.
+              Stay ahead of problems and seize opportunities—powered by live
+              financial intelligence.
             </p>
           </div>
         </div>
@@ -437,4 +598,3 @@ const About = () => {
 };
 
 export default About;
-

@@ -93,7 +93,7 @@ const Contact = () => {
             Contact Us
           </h1>
           <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-500">
-            Have questions about our PER System? We'd love to hear from you.
+            Have questions or queries ? We'd love to hear from you.
             Send us a message and we'll respond as soon as possible.
           </p>
         </div>

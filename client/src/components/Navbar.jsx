@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Menu, X, Eye, EyeOff, ChevronDown } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -14,8 +14,11 @@ import {
 } from "react-icons/fi";
 import { RxExit } from "react-icons/rx";
 import { PulseLoader, PropagateLoader } from "react-spinners";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, user, login, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSigninModalOpen, setIsSigninModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
@@ -46,19 +49,8 @@ const Navbar = () => {
     confirmPassword: "",
     role: "accountant",
   });
-  const navigate = useNavigate();
   const [navShadow, setNavShadow] = useState(false);
   const [navTransparent, setNavTransparent] = useState(false);
-  const [user, setUser] = useState(() => {
-    // Try to load user from localStorage on mount
-    const saved = localStorage.getItem("user");
-    try {
-      return saved ? JSON.parse(saved) : null;
-    } catch (error) {
-      console.error("Failed to parse user from localStorage:", error);
-      return null;
-    }
-  });
   const [loading, setLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
 
@@ -90,6 +82,19 @@ const Navbar = () => {
     };
   }, [isSigninModalOpen, isSignupModalOpen, isCreateUserModalOpen]);
 
+  // Listen for custom event to open login modal from ProtectedRoute
+  useEffect(() => {
+    const handleOpenLoginModal = () => {
+      setIsSigninModalOpen(true);
+    };
+
+    document.addEventListener("openLoginModal", handleOpenLoginModal);
+
+    return () => {
+      document.removeEventListener("openLoginModal", handleOpenLoginModal);
+    };
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -114,23 +119,27 @@ const Navbar = () => {
     }));
   };
 
+  const handleDashboardClick = (e) => {
+    e.preventDefault();
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    } else {
+      openSigninModal();
+      toast.warning("Please sign in to access the dashboard");
+    }
+  };
+
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = formData;
     setLoading(true);
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/login",
-        { email, password }
-      );
-      toast.success("Login successful");
-      setIsSigninModalOpen(false);
-      setUser(response.data.user);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      localStorage.setItem("token", response.data.token);
+      await login({ email, password });
+      closeSigninModal();
+      toast.success("Login successful!");
       navigate("/dashboard");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed");
+      toast.error(error.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -160,22 +169,17 @@ const Navbar = () => {
 
     setSignupLoading(true);
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/auth/register-company",
-        {
-          companyName,
-          ownerName,
-          email,
-          password,
-          phone,
-        }
-      );
+      await axios.post("http://localhost:3000/api/auth/register-company", {
+        companyName,
+        ownerName,
+        email,
+        password,
+        phone,
+      });
 
-      toast.success("Company registered successfully!");
+      await login({ email, password }); // Use the login function from AuthContext
       setIsSignupModalOpen(false);
-      setUser(response.data.user);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      localStorage.setItem("token", response.data.token);
+      toast.success("Company registered successfully!");
       navigate("/dashboard");
     } catch (error) {
       toast.error(
@@ -272,9 +276,8 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    logout();
+    navigate("/");
     toast.info("Logged out successfully");
   };
 
@@ -291,54 +294,87 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-5 h-5 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-                </svg>
+            <NavLink to="/">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8  rounded-lg flex items-center justify-center">
+                  <img src="/Accure3.png" alt="Accrue Logo" />
+                </div>
+
+                <span className="text-xl font-bold text-gray-900">Accrue</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">PER Entry</span>
-            </div>
+            </NavLink>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link
+              <NavLink
                 to="/"
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-blue-600 transition-colors duration-200 font-medium"
+                    : "text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                }
               >
                 Home
-              </Link>
-              <Link
+              </NavLink>
+
+              <NavLink
+                to="/how-to-use"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-blue-600 transition-colors duration-200 font-medium"
+                    : "text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                }
+              >
+                How to Use
+              </NavLink>
+
+              <NavLink
                 to="/about"
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-blue-600 transition-colors duration-200 font-medium"
+                    : "text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                }
               >
                 About
-              </Link>
-              <Link
-                to="/contact"
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
-              >
-                Contact
-              </Link>
-              <Link
+              </NavLink>
+
+              <NavLink
                 to="/pricing"
-                className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-blue-600 transition-colors duration-200 font-medium"
+                    : "text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                }
               >
                 Pricing
-              </Link>
-              {user && (
-                <Link
+              </NavLink>
+              
+              <NavLink
+                to="/contact"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-blue-600 transition-colors duration-200 font-medium"
+                    : "text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
+                }
+              >
+                Contact
+              </NavLink>
+
+              {isAuthenticated && (
+                <NavLink
                   to="/dashboard"
-                  className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  onClick={handleDashboardClick}
+                  className={({ isActive }) =>
+                    `cursor-pointer text-white px-6 py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ${
+                      isActive ? "bg-blue-700" : "bg-blue-600 hover:bg-blue-700"
+                    }`
+                  }
                 >
                   Dashboard
-                </Link>
+                </NavLink>
               )}
-              {user ? (
+              {isAuthenticated ? (
                 <div className="flex items-center space-x-4 relative group">
                   <UserCircle className="w-7 h-7 text-blue-600" />
                   <span className="text-gray-800 font-medium">
@@ -419,7 +455,7 @@ const Navbar = () => {
             }}
           >
             <div
-              className={`w-64 bg-white rounded-l-2xl shadow-2xl h-full p-6 flex flex-col space-y-4 transform transition-transform duration-500 ${
+              className={`w-64 bg-white rounded-l-2xl shadow-2xl h-full p-6 flex flex-col transform transition-transform duration-500 ${
                 isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
               }`}
             >
@@ -430,43 +466,189 @@ const Navbar = () => {
               >
                 <X className="w-7 h-7" />
               </button>
-              <Link
-                to="/"
-                className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50"
-                onClick={toggleMobileMenu}
-              >
-                <FiHome className="w-5 h-5" /> Home
-              </Link>
-              <Link
-                to="/about"
-                className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50"
-                onClick={toggleMobileMenu}
-              >
-                <FiInfo className="w-5 h-5" /> About
-              </Link>
-              <Link
-                to="/contact"
-                className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50"
-                onClick={toggleMobileMenu}
-              >
-                <FiPhone className="w-5 h-5" /> Contact
-              </Link>
-              <Link
-                to="/pricing"
-                className="flex items-center gap-3 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50"
-                onClick={toggleMobileMenu}
-              >
-                <FiTag className="w-5 h-5" /> Pricing
-              </Link>
-              <button
-                onClick={() => {
-                  openSigninModal();
-                  toggleMobileMenu();
-                }}
-                className="bg-blue-600 cursor-pointer text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 w-full transform hover:scale-[1.02] mt-4"
-              >
-                Sign In
-              </button>
+
+              {/* User Info Section - Only show when logged in */}
+              {isAuthenticated && (
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <UserCircle className="w-10 h-10 text-blue-600" />
+                    <div>
+                      <span className="text-gray-900 font-medium block">
+                        {user.employeeId || user.name || user.email}
+                      </span>
+                      <span className="text-gray-500 text-sm capitalize">
+                        {user.role}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Navigation NavLinks */}
+              <div className="flex-1 flex flex-col space-y-2">
+                <NavLink
+                  to="/"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 ${
+                      isActive
+                        ? "text-blue-600"
+                        : "text-gray-700 hover:text-blue-600"
+                    } transition-colors duration-200 font-medium py-2 px-3 rounded-lg ${
+                      isActive ? "bg-blue-50" : "hover:bg-blue-50"
+                    }`
+                  }
+                  onClick={toggleMobileMenu}
+                >
+                  <FiHome className="w-5 h-5" /> Home
+                </NavLink>
+                <NavLink
+                  to="/about"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 ${
+                      isActive
+                        ? "text-blue-600"
+                        : "text-gray-700 hover:text-blue-600"
+                    } transition-colors duration-200 font-medium py-2 px-3 rounded-lg ${
+                      isActive ? "bg-blue-50" : "hover:bg-blue-50"
+                    }`
+                  }
+                  onClick={toggleMobileMenu}
+                >
+                  <FiInfo className="w-5 h-5" /> About
+                </NavLink>
+                <NavLink
+                  to="/contact"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 ${
+                      isActive
+                        ? "text-blue-600"
+                        : "text-gray-700 hover:text-blue-600"
+                    } transition-colors duration-200 font-medium py-2 px-3 rounded-lg ${
+                      isActive ? "bg-blue-50" : "hover:bg-blue-50"
+                    }`
+                  }
+                  onClick={toggleMobileMenu}
+                >
+                  <FiPhone className="w-5 h-5" /> Contact
+                </NavLink>
+                <NavLink
+                  to="/pricing"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 ${
+                      isActive
+                        ? "text-blue-600"
+                        : "text-gray-700 hover:text-blue-600"
+                    } transition-colors duration-200 font-medium py-2 px-3 rounded-lg ${
+                      isActive ? "bg-blue-50" : "hover:bg-blue-50"
+                    }`
+                  }
+                  onClick={toggleMobileMenu}
+                >
+                  <FiTag className="w-5 h-5" /> Pricing
+                </NavLink>
+                <NavLink
+                  to="/how-to-use"
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 ${
+                      isActive
+                        ? "text-blue-600"
+                        : "text-gray-700 hover:text-blue-600"
+                    } transition-colors duration-200 font-medium py-2 px-3 rounded-lg ${
+                      isActive ? "bg-blue-50" : "hover:bg-blue-50"
+                    }`
+                  }
+                  onClick={toggleMobileMenu}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>{" "}
+                  How to Use
+                </NavLink>
+
+                {/* Dashboard NavLink - Only show when logged in */}
+                {isAuthenticated && (
+                  <NavLink
+                    to="/dashboard"
+                    onClick={(e) => {
+                      handleDashboardClick(e);
+                      toggleMobileMenu();
+                    }}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 ${
+                        isActive
+                          ? "bg-blue-700"
+                          : "bg-blue-600 hover:bg-blue-700"
+                      } text-white px-4 py-2 rounded-lg transition-all duration-200 font-medium`
+                    }
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                      />
+                    </svg>
+                    Dashboard
+                  </NavLink>
+                )}
+              </div>
+
+              {/* Bottom Section */}
+              <div className="pt-6 mt-6 border-t border-gray-200">
+                {isAuthenticated ? (
+                  <>
+                    {/* Admin Only - Create User Button */}
+                    {user.role === "admin" && (
+                      <button
+                        onClick={() => {
+                          openCreateUserModal();
+                          toggleMobileMenu();
+                        }}
+                        className="flex items-center w-full gap-3 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-blue-50 mb-2"
+                      >
+                        <FiUserPlus className="w-5 h-5" /> Create User
+                      </button>
+                    )}
+                    {/* Logout Button */}
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        toggleMobileMenu();
+                      }}
+                      className="flex items-center w-full gap-3 text-red-600 hover:text-red-700 transition-colors duration-200 font-medium py-2 px-3 rounded-lg hover:bg-red-50"
+                    >
+                      <RxExit className="w-5 h-5" /> Logout
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      openSigninModal();
+                      toggleMobileMenu();
+                    }}
+                    className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 transform hover:scale-[1.02] font-medium"
+                  >
+                    Sign In
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -868,7 +1050,7 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Sign In Link */}
+            {/* Sign In NavLink */}
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
