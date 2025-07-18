@@ -68,8 +68,6 @@ PER/
 
 ```env
 MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/PER"
-ADMIN_EMAIL=admin@yourcompany.com
-ADMIN_PASSWORD=your_secure_admin_password
 JWT_SECRET=your_jwt_secret_key_here
 PORT=3000
 ```
