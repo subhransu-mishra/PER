@@ -1,57 +1,39 @@
-require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
-
+const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 
-const authRoutes = require("./routes/authRoute");
-const userRoute = require("./routes/userRoute");
-const pettyCashRoutes = require("./routes/pettyCashRoute");
-const contactRoutes = require("./routes/contactRoute");
-const expenseRoutes = require("./routes/expenseRoute");
-const revenueRoutes = require("./routes/revenueRoute");
-
+dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Connect to database
+// Database connection
 connectDB();
 
-// CORS configuration
-const allowedOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
-
+// CORS Configuration
 app.use(cors({
-  origin: allowedOrigin,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: process.env.FRONTEND_URL, // "https://accrue.onrender.com"
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true, // Optional if using cookies/auth headers
 }));
 
-// Handle preflight requests for all routes
-app.options("*", cors({
-  origin: allowedOrigin,
-  credentials: true,
-}));
-
-// Middleware to parse JSON and URL-encoded data
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoute);
-app.use("/api/pettycash", pettyCashRoutes);
-app.use("/api/contact", contactRoutes);
-app.use("/api/expense", expenseRoutes);
-app.use("/api/revenue", revenueRoutes);
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/expense", require("./routes/expenseRoutes"));
+app.use("/api/pettycash", require("./routes/pettyCashRoutes"));
+app.use("/api/revenue", require("./routes/revenueRoutes"));
 
-// Default route
+// Root route
 app.get("/", (req, res) => {
-  res.send("Welcome to Home page!");
+  res.send("Accrue Backend is running");
 });
 
 // Start server
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server started on port ${PORT}`);
 });
+
