@@ -3,6 +3,8 @@ import { FiEye, FiEdit, FiPlus } from "react-icons/fi";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 const emptyRevenue = {
   date: "",
   description: "",
@@ -47,7 +49,7 @@ const Revenue = () => {
         return;
       }
 
-      const res = await axios.get("http://localhost:3000/api/revenue", {
+      const res = await axios.get(`${API_BASE_URL}/api/revenue`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -164,7 +166,7 @@ const Revenue = () => {
       if (editMode && currentId) {
         // Update existing revenue
         res = await axios.put(
-          `http://localhost:3000/api/revenue/${currentId}`,
+          `${API_BASE_URL}/api/revenue/${currentId}`,
           formData,
           {
             headers: {
@@ -185,7 +187,7 @@ const Revenue = () => {
       } else {
         // Create new revenue
         res = await axios.post(
-          "http://localhost:3000/api/revenue/create",
+          `${API_BASE_URL}/api/revenue/create`,
           formData,
           {
             headers: {

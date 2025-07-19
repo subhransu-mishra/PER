@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -77,7 +79,7 @@ const Contact = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:3000/api/contact/new-contact",
+        `${API_BASE_URL}/api/contact/new-contact`,
         {
           FullName: formData.FullName.trim(),
           Email: formData.Email.trim(),

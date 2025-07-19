@@ -16,6 +16,8 @@ import { RxExit } from "react-icons/rx";
 import { PulseLoader, PropagateLoader } from "react-spinners";
 import { useAuth } from "../context/AuthContext";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 const Navbar = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user, login, logout } = useAuth();
@@ -169,7 +171,7 @@ const Navbar = () => {
 
     setSignupLoading(true);
     try {
-      await axios.post("http://localhost:3000/api/auth/register-company", {
+      await axios.post(`${API_BASE_URL}/api/auth/register-company`, {
         companyName,
         ownerName,
         email,
@@ -211,8 +213,8 @@ const Navbar = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:3000/api/user/create",
+      const response = await axios.post(
+        `${API_BASE_URL}/api/user/create`,
         {
           name,
           email,
