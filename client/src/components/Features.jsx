@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import {
   BarChart3,
   DollarSign,
@@ -10,59 +11,81 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+// Animation variants for container elements
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+// Animation variants for individual items
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 100 },
+  },
+};
+
 const Features = () => {
   const featureCards = [
     {
-      id:"petty-cash",
+      id: "petty-cash",
       icon: <DollarSign className="w-10 h-10 text-blue-600" />,
       title: "Petty Cash Management",
       description:
         "Track and manage petty cash transactions with ease. Record deposits, withdrawals, and reconcile balances in real-time.",
     },
     {
-      id:"expense-tracking",
+      id: "expense-tracking",
       icon: <TrendingUp className="w-10 h-10 text-indigo-600" />,
       title: "Expense Tracking",
       description:
         "Categorize and monitor all expenses. Attach receipts, set budgets, and get alerts when approaching limits.",
     },
     {
-      id:"income-management",
+      id: "income-management",
       icon: <BarChart3 className="w-10 h-10 text-green-600" />,
       title: "Income Management",
       description:
         "Record and track all income sources. Generate detailed income reports and forecasts based on historical data.",
     },
     {
-      id:"visual-reports",
+      id: "visual-reports",
       icon: <PieChart className="w-10 h-10 text-purple-600" />,
       title: "Visual Reports",
       description:
         "Transform your financial data into intuitive visualizations. Get actionable insights with customizable dashboards.",
     },
     {
-      id:"multi-user-system",
+      id: "multi-user-system",
       icon: <Users className="w-10 h-10 text-orange-600" />,
       title: "Multi-User System",
       description:
         "Collaborate with your team through role-based access controls. Define permissions for different user roles.",
     },
     {
-      id:"document-management",
+      id: "document-management",
       icon: <FileText className="w-10 h-10 text-red-600" />,
       title: "Document Management",
       description:
         "Store and organize all financial documents securely. Quick search and retrieve documents when needed.",
     },
     {
-      id:"audit-ready-reports",
+      id: "audit-ready-reports",
       icon: <Shield className="w-10 h-10 text-cyan-600" />,
       title: "Audit-Ready Reports",
       description:
         "Generate comprehensive reports that are audit-ready. Keep track of approval workflows and compliance.",
     },
     {
-      id:"real-time-statistics",
+      id: "real-time-statistics",
       icon: <Clock className="w-10 h-10 text-amber-600" />,
       title: "Real-Time Statistics",
       description:
@@ -73,26 +96,48 @@ const Features = () => {
   return (
     <div className="bg-gradient-to-b from-white to-gray-100 py-16 px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
-      <div className="max-w-7xl mx-auto text-center mb-16">
-        <h2 className="text-base font-semibold text-blue-600 tracking-wide uppercase">
+      <motion.div
+        className="max-w-7xl mx-auto text-center mb-16"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.5 }}
+        variants={containerVariants}
+      >
+        <motion.h2
+          className="text-base font-semibold text-blue-600 tracking-wide uppercase"
+          variants={itemVariants}
+        >
           Features
-        </h2>
-        <h1 className="mt-2 text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
+        </motion.h2>
+        <motion.h1
+          className="mt-2 text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl"
+          variants={itemVariants}
+        >
           Manage Everything on One Platform
-        </h1>
-        <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
+        </motion.h1>
+        <motion.p
+          className="mt-4 max-w-2xl mx-auto text-xl text-gray-500"
+          variants={itemVariants}
+        >
           Our comprehensive PER (Petty cash Expense Reporter) system streamlines
-          financial management with powerful features designed for simplicity
-          and efficiency.
-        </p>
-      </div>
+          financial management with powerful features designed for simplicity and
+          efficiency.
+        </motion.p>
+      </motion.div>
 
       {/* Feature Cards */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <motion.div
+        className="max-w-7xl mx-auto grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={containerVariants}
+      >
         {featureCards.map((feature, index) => (
-          <div
+          <motion.div
             key={index}
             className="relative group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+            variants={itemVariants}
           >
             {/* Card Background Effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -134,12 +179,18 @@ const Features = () => {
                 </Link>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Call to Action */}
-      <div className="max-w-4xl mx-auto mt-20 text-center">
+      <motion.div
+        className="max-w-4xl mx-auto mt-20 text-center"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.5 }}
+        variants={itemVariants}
+      >
         <div className="bg-blue-600 rounded-2xl shadow-xl p-8 sm:p-10 relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute right-0 top-0 -mt-20 -mr-20 w-80 h-80 bg-blue-500 rounded-full opacity-20"></div>
@@ -161,7 +212,7 @@ const Features = () => {
             </Link>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

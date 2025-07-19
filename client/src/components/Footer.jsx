@@ -1,8 +1,36 @@
 import React from "react";
+import { motion } from "framer-motion";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 100 },
+  },
+};
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
+    <motion.footer
+      className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.1 }}
+      variants={containerVariants}
+    >
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 animate-pulse"></div>
@@ -11,9 +39,12 @@ const Footer = () => {
       <div className="relative px-6 py-16">
         <div className="max-w-7xl mx-auto">
           {/* Main Content */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12"
+            variants={containerVariants}
+          >
             {/* Brand Section */}
-            <div className="lg:col-span-1">
+            <motion.div className="lg:col-span-1" variants={itemVariants}>
               <div className="mb-6">
                 <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-4">
                   Accrue
@@ -46,10 +77,10 @@ const Footer = () => {
                   </svg>
                 </a>
               </div>
-            </div>
+            </motion.div>
 
             {/* Navigation */}
-            <div>
+            <motion.div variants={itemVariants}>
               <h3 className="text-lg font-semibold text-white mb-6 relative">
                 Navigation
                 <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400"></div>
@@ -73,10 +104,10 @@ const Footer = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
 
             {/* Services */}
-            <div>
+            <motion.div variants={itemVariants}>
               <h3 className="text-lg font-semibold text-white mb-6 relative">
                 Services
                 <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400"></div>
@@ -100,10 +131,10 @@ const Footer = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
 
             {/* Support & Legal */}
-            <div>
+            <motion.div variants={itemVariants}>
               <h3 className="text-lg font-semibold text-white mb-6 relative">
                 Support & Legal
                 <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400"></div>
@@ -152,11 +183,11 @@ const Footer = () => {
                   </li>
                 ))}
               </ul>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Newsletter Subscription */}
-          <div className="border-t border-slate-700 pt-8 mb-8">
+          <motion.div className="border-t border-slate-700 pt-8 mb-8" variants={itemVariants}>
             <div className="max-w-md mx-auto lg:mx-0">
               <h4 className="text-lg font-semibold text-white mb-4">Stay Updated</h4>
               <p className="text-slate-300 text-sm mb-4">
@@ -173,10 +204,10 @@ const Footer = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Bottom Section */}
-          <div className="border-t border-slate-700 pt-8">
+          <motion.div className="border-t border-slate-700 pt-8" variants={itemVariants}>
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-slate-400 text-sm mb-4 md:mb-0">
                 © {new Date().getFullYear()} PER System. All rights reserved.
@@ -187,10 +218,10 @@ const Footer = () => {
                 <span className="text-slate-400">for better financial management</span>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </footer>
+    </motion.footer>
   );
 };
 

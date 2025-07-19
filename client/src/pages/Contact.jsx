@@ -2,6 +2,29 @@ import React, { useState } from "react";
 import Layout from "../components/Layout";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 100 },
+  },
+};
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -86,30 +109,54 @@ const Contact = () => {
 
   return (
     <Layout>
-      <div className="bg-gradient-to-b from-white to-gray-50 py-16 px-4 sm:px-6 lg:px-8">
+      <div className="bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 py-16 px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl lg:text-6xl">
+        <motion.div
+          className="max-w-7xl mx-auto text-center mb-16"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.h1
+            className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight sm:text-5xl lg:text-6xl"
+            variants={itemVariants}
+          >
             Contact Us
-          </h1>
-          <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-500">
-            Have questions or queries ? We'd love to hear from you.
-            Send us a message and we'll respond as soon as possible.
-          </p>
-        </div>
+          </motion.h1>
+          <motion.p
+            className="mt-6 max-w-3xl mx-auto text-xl text-gray-500 dark:text-gray-300"
+            variants={itemVariants}
+          >
+            Have questions or queries? We'd love to hear from you. Send us a
+            message and we'll respond as soon as possible.
+          </motion.p>
+        </motion.div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <motion.div
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={containerVariants}
+          >
             {/* Contact Form */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <motion.div
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8"
+              variants={itemVariants}
+            >
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                 Send us a message
               </h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
+              <motion.form
+                onSubmit={handleSubmit}
+                className="space-y-6"
+                variants={containerVariants}
+              >
+                <motion.div variants={itemVariants}>
                   <label
                     htmlFor="FullName"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                   >
                     Full Name
                   </label>
@@ -120,15 +167,15 @@ const Contact = () => {
                     value={formData.FullName}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     placeholder="Enter your full name"
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label
                     htmlFor="Email"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                   >
                     Email Address
                   </label>
@@ -139,15 +186,15 @@ const Contact = () => {
                     value={formData.Email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     placeholder="Enter your email address"
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label
                     htmlFor="Subject"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                   >
                     Subject
                   </label>
@@ -158,15 +205,15 @@ const Contact = () => {
                     value={formData.Subject}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     placeholder="What is this about?"
                   />
-                </div>
+                </motion.div>
 
-                <div>
+                <motion.div variants={itemVariants}>
                   <label
                     htmlFor="Message"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                   >
                     Message
                   </label>
@@ -177,147 +224,99 @@ const Contact = () => {
                     onChange={handleInputChange}
                     required
                     rows={6}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     placeholder="Tell us more about your inquiry..."
                   />
-                </div>
+                </motion.div>
 
-                <button
+                <motion.button
                   type="submit"
-                  className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                  className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
                   Send Message
-                </button>
-              </form>
-            </div>
+                </motion.button>
+              </motion.form>
+            </motion.div>
 
             {/* Contact Information */}
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            <motion.div
+              className="space-y-8"
+              variants={containerVariants}
+            >
+              <motion.div variants={itemVariants}>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                   Get in touch
                 </h2>
-                <p className="text-lg text-gray-600 mb-8">
-                  We're here to help and answer any questions you might have. We
+                <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                  We are here to help and answer any question you might have. We
                   look forward to hearing from you.
                 </p>
-              </div>
+              </motion.div>
 
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      ></path>
-                    </svg>
+              <motion.div className="space-y-6" variants={containerVariants}>
+                <motion.div className="flex items-start space-x-4" variants={itemVariants}>
+                  <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
+                    <Mail className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Email
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      Email Us
                     </h3>
-                    <p className="text-gray-600">support@per.com</p>
-                    <p className="text-gray-600">info@per.com</p>
+                    <p className="text-gray-600 dark:text-gray-400">contact@per.com</p>
+                    <p className="text-gray-600 dark:text-gray-400">info@per.com</p>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                      ></path>
-                    </svg>
+                <motion.div className="flex items-start space-x-4" variants={itemVariants}>
+                  <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+                    <Phone className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Phone
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      Call Us
                     </h3>
-                    <p className="text-gray-600">+91-9876543210</p>
-                    <p className="text-gray-600">+91-9876543211</p>
+                    <p className="text-gray-600 dark:text-gray-400">(+1) 123-456-7890</p>
+                    <p className="text-gray-600 dark:text-gray-400">(+1) 987-654-3210</p>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      ></path>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                    </svg>
+                <motion.div className="flex items-start space-x-4" variants={itemVariants}>
+                  <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
+                    <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Office
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      Visit Us
                     </h3>
-                    <p className="text-gray-600">123 Business Street</p>
-                    <p className="text-gray-600">Mumbai, Maharashtra 400001</p>
-                    <p className="text-gray-600">India</p>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      123 Finance Street, Suite 100, Business City, 54321
+                    </p>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-6 h-6 text-orange-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      ></path>
-                    </svg>
+                <motion.div className="flex items-start space-x-4" variants={itemVariants}>
+                  <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full">
+                    <Clock className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                       Business Hours
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                       Monday - Friday: 9:00 AM - 6:00 PM
                     </p>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                       Saturday: 10:00 AM - 4:00 PM
                     </p>
-                    <p className="text-gray-600">Sunday: Closed</p>
+                    <p className="text-gray-600 dark:text-gray-400">Sunday: Closed</p>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </Layout>

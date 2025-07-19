@@ -657,17 +657,15 @@ const Expenses = () => {
                                 <>
                                   <button
                                     onClick={() => setConfirmModal({ open: true, action: 'approve', expenseId: expense._id })}
-                                    className="text-green-600 cursor-pointer hover:text-green-800 hover:bg-green-50 p-1 rounded transition-colors duration-200"
-                                    title="Approve"
+                                    className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-green-700 bg-green-100 hover:bg-green-200"
                                   >
-                                    <FiCheckCircle className="w-5 h-5" />
+                                    Approve
                                   </button>
                                   <button
                                     onClick={() => setConfirmModal({ open: true, action: 'reject', expenseId: expense._id })}
-                                    className="text-red-600 cursor-pointer hover:text-red-800 hover:bg-red-50 p-1 rounded transition-colors duration-200"
-                                    title="Reject"
+                                    className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-red-700 bg-red-100 hover:bg-red-200"
                                   >
-                                    <FiXCircle className="w-5 h-5" />
+                                    Reject
                                   </button>
                                 </>
                               )}
@@ -772,17 +770,15 @@ const Expenses = () => {
                             <>
                               <button
                                 onClick={() => setConfirmModal({ open: true, action: 'approve', expenseId: expense._id })}
-                                className="text-green-600 cursor-pointer hover:text-green-800 hover:bg-green-50 p-2 rounded-full transition-colors duration-200 touch-manipulation"
-                                title="Approve"
+                                className="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
                               >
-                                <FiCheckCircle className="w-5 h-5" />
+                                Approve
                               </button>
                               <button
                                 onClick={() => setConfirmModal({ open: true, action: 'reject', expenseId: expense._id })}
-                                className="text-red-600 cursor-pointer hover:text-red-800 hover:bg-red-50 p-2 rounded-full transition-colors duration-200 touch-manipulation"
-                                title="Reject"
+                                className="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
                               >
-                                <FiXCircle className="w-5 h-5" />
+                                Reject
                               </button>
                             </>
                           )}
