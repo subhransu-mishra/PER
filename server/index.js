@@ -21,10 +21,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/expense", require("./routes/expenseRoutes"));
-app.use("/api/pettycash", require("./routes/pettyCashRoutes"));
-app.use("/api/revenue", require("./routes/revenueRoutes"));
+app.use("/api/auth", require("./routes/authRoute"));
+app.use("/api/expense", require("./routes/expenseRoute"));
+app.use("/api/pettycash", require("./routes/pettyCashRoute"));
+app.use("/api/revenue", require("./routes/revenueRoute"));
+app.use("/api/contact", require("./routes/contactRoute")); 
+
 
 // Root route
 app.get("/", (req, res) => {
