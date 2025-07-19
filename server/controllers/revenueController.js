@@ -1,4 +1,4 @@
-const Revenue = require("../models/Revenue");
+const Revenue = require("../models/revenue");
 
 const addRevenue = async (req, res) => {
   try {
