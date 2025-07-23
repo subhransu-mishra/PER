@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FiEye, FiCheckCircle, FiXCircle, FiPlus } from "react-icons/fi";
+import { FiEye, FiCheckCircle, FiXCircle, FiPlus, FiDownload } from "react-icons/fi";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { format } from "date-fns";
+import { useAuth } from "../../context/AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-console.log("API Base URL:", API_BASE_URL); // Debug to check if it's correct
+// console.log("API Base URL:", API_BASE_URL); // Debug to check if it's correct
 
 const emptyExpense = {
   serialNumber: "",
@@ -27,6 +28,8 @@ const initialCategories = [
 ];
 
 const Expenses = () => {
+  const { user, apiCall } = useAuth();
+  
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState({
     open: false,
@@ -47,10 +50,6 @@ const Expenses = () => {
   });
   const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [newCategory, setNewCategory] = useState("");
-  const [user] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
-  });
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [serialFilter, setSerialFilter] = useState("");
@@ -87,15 +86,12 @@ const Expenses = () => {
   const fetchExpenses = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/api/expense`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const data = await apiCall("GET", "/expense");
 
-      if (res.data.success) {
-        setExpenses(res.data.data);
+      if (data.success) {
+        setExpenses(data.data);
       } else {
-        console.error("Failed to fetch expenses:", res.data.message);
+        console.error("Failed to fetch expenses:", data.message);
         setExpenses([]);
       }
     } catch (err) {
@@ -108,38 +104,35 @@ const Expenses = () => {
 
   const fetchStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API_BASE_URL}/api/expense/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const data = await apiCall("GET", "/expense/stats");
 
-      if (res.data.success && res.data.data) {
-        console.log("Stats received from API:", res.data.data);
+      if (data.success && data.data) {
+        console.log("Stats received from API:", data.data);
         setStats((prevStats) => ({
           ...prevStats,
           // Default values for any missing fields
-          currentMonthTotal: res.data.data.currentMonthTotal || 0,
-          prevMonthTotal: res.data.data.prevMonthTotal || 0,
-          percentageChange: res.data.data.percentageChange || 0,
-          pendingCount: res.data.data.pendingCount || 0,
+          currentMonthTotal: data.data.currentMonthTotal || 0,
+          prevMonthTotal: data.data.prevMonthTotal || 0,
+          percentageChange: data.data.percentageChange || 0,
+          pendingCount: data.data.pendingCount || 0,
           month:
-            res.data.data.month ||
+            data.data.month ||
             new Date().toLocaleString("default", { month: "long" }),
-          year: res.data.data.year || new Date().getFullYear(),
+          year: data.data.year || new Date().getFullYear(),
         }));
         console.log("Stats after update:", {
-          currentMonthTotal: res.data.data.currentMonthTotal,
-          updatedState: res.data.data.currentMonthTotal || 0,
+          currentMonthTotal: data.data.currentMonthTotal,
+          updatedState: data.data.currentMonthTotal || 0,
         });
       } else {
-        console.error("Failed to fetch expense stats:", res.data.message);
+        console.error("Failed to fetch expense stats:", data.message);
         toast.error("Failed to fetch expense statistics");
       }
     } catch (err) {
       console.error("Error fetching expense stats:", err);
       toast.error("Error loading expense statistics");
     }
-  }, []);
+  }, [apiCall]);
 
   useEffect(() => {
     if (!user) return;
@@ -433,6 +426,44 @@ const Expenses = () => {
     setForm(emptyExpense);
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const queryParams = new URLSearchParams();
+      
+      if (filters.startDate) queryParams.append('from', filters.startDate);
+      if (filters.endDate) queryParams.append('to', filters.endDate);
+      
+      const response = await axios.get(
+        `${API_BASE_URL}/api/export/expenses?${queryParams}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        }
+      );
+      
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with date range
+      const fromDate = filters.startDate ? format(new Date(filters.startDate), 'dd-MM-yyyy') : 'all';
+      const toDate = filters.endDate ? format(new Date(filters.endDate), 'dd-MM-yyyy') : 'all';
+      link.setAttribute('download', `expense-report-${fromDate}-to-${toDate}.pdf`);
+      
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('PDF exported successfully!');
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.error(err.response?.data?.message || 'Failed to export PDF');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "approved":
@@ -537,13 +568,16 @@ const Expenses = () => {
               />
             </div>
             
-            {/* New Expense Button */}
-            <button
-              onClick={handleNewExpense}
-              className="inline-flex cursor-pointer items-center justify-center px-4 py-3 sm:px-3 sm:py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 min-h-[44px] touch-manipulation"
-            >
-              <FiPlus className="mr-2 h-4 w-4" /> New Expense
-            </button>
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+            
+              <button
+                onClick={handleNewExpense}
+                className="inline-flex cursor-pointer items-center justify-center px-4 py-3 sm:px-3 sm:py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 min-h-[44px] touch-manipulation"
+              >
+                <FiPlus className="mr-2 h-4 w-4" /> New Expense
+              </button>
+            </div>
           </div>
         </div>
         {/* Expenses Table */}

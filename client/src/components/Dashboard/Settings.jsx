@@ -12,18 +12,16 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 const Settings = () => {
+  const { user, apiCall } = useAuth();
   const [activeTab, setActiveTab] = useState("reports");
   const [loading, setLoading] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState("");
   const [dateRange, setDateRange] = useState({
     startDate: "",
     endDate: "",
-  });
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
   });
 
   const handleDateChange = (e) => {
@@ -86,6 +84,46 @@ const Settings = () => {
     }
   };
 
+  // Add this function for Petty Cash export (copy from PettyCash.jsx)
+  const handleExportPettyCashPDF = async (startDate, endDate) => {
+    try {
+      const token = localStorage.getItem("token");
+      const queryParams = new URLSearchParams();
+      if (startDate) queryParams.append("from", startDate);
+      if (endDate) queryParams.append("to", endDate);
+      const response = await axios.get(
+        `http://localhost:3000/api/export/pettycash?${queryParams}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob",
+        }
+      );
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      // Generate filename with date range
+      const fromDate = startDate
+        ? new Date(startDate).toLocaleDateString("en-GB")
+        : "all";
+      const toDate = endDate
+        ? new Date(endDate).toLocaleDateString("en-GB")
+        : "all";
+      link.setAttribute(
+        "download",
+        `petty-cash-report-${fromDate}-to-${toDate}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF exported successfully!");
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error(err.response?.data?.message || "Failed to export PDF");
+    }
+  };
+
   const updateProfile = async (e) => {
     e.preventDefault();
     // Implementation for profile update
@@ -94,7 +132,7 @@ const Settings = () => {
 
   const updatePassword = async (e) => {
     e.preventDefault();
-   
+
     toast.success("Password updated successfully");
   };
 
@@ -331,7 +369,12 @@ const Settings = () => {
                         transactions
                       </p>
                       <button
-                        onClick={() => downloadReport("pettycash")}
+                        onClick={() =>
+                          handleExportPettyCashPDF(
+                            dateRange.startDate,
+                            dateRange.endDate
+                          )
+                        }
                         disabled={downloadingReport === "pettycash"}
                         className="w-full flex justify-center cursor-pointer items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:bg-purple-300"
                       >

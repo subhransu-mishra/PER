@@ -10,10 +10,12 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 import { format } from "date-fns";
+import { useAuth } from "../../context/AuthContext";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const DashboardHome = () => {
+  const { user, apiCall } = useAuth();
   const [stats, setStats] = useState({
     expenses: {
       currentMonthTotal: 0,
@@ -31,100 +33,78 @@ const DashboardHome = () => {
     },
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [recentTransactions, setRecentTransactions] = useState([]);
 
   useEffect(() => {
-    // Load user data from localStorage
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-
+    if (!user) return;
+    
     // Fetch dashboard data
     fetchDashboardData();
-  }, []);
+  }, [user]);
 
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No authentication token found");
-        return;
-      }
-
       // Get expense stats
-      const expenseRes = await axios.get(`${API_BASE_URL}/api/expense/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const expenseData = await apiCall("GET", "/expense/stats").catch((err) => {
+        console.log("Expense stats not available:", err);
+        return { success: false };
       });
 
       // Get revenue stats
-      const revenueRes = await axios
-        .get(`${API_BASE_URL}/api/revenue/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .catch((err) => {
-          console.log("Revenue stats not available:", err);
-          return { data: { success: false } };
-        });
+      const revenueData = await apiCall("GET", "/revenue/stats").catch((err) => {
+        console.log("Revenue stats not available:", err);
+        return { success: false };
+      });
 
       // Get petty cash stats
-      const pettyCashRes = await axios
-        .get(`${API_BASE_URL}/api/pettycash/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .catch((err) => {
-          console.log("Petty cash stats not available:", err);
-          return { data: { success: false } };
-        });
+      const pettyCashData = await apiCall("GET", "/pettycash/stats").catch((err) => {
+        console.log("Petty cash stats not available:", err);
+        return { success: false };
+      });
 
       // Get recent transactions (combined from all sources)
-      const recentTxRes = await axios
-        .get(`${API_BASE_URL}/api/expense?limit=5`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .catch((err) => {
-          console.log("Recent transactions not available:", err);
-          return { data: { success: false, data: [] } };
-        });
+      const recentTxData = await apiCall("GET", "/expense?limit=5").catch((err) => {
+        console.log("Recent transactions not available:", err);
+        return { success: false, data: [] };
+      });
 
       // Update state with fetched data
       setStats({
         expenses: {
-          currentMonthTotal: expenseRes.data.success
-            ? expenseRes.data.data.currentMonthTotal || 0
+          currentMonthTotal: expenseData.success
+            ? expenseData.data?.currentMonthTotal || 0
             : 0,
-          percentageChange: expenseRes.data.success
-            ? expenseRes.data.data.percentageChange || 0
+          percentageChange: expenseData.success
+            ? expenseData.data?.percentageChange || 0
             : 0,
-          pendingCount: expenseRes.data.success
-            ? expenseRes.data.data.pendingCount || 0
+          pendingCount: expenseData.success
+            ? expenseData.data?.pendingCount || 0
             : 0,
         },
         revenue: {
-          currentMonthTotal: revenueRes.data.success
-            ? revenueRes.data.data?.currentMonthTotal || 0
+          currentMonthTotal: revenueData.success
+            ? revenueData.data?.currentMonthTotal || 0
             : 0,
-          percentageChange: revenueRes.data.success
-            ? revenueRes.data.data?.percentageChange || 0
+          percentageChange: revenueData.success
+            ? revenueData.data?.percentageChange || 0
             : 0,
         },
         pettyCash: {
-          balance: pettyCashRes.data.success
-            ? pettyCashRes.data.stats?.totalAmount || 0
+          balance: pettyCashData.success
+            ? pettyCashData.stats?.totalAmount || 0
             : 0,
-          pendingTransactions: pettyCashRes.data.success
-            ? pettyCashRes.data.stats?.pendingCount || 0
+          pendingTransactions: pettyCashData.success
+            ? pettyCashData.stats?.pendingCount || 0
             : 0,
-          currentMonthTotal: pettyCashRes.data.success
-            ? pettyCashRes.data.stats?.totalAmount || 0
+          currentMonthTotal: pettyCashData.success
+            ? pettyCashData.stats?.totalAmount || 0
             : 0,
         },
       });
 
-      if (recentTxRes.data.success) {
-        setRecentTransactions(recentTxRes.data.data.slice(0, 5));
+      if (recentTxData.success) {
+        setRecentTransactions(recentTxData.data?.slice(0, 5) || []);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);

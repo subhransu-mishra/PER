@@ -25,7 +25,9 @@ app.use("/api/auth", require("./routes/authRoute"));
 app.use("/api/expense", require("./routes/expenseRoute"));
 app.use("/api/pettycash", require("./routes/pettyCashRoute"));
 app.use("/api/revenue", require("./routes/revenueRoute"));
-app.use("/api/contact", require("./routes/contactRoute")); 
+app.use("/api/contact", require("./routes/contactRoute"));
+app.use("/api/export", require("./routes/exportRoutes"));
+app.use("/api/reports", require("./routes/reportRoute")); 
 
 
 // Root route

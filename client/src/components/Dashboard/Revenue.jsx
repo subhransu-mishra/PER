@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FiEye, FiEdit, FiPlus } from "react-icons/fi";
+import { FiEye, FiEdit, FiPlus, FiDownload } from "react-icons/fi";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { format } from "date-fns";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -294,6 +295,44 @@ const Revenue = () => {
   const resetDateFilters = () => {
     setStartDate("");
     setEndDate("");
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const queryParams = new URLSearchParams();
+      
+      if (startDate) queryParams.append('from', startDate);
+      if (endDate) queryParams.append('to', endDate);
+      
+      const response = await axios.get(
+        `${API_BASE_URL}/api/export/revenue?${queryParams}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        }
+      );
+      
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with date range
+      const fromDate = startDate ? format(new Date(startDate), 'dd-MM-yyyy') : 'all';
+      const toDate = endDate ? format(new Date(endDate), 'dd-MM-yyyy') : 'all';
+      link.setAttribute('download', `revenue-report-${fromDate}-to-${toDate}.pdf`);
+      
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('PDF exported successfully!');
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.error(err.response?.data?.message || 'Failed to export PDF');
+    }
   };
 
   return (

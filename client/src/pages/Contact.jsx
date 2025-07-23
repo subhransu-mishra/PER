@@ -267,8 +267,8 @@ const Contact = () => {
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                       Email Us
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400">contact@per.com</p>
-                    <p className="text-gray-600 dark:text-gray-400">info@per.com</p>
+                    <p className="text-gray-600 dark:text-gray-400">contact@accrue.com</p>
+                    <p className="text-gray-600 dark:text-gray-400">info@accrue.com</p>
                   </div>
                 </motion.div>
 
@@ -294,7 +294,7 @@ const Contact = () => {
                       Visit Us
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      123 Finance Street, Suite 100, Business City, 54321
+                       MIG –II, 14/5, Housing Board Colony, Chandrasekharpur, Bhubaneswar, Odisha 751016
                     </p>
                   </div>
                 </motion.div>
@@ -310,10 +310,7 @@ const Contact = () => {
                     <p className="text-gray-600 dark:text-gray-400">
                       Monday - Friday: 9:00 AM - 6:00 PM
                     </p>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Saturday: 10:00 AM - 4:00 PM
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-400">Sunday: Closed</p>
+                  
                   </div>
                 </motion.div>
               </motion.div>

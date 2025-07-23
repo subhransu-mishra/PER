@@ -112,7 +112,7 @@ const About = () => {
                   <span className="text-white text-2xl font-bold">P</span>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Petty Cash
+                  Finance
                 </h3>
                 <p className="text-gray-600">
                   Efficient management and tracking

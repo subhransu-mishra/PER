@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { format } from "date-fns";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaDownload } from "react-icons/fa6";
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -373,6 +374,44 @@ const PettyCash = () => {
     await fetchNextVoucherNumber();
   };
 
+  const handleExportPDF = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const queryParams = new URLSearchParams();
+      
+      if (filters.startDate) queryParams.append('from', filters.startDate);
+      if (filters.endDate) queryParams.append('to', filters.endDate);
+      
+      const response = await axios.get(
+        `${API_BASE_URL}/api/export/pettycash?${queryParams}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: 'blob',
+        }
+      );
+      
+      // Create blob link to download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with date range
+      const fromDate = filters.startDate ? format(new Date(filters.startDate), 'dd-MM-yyyy') : 'all';
+      const toDate = filters.endDate ? format(new Date(filters.endDate), 'dd-MM-yyyy') : 'all';
+      link.setAttribute('download', `petty-cash-report-${fromDate}-to-${toDate}.pdf`);
+      
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('PDF exported successfully!');
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.error(err.response?.data?.message || 'Failed to export PDF');
+    }
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setForm(emptyVoucher);
@@ -443,13 +482,22 @@ const PettyCash = () => {
           <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
             Petty Cash Management
           </h1>
-          <button
-            onClick={handleNewVoucher}
-            className="px-3 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium flex items-center justify-center gap-2 shadow-sm"
-          >
-            <FaPlus className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span>New Entry</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExportPDF}
+              className="px-3 py-2 cursor-pointer bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium flex items-center justify-center gap-2 shadow-sm"
+            >
+              <FaDownload className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>Export PDF</span>
+            </button>
+            <button
+              onClick={handleNewVoucher}
+              className="px-3 py-2 cursor-pointer bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium flex items-center justify-center gap-2 shadow-sm"
+            >
+              <FaPlus className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>New Entry</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
@@ -795,14 +843,14 @@ const PettyCash = () => {
                   type="button"
                   onClick={closeModal}
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
+                  className="w-full cursor-pointer sm:w-auto justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm disabled:opacity-50 flex items-center"
+                  className="w-full cursor-pointer sm:w-auto justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm disabled:opacity-50 flex items-center"
                 >
                   {isSubmitting ? (
                     <>
@@ -834,7 +882,7 @@ const PettyCash = () => {
               </button>
             </div>
             <div className="mb-4 flex flex-col items-center">
-              <div className={`mb-2 text-4xl ${confirmModal.action === 'approve' ? 'text-green-500' : 'text-red-500'}`}>{confirmModal.action === 'approve' ? '✔️' : '✖️'}</div>
+              <div className={`mb-2 text-4xl ${confirmModal.action === 'approve' ? 'text-green-500' : 'text-red-500'}`}>{confirmModal.action === 'approve' ? <FiCheckCircle /> : <FiXCircle />}</div>
               <h2 className="text-xl font-semibold mb-2 text-center">
                 {confirmModal.action === 'approve' ? 'Approve Voucher?' : 'Reject Voucher?'}
               </h2>
