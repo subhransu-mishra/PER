@@ -27,8 +27,13 @@ ChartJS.register(
 
 const RevenueChart = ({ data, type = "monthly" }) => {
   console.log("RevenueChart - Type:", type, "Data:", data);
-  console.log("RevenueChart - Data type:", typeof data, "Is Array:", Array.isArray(data));
-  
+  console.log(
+    "RevenueChart - Data type:",
+    typeof data,
+    "Is Array:",
+    Array.isArray(data)
+  );
+
   if (data && Array.isArray(data)) {
     console.log("RevenueChart - Data length:", data.length);
     console.log("RevenueChart - First item:", data[0]);
@@ -93,6 +98,8 @@ const RevenueChart = ({ data, type = "monthly" }) => {
             ? "Revenue by Source"
             : type === "status"
             ? "Revenue by Status"
+            : type === "payment"
+            ? "Revenue by Payment Method"
             : "Revenue Overview",
       },
     },
@@ -162,15 +169,19 @@ const RevenueChart = ({ data, type = "monthly" }) => {
 
     const chartData = {
       labels: data.map((d) => {
-        const source = d._id || 'Unknown';
+        const source = d._id || "Unknown";
         return source.charAt(0).toUpperCase() + source.slice(1);
       }),
       datasets: [
         {
           label: "Revenue Amount",
           data: data.map((d) => d.totalAmount),
-          backgroundColor: data.map((_, index) => colors[index % colors.length]),
-          borderColor: data.map((_, index) => borderColors[index % borderColors.length]),
+          backgroundColor: data.map(
+            (_, index) => colors[index % colors.length]
+          ),
+          borderColor: data.map(
+            (_, index) => borderColors[index % borderColors.length]
+          ),
           borderWidth: 1,
           borderRadius: 4,
           borderSkipped: false,
@@ -267,7 +278,7 @@ const RevenueChart = ({ data, type = "monthly" }) => {
     };
 
     return (
-      <div className="h-[400px] relative">
+      <div className="h-[300px] sm:h-[400px] relative w-full overflow-x-auto p-2 sm:p-0">
         <Pie data={chartData} options={pieOptions} />
         {data.length > 0 && (
           <div className="mt-4 text-center text-sm text-gray-600">
@@ -308,7 +319,7 @@ const RevenueChart = ({ data, type = "monthly" }) => {
 
     const chartData = {
       labels: data.map((d) => {
-        const status = d._id || 'Unknown';
+        const status = d._id || "Unknown";
         return status.charAt(0).toUpperCase() + status.slice(1);
       }),
       datasets: [
@@ -355,7 +366,7 @@ const RevenueChart = ({ data, type = "monthly" }) => {
 
     const chartData = {
       labels: data.map((d) => {
-        const method = d._id || 'Unknown';
+        const method = d._id || "Unknown";
         return method.charAt(0).toUpperCase() + method.slice(1);
       }),
       datasets: [

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+
 import {
   FiDollarSign,
   FiPieChart,
@@ -37,7 +37,7 @@ const DashboardHome = () => {
 
   useEffect(() => {
     if (!user) return;
-    
+
     // Fetch dashboard data
     fetchDashboardData();
   }, [user]);
@@ -46,28 +46,36 @@ const DashboardHome = () => {
     setIsLoading(true);
     try {
       // Get expense stats
-      const expenseData = await apiCall("GET", "/expense/stats").catch((err) => {
-        console.log("Expense stats not available:", err);
-        return { success: false };
-      });
+      const expenseData = await apiCall("GET", "/expense/stats").catch(
+        (err) => {
+          console.log("Expense stats not available:", err);
+          return { success: false };
+        }
+      );
 
       // Get revenue stats
-      const revenueData = await apiCall("GET", "/revenue/stats").catch((err) => {
-        console.log("Revenue stats not available:", err);
-        return { success: false };
-      });
+      const revenueData = await apiCall("GET", "/revenue/stats").catch(
+        (err) => {
+          console.log("Revenue stats not available:", err);
+          return { success: false };
+        }
+      );
 
       // Get petty cash stats
-      const pettyCashData = await apiCall("GET", "/pettycash/stats").catch((err) => {
-        console.log("Petty cash stats not available:", err);
-        return { success: false };
-      });
+      const pettyCashData = await apiCall("GET", "/pettycash/stats").catch(
+        (err) => {
+          console.log("Petty cash stats not available:", err);
+          return { success: false };
+        }
+      );
 
       // Get recent transactions (combined from all sources)
-      const recentTxData = await apiCall("GET", "/expense?limit=5").catch((err) => {
-        console.log("Recent transactions not available:", err);
-        return { success: false, data: [] };
-      });
+      const recentTxData = await apiCall("GET", "/expense?limit=5").catch(
+        (err) => {
+          console.log("Recent transactions not available:", err);
+          return { success: false, data: [] };
+        }
+      );
 
       // Update state with fetched data
       setStats({
@@ -118,7 +126,7 @@ const DashboardHome = () => {
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 sm:p-6 mb-6 text-white">
         <h1 className="text-xl sm:text-2xl font-bold mb-2">
-         Hello {user?.name || "User"}!
+          Hello {user?.name || "User"}!
         </h1>
         <p className="opacity-90 text-sm sm:text-base">
           Here's an overview of your business finances for{" "}
@@ -195,9 +203,9 @@ const DashboardHome = () => {
               <FiPieChart className="text-purple-600 text-lg sm:text-xl" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold">Reports</h3>
+              <h3 className="text-base sm:text-lg font-semibold">Analytics</h3>
               <p className="text-gray-500 text-xs sm:text-sm">
-                View financial reports
+                View financial analytics
               </p>
             </div>
           </div>

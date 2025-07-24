@@ -179,7 +179,7 @@ const ExpenseChart = ({ data, type = 'category' }) => {
     };
 
     return (
-      <div className="h-64">
+      <div className="h-64 min-h-[220px] w-full overflow-x-auto p-2 sm:p-0">
         <Line data={chartData} options={chartOptions} />
       </div>
     );

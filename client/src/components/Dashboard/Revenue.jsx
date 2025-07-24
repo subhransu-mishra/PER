@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FiEye, FiEdit, FiPlus, FiDownload } from "react-icons/fi";
+import { IoAnalyticsSharp } from "react-icons/io5";
+import { MdAccountBalanceWallet } from "react-icons/md";
+import { TbMoneybag } from "react-icons/tb";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
@@ -297,43 +300,43 @@ const Revenue = () => {
     setEndDate("");
   };
 
-  const handleExportPDF = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const queryParams = new URLSearchParams();
+  // const handleExportPDF = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const queryParams = new URLSearchParams();
       
-      if (startDate) queryParams.append('from', startDate);
-      if (endDate) queryParams.append('to', endDate);
+  //     if (startDate) queryParams.append('from', startDate);
+  //     if (endDate) queryParams.append('to', endDate);
       
-      const response = await axios.get(
-        `${API_BASE_URL}/api/export/revenue?${queryParams}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob',
-        }
-      );
+  //     const response = await axios.get(
+  //       `${API_BASE_URL}/api/export/revenue?${queryParams}`,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //         responseType: 'blob',
+  //       }
+  //     );
       
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
+  //     // Create blob link to download
+  //     const url = window.URL.createObjectURL(new Blob([response.data]));
+  //     const link = document.createElement('a');
+  //     link.href = url;
       
-      // Generate filename with date range
-      const fromDate = startDate ? format(new Date(startDate), 'dd-MM-yyyy') : 'all';
-      const toDate = endDate ? format(new Date(endDate), 'dd-MM-yyyy') : 'all';
-      link.setAttribute('download', `revenue-report-${fromDate}-to-${toDate}.pdf`);
+  //     // Generate filename with date range
+  //     const fromDate = startDate ? format(new Date(startDate), 'dd-MM-yyyy') : 'all';
+  //     const toDate = endDate ? format(new Date(endDate), 'dd-MM-yyyy') : 'all';
+  //     link.setAttribute('download', `revenue-report-${fromDate}-to-${toDate}.pdf`);
       
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //     window.URL.revokeObjectURL(url);
       
-      toast.success('PDF exported successfully!');
-    } catch (err) {
-      console.error('Export error:', err);
-      toast.error(err.response?.data?.message || 'Failed to export PDF');
-    }
-  };
+  //     toast.success('PDF exported successfully!');
+  //   } catch (err) {
+  //     console.error('Export error:', err);
+  //     toast.error(err.response?.data?.message || 'Failed to export PDF');
+  //   }
+  // };
 
   return (
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
@@ -349,96 +352,53 @@ const Revenue = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {/* This Month Revenue */}
-          <div className="bg-white rounded-lg shadow p-3 sm:p-4 border-l-4 border-blue-500">
-            <h3 className="text-gray-500 text-xs sm:text-sm font-medium">
-              This Month
-            </h3>
-            <div className="flex items-center justify-between">
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                ₹{calculateThisMonthRevenue().toLocaleString()}
-              </p>
-              <div className="p-2 bg-blue-100 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-blue-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">This Month</p>
+                <h3 className="text-xl font-bold text-blue-600 mb-1">
+                  ₹{calculateThisMonthRevenue().toLocaleString()}
+                </h3>
+                <p className="text-xs text-gray-500">Revenue received this month</p>
+              </div>
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <IoAnalyticsSharp className="w-6 h-6 text-blue-500" />
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Revenue received this month
-            </p>
           </div>
 
           {/* This Week Revenue */}
-          <div className="bg-white rounded-lg shadow p-3 sm:p-4 border-l-4 border-green-500">
-            <h3 className="text-gray-500 text-xs sm:text-sm font-medium">
-              This Week
-            </h3>
-            <div className="flex items-center justify-between">
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                ₹{calculateThisWeekRevenue().toLocaleString()}
-              </p>
-              <div className="p-2 bg-green-100 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-green-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">This Week</p>
+                <h3 className="text-xl font-bold text-green-600 mb-1">
+                  ₹{calculateThisWeekRevenue().toLocaleString()}
+                </h3>
+                <p className="text-xs text-gray-500">Revenue received this week</p>
+              </div>
+              <div className="p-2 bg-green-50 rounded-lg">
+                <MdAccountBalanceWallet className="w-6 h-6 text-green-500" />
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Revenue received this week
-            </p>
           </div>
 
           {/* Total Revenue */}
-          <div className="bg-white rounded-lg shadow p-3 sm:p-4 border-l-4 border-purple-500">
-            <h3 className="text-gray-500 text-xs sm:text-sm font-medium">
-              Total Revenue
-            </h3>
-            <div className="flex items-center justify-between">
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                ₹{calculateTotalRevenue().toLocaleString()}
-              </p>
-              <div className="p-2 bg-purple-100 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-purple-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 11l7-7 7 7M5 19l7-7 7 7"
-                  />
-                </svg>
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">Total Revenue</p>
+                <h3 className="text-xl font-bold text-purple-600 mb-1">
+                  ₹{calculateTotalRevenue().toLocaleString()}
+                </h3>
+                <p className="text-xs text-gray-500">All time revenue</p>
+              </div>
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <TbMoneybag className="w-6 h-6 text-purple-500" />
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-1">All time revenue</p>
           </div>
         </div>
 
@@ -854,3 +814,4 @@ const Revenue = () => {
 };
 
 export default Revenue;
+            

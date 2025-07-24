@@ -31,7 +31,7 @@ const Pricing = () => {
   const plans = [
     {
       name: "Starter",
-      price: isAnnual ? 29 : 39,
+      price: isAnnual ? 499 : 39,
       period: isAnnual ? "year" : "month",
       description:
         "Perfect for small teams getting started with financial management",
@@ -48,7 +48,7 @@ const Pricing = () => {
     },
     {
       name: "Professional",
-      price: isAnnual ? 79 : 99,
+      price: isAnnual ? 999 : 99,
       period: isAnnual ? "year" : "month",
       description: "Ideal for growing businesses that need advanced features",
       features: [
@@ -66,7 +66,7 @@ const Pricing = () => {
     },
     {
       name: "Enterprise",
-      price: isAnnual ? 199 : 249,
+      price: isAnnual ? 1499 : 249,
       period: isAnnual ? "year" : "month",
       description: "For large organizations with complex financial needs",
       features: [
@@ -86,14 +86,14 @@ const Pricing = () => {
     },
   ];
 
-  const getColorClasses = (color) => {
-    const colors = {
-      blue: "border-blue-200 bg-blue-50",
-      purple: "border-purple-200 bg-purple-50",
-      indigo: "border-indigo-200 bg-indigo-50",
-    };
-    return colors[color] || colors.blue;
-  };
+  // const getColorClasses = (color) => {
+  //   const colors = {
+  //     blue: "border-blue-200 bg-blue-50",
+  //     purple: "border-purple-200 bg-purple-50",
+  //     indigo: "border-indigo-200 bg-indigo-50",
+  //   };
+  //   return colors[color] || colors.blue;
+  // };
 
   const getButtonClasses = (color, popular) => {
     const baseClasses =

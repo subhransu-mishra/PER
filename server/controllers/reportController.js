@@ -8,16 +8,16 @@ const getPettyCashSummary = async (req, res) => {
   try {
     console.log('getPettyCashSummary called, user:', req.user);
     const organizationId = new mongoose.Types.ObjectId(req.user.organizationId);
-    console.log('organizationId:', organizationId);
-    console.log('organizationId type:', typeof organizationId);
+    // console.log('organizationId:', organizationId);
+    // console.log('organizationId type:', typeof organizationId);
 
     // Check total documents in PettyCash collection
     const totalDocs = await PettyCash.countDocuments();
-    console.log('Total PettyCash documents in collection:', totalDocs);
+    // console.log('Total PettyCash documents in collection:', totalDocs);
     
     // Check documents for this organization
     const orgDocs = await PettyCash.countDocuments({ organizationId });
-    console.log('PettyCash documents for organizationId:', orgDocs);
+    // console.log('PettyCash documents for organizationId:', orgDocs);
     
     // Check a few sample documents to see their structure
     const sampleDocs = await PettyCash.find().limit(3);
@@ -25,7 +25,7 @@ const getPettyCashSummary = async (req, res) => {
 
     // Total, pending, approved, rejected counts and amounts
     const summary = await PettyCash.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: "$status",
@@ -39,7 +39,7 @@ const getPettyCashSummary = async (req, res) => {
 
     // Category-wise breakdown
     const categoryBreakdown = await PettyCash.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: "$categoryType",
@@ -52,7 +52,7 @@ const getPettyCashSummary = async (req, res) => {
 
     // Monthly trend
     const monthlyTrend = await PettyCash.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: {
@@ -105,7 +105,7 @@ const getExpensesSummary = async (req, res) => {
 
     // Total expenses by category
     const categoryBreakdown = await Expense.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: "$category",
@@ -118,7 +118,7 @@ const getExpensesSummary = async (req, res) => {
 
     // Monthly expenses trend
     const monthlyTrend = await Expense.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: {
@@ -135,7 +135,7 @@ const getExpensesSummary = async (req, res) => {
 
     // Status breakdown
     const statusBreakdown = await Expense.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: "$status",
@@ -147,7 +147,7 @@ const getExpensesSummary = async (req, res) => {
 
     // Payment type breakdown
     const paymentTypeBreakdown = await Expense.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: "$paymentType",
@@ -159,7 +159,7 @@ const getExpensesSummary = async (req, res) => {
 
     // Total summary
     const totalSummary = await Expense.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: null,
@@ -187,9 +187,10 @@ const getExpensesSummary = async (req, res) => {
 // Get Revenue Summary
 const getRevenueSummary = async (req, res) => {
   try {
-    console.log('getRevenueSummary called, user:', req.user);
-    const organizationId = req.user.organizationId;
-    console.log('organizationId:', organizationId);
+    // console.log('getRevenueSummary called, user:', req.user);
+    const mongoose = require('mongoose');
+    const organizationId = new mongoose.Types.ObjectId(req.user.organizationId);
+    // console.log('organizationId:', organizationId, typeof organizationId);
     
     // Check total revenue count
     const totalRevenueCount = await Revenue.countDocuments({ organizationId });
@@ -197,7 +198,7 @@ const getRevenueSummary = async (req, res) => {
 
     // Monthly revenue trend
     const monthlyTrend = await Revenue.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: {
@@ -214,7 +215,7 @@ const getRevenueSummary = async (req, res) => {
 
     // Revenue by source
     const sourceBreakdown = await Revenue.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: "$source",
@@ -224,11 +225,11 @@ const getRevenueSummary = async (req, res) => {
       },
       { $sort: { totalAmount: -1 } }
     ]);
-    console.log('sourceBreakdown result:', sourceBreakdown);
+    // console.log('sourceBreakdown result:', sourceBreakdown);
 
     // Status breakdown
     const statusBreakdown = await Revenue.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: "$status",
@@ -240,7 +241,7 @@ const getRevenueSummary = async (req, res) => {
 
     // Payment method breakdown
     const paymentMethodBreakdown = await Revenue.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: "$receivedThrough",
@@ -252,7 +253,7 @@ const getRevenueSummary = async (req, res) => {
 
     // Total summary
     const totalSummary = await Revenue.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: null,
@@ -284,7 +285,7 @@ const getCashflowSummary = async (req, res) => {
 
     // Monthly revenue vs expenses
     const monthlyRevenue = await Revenue.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: {
@@ -297,7 +298,7 @@ const getCashflowSummary = async (req, res) => {
     ]);
 
     const monthlyExpenses = await Expense.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: {
@@ -310,7 +311,7 @@ const getCashflowSummary = async (req, res) => {
     ]);
 
     const monthlyPettyCash = await PettyCash.aggregate([
-      { $match: { organizationId } },
+      { $match: { organizationId: organizationId } },
       {
         $group: {
           _id: {
@@ -372,15 +373,15 @@ const getCashflowSummary = async (req, res) => {
     // Overall totals
     const overallTotals = await Promise.all([
       Revenue.aggregate([
-        { $match: { organizationId } },
+        { $match: { organizationId: organizationId } },
         { $group: { _id: null, total: { $sum: "$amount" } } }
       ]),
       Expense.aggregate([
-        { $match: { organizationId } },
+        { $match: { organizationId: organizationId } },
         { $group: { _id: null, total: { $sum: "$amount" } } }
       ]),
       PettyCash.aggregate([
-        { $match: { organizationId } },
+        { $match: { organizationId: organizationId } },
         { $group: { _id: null, total: { $sum: "$amount" } } }
       ])
     ]);

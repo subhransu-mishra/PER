@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FiEye, FiCheckCircle, FiXCircle, FiPlus, FiDownload } from "react-icons/fi";
+import {
+  FiEye,
+  FiCheckCircle,
+  FiXCircle,
+  FiPlus,
+  FiDownload,
+} from "react-icons/fi";
+import { MdAccountBalanceWallet } from "react-icons/md";
+import { IoAnalyticsSharp } from "react-icons/io5";
+import { TbMoneybag } from "react-icons/tb";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { format } from "date-fns";
@@ -29,7 +38,7 @@ const initialCategories = [
 
 const Expenses = () => {
   const { user, apiCall } = useAuth();
-  
+
   // Confirmation modal state
   const [confirmModal, setConfirmModal] = useState({
     open: false,
@@ -61,6 +70,7 @@ const Expenses = () => {
     month: "",
     year: "",
   });
+  const [showAllExpenses, setShowAllExpenses] = useState(false);
 
   // Save categories to localStorage whenever they change
   useEffect(() => {
@@ -173,6 +183,11 @@ const Expenses = () => {
       : true;
     return matchesSearch && matchesSerial && matchesFromDate && matchesToDate;
   });
+
+  // Add this after filteredExpenses definition
+  const displayedExpenses = showAllExpenses
+    ? filteredExpenses
+    : filteredExpenses.slice(0, 10);
 
   // Fetch next expense serial number
   const fetchNextSerialNumber = async () => {
@@ -426,44 +441,6 @@ const Expenses = () => {
     setForm(emptyExpense);
   };
 
-  const handleExportPDF = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const queryParams = new URLSearchParams();
-      
-      if (filters.startDate) queryParams.append('from', filters.startDate);
-      if (filters.endDate) queryParams.append('to', filters.endDate);
-      
-      const response = await axios.get(
-        `${API_BASE_URL}/api/export/expenses?${queryParams}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob',
-        }
-      );
-      
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      
-      // Generate filename with date range
-      const fromDate = filters.startDate ? format(new Date(filters.startDate), 'dd-MM-yyyy') : 'all';
-      const toDate = filters.endDate ? format(new Date(filters.endDate), 'dd-MM-yyyy') : 'all';
-      link.setAttribute('download', `expense-report-${fromDate}-to-${toDate}.pdf`);
-      
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('PDF exported successfully!');
-    } catch (err) {
-      console.error('Export error:', err);
-      toast.error(err.response?.data?.message || 'Failed to export PDF');
-    }
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "approved":
@@ -481,47 +458,76 @@ const Expenses = () => {
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-start">
-            <div className="text-gray-500 text-sm mb-1">
-              Total Expenses This Month
-            </div>
-            <div className="text-2xl font-bold text-gray-900">
-              ₹{(stats.currentMonthTotal || 0).toLocaleString()}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              {stats.month} {stats.year}
-              {/* Debug info - remove later */}
-              <div className="hidden">Raw value: {stats.currentMonthTotal}</div>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-start">
-            <div className="text-gray-500 text-sm mb-1">
-              Change from Last Month
-            </div>
-            <div
-              className={`text-2xl font-bold ${
-                stats.percentageChange < 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {Math.abs(stats.percentageChange).toFixed(2)}%{" "}
-              {stats.percentageChange < 0 ? "less" : "more"} than last month
-            </div>
-            <div className="text-xs text-gray-500 mt-1">
-              Previous month: ₹{(stats.prevMonthTotal || 0).toLocaleString()}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+          {/* Total Expenses Card */}
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">
+                  Total Expenses This Month
+                </p>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">
+                  ₹{(stats.currentMonthTotal || 0).toLocaleString()}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  {stats.month} {stats.year}
+                </p>
+              </div>
+              <div className="p-2 bg-blue-50 rounded-lg">
+                <MdAccountBalanceWallet className="w-6 h-6 text-blue-500" />
+              </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-start">
-            <div className="text-gray-500 text-sm mb-1">Pending Expenses</div>
-            <div className="text-2xl font-bold text-amber-500">
-              {stats.pendingCount} expense{stats.pendingCount !== 1 ? "s" : ""}
+
+          {/* Change from Last Month Card */}
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">
+                  Change from Last Month
+                </p>
+                <h3
+                  className={`text-xl font-bold ${
+                    stats.percentageChange < 0
+                      ? "text-green-600"
+                      : "text-red-600"
+                  } mb-1`}
+                >
+                  {Math.abs(stats.percentageChange).toFixed(2)}%{" "}
+                  {stats.percentageChange < 0 ? "less" : "more"}
+                </h3>
+                <p className="text-xs text-gray-500">
+                  Previous: ₹{(stats.prevMonthTotal || 0).toLocaleString()}
+                </p>
+              </div>
+              <div className="p-2 bg-purple-50 rounded-lg">
+                <IoAnalyticsSharp className="w-6 h-6 text-purple-500" />
+              </div>
             </div>
-            <div className="text-xs text-gray-500 mt-1">Awaiting approval</div>
+          </div>
+
+          {/* Pending Expenses Card */}
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">
+                  Pending Expenses
+                </p>
+                <h3 className="text-xl font-bold text-amber-500 mb-1">
+                  {stats.pendingCount} expense
+                  {stats.pendingCount !== 1 ? "s" : ""}
+                </h3>
+                <p className="text-xs text-gray-500">Awaiting approval</p>
+              </div>
+              <div className="p-2 bg-amber-50 rounded-lg">
+                <TbMoneybag className="w-6 h-6 text-amber-500" />
+              </div>
+            </div>
           </div>
         </div>
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-blue- mb-2 text-black">
             Expense Management
           </h1>
           <p className="text-gray-600">
@@ -540,7 +546,7 @@ const Expenses = () => {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
             />
           </div>
-          
+
           {/* Filters and Actions */}
           <div className="flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center">
             {/* Date and Serial Filters */}
@@ -567,10 +573,9 @@ const Expenses = () => {
                 placeholder="Serial Number"
               />
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex gap-2">
-            
               <button
                 onClick={handleNewExpense}
                 className="inline-flex cursor-pointer items-center justify-center px-4 py-3 sm:px-3 sm:py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 min-h-[44px] touch-manipulation"
@@ -643,7 +648,7 @@ const Expenses = () => {
                         </div>
                       </td>
                     </tr>
-                  ) : filteredExpenses.length === 0 ? (
+                  ) : displayedExpenses.length === 0 ? (
                     <tr>
                       <td
                         colSpan="8"
@@ -653,8 +658,11 @@ const Expenses = () => {
                       </td>
                     </tr>
                   ) : (
-                    filteredExpenses.map((expense) => (
-                      <tr key={expense._id} className="hover:bg-gray-50 transition-colors duration-150">
+                    displayedExpenses.map((expense) => (
+                      <tr
+                        key={expense._id}
+                        className="hover:bg-gray-50 transition-colors duration-150"
+                      >
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {expense.serialNumber || "-"}
                         </td>
@@ -667,13 +675,19 @@ const Expenses = () => {
                           {expense.description || "-"}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                          <span className="capitalize">{expense.category || "-"}</span>
+                          <span className="capitalize">
+                            {expense.category || "-"}
+                          </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                           ₹{(expense.amount || 0).toLocaleString()}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                          <span className="capitalize">{expense.paymentType || expense.paymentMethod || "-"}</span>
+                          <span className="capitalize">
+                            {expense.paymentType ||
+                              expense.paymentMethod ||
+                              "-"}
+                          </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <span
@@ -690,13 +704,25 @@ const Expenses = () => {
                               expense.status === "pending" && (
                                 <>
                                   <button
-                                    onClick={() => setConfirmModal({ open: true, action: 'approve', expenseId: expense._id })}
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        open: true,
+                                        action: "approve",
+                                        expenseId: expense._id,
+                                      })
+                                    }
                                     className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-green-700 bg-green-100 hover:bg-green-200"
                                   >
                                     Approve
                                   </button>
                                   <button
-                                    onClick={() => setConfirmModal({ open: true, action: 'reject', expenseId: expense._id })}
+                                    onClick={() =>
+                                      setConfirmModal({
+                                        open: true,
+                                        action: "reject",
+                                        expenseId: expense._id,
+                                      })
+                                    }
                                     className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-red-700 bg-red-100 hover:bg-red-200"
                                   >
                                     Reject
@@ -721,6 +747,26 @@ const Expenses = () => {
                   )}
                 </tbody>
               </table>
+
+              {/* View All/Show Less Button */}
+              {filteredExpenses.length > 10 && (
+                <div className="flex justify-center py-4 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowAllExpenses(!showAllExpenses)}
+                    className="inline-flex cursor-pointer items-center px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                  >
+                    {showAllExpenses ? (
+                      <>
+                        Show Less <span className="ml-1">↑</span>
+                      </>
+                    ) : (
+                      <>
+                        View All Expenses <span className="ml-1">↓</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -750,88 +796,127 @@ const Expenses = () => {
                 </svg>
                 <span className="text-gray-600">Loading expenses...</span>
               </div>
-            ) : filteredExpenses.length === 0 ? (
+            ) : displayedExpenses.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 No expenses found
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
-                {filteredExpenses.map((expense) => (
-                  <div key={expense._id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
-                    <div className="flex justify-between items-start mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-gray-500">
-                            #{expense.serialNumber || "-"}
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            {expense.date
-                              ? new Date(expense.date).toLocaleDateString()
-                              : "-"}
-                          </span>
-                        </div>
-                        <h3 className="text-base font-semibold text-gray-900 mb-1">
-                          {expense.description || "-"}
-                        </h3>
-                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-2">
-                          <span className="capitalize bg-gray-100 px-2 py-1 rounded">
-                            {expense.category || "-"}
-                          </span>
-                          <span className="capitalize">
-                            {expense.paymentType || expense.paymentMethod || "-"}
-                          </span>
+              <>
+                <div className="divide-y divide-gray-200">
+                  {displayedExpenses.map((expense) => (
+                    <div
+                      key={expense._id}
+                      className="p-4 hover:bg-gray-50 transition-colors duration-150"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-500">
+                              #{expense.serialNumber || "-"}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              {expense.date
+                                ? new Date(expense.date).toLocaleDateString()
+                                : "-"}
+                            </span>
+                          </div>
+                          <h3 className="text-base font-semibold text-gray-900 mb-1">
+                            {expense.description || "-"}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-2">
+                            <span className="capitalize bg-gray-100 px-2 py-1 rounded">
+                              {expense.category || "-"}
+                            </span>
+                            <span className="capitalize">
+                              {expense.paymentType ||
+                                expense.paymentMethod ||
+                                "-"}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg font-bold text-gray-900">
-                          ₹{(expense.amount || 0).toLocaleString()}
-                        </span>
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                            expense.status
-                          )}`}
-                        >
-                          {expense.status || "pending"}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        {user?.role === "admin" &&
-                          expense.status === "pending" && (
-                            <>
-                              <button
-                                onClick={() => setConfirmModal({ open: true, action: 'approve', expenseId: expense._id })}
-                                className="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => setConfirmModal({ open: true, action: 'reject', expenseId: expense._id })}
-                                className="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          )}
-                        {(expense.billUrl || expense.receiptUrl) && (
-                          <a
-                            href={expense.billUrl || expense.receiptUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-colors duration-200 touch-manipulation"
-                            title="View Bill/Receipt"
+
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-lg font-bold text-gray-900">
+                            ₹{(expense.amount || 0).toLocaleString()}
+                          </span>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                              expense.status
+                            )}`}
                           >
-                            <FiEye className="w-5 h-5" />
-                          </a>
-                        )}
+                            {expense.status || "pending"}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          {user?.role === "admin" &&
+                            expense.status === "pending" && (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    setConfirmModal({
+                                      open: true,
+                                      action: "approve",
+                                      expenseId: expense._id,
+                                    })
+                                  }
+                                  className="px-2 py-1 text-xs font-medium text-white bg-green-600 rounded hover:bg-green-700 disabled:opacity-50"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setConfirmModal({
+                                      open: true,
+                                      action: "reject",
+                                      expenseId: expense._id,
+                                    })
+                                  }
+                                  className="px-2 py-1 text-xs font-medium text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            )}
+                          {(expense.billUrl || expense.receiptUrl) && (
+                            <a
+                              href={expense.billUrl || expense.receiptUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-colors duration-200 touch-manipulation"
+                              title="View Bill/Receipt"
+                            >
+                              <FiEye className="w-5 h-5" />
+                            </a>
+                          )}
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+
+                {/* Mobile View All/Show Less Button */}
+                {filteredExpenses.length > 10 && (
+                  <div className="flex justify-center p-4 border-t border-gray-200">
+                    <button
+                      onClick={() => setShowAllExpenses(!showAllExpenses)}
+                      className="w-full px-4 py-3 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                    >
+                      {showAllExpenses ? (
+                        <>
+                          Show Less <span className="ml-1">↑</span>
+                        </>
+                      ) : (
+                        <>
+                          View All Expenses <span className="ml-1">↓</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -846,7 +931,9 @@ const Expenses = () => {
                 &times;
               </button> */}
               <div className="sticky top-0 bg-white p-6 pb-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Add New Expense</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Add New Expense
+                </h3>
               </div>
               <form
                 onSubmit={handleSubmit}
@@ -1058,7 +1145,9 @@ const Expenses = () => {
                         console.log("Submit button clicked");
                         // The form's onSubmit should handle this, but as a fallback:
                         if (!formLoading) {
-                          document.getElementById("expenseForm").requestSubmit();
+                          document
+                            .getElementById("expenseForm")
+                            .requestSubmit();
                         }
                       }}
                     >
@@ -1104,52 +1193,87 @@ const Expenses = () => {
             </div>
           </div>
         )}
-      {/* Status Change Confirmation Modal */}
-      {confirmModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
-            <div className="absolute top-4 right-4">
-              <button
-                onClick={() => setConfirmModal({ open: false, action: null, expenseId: null })}
-                className="text-gray-400 hover:text-gray-600 text-2xl focus:outline-none"
-                aria-label="Close"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="mb-4 flex flex-col items-center">
-              <div className={`mb-2 text-4xl ${confirmModal.action === 'approve' ? 'text-green-500' : 'text-red-500'}`}>{confirmModal.action === 'approve' ? <FiCheckCircle /> : <FiXCircle />}</div>
-              <h2 className="text-xl font-semibold mb-2 text-center">
-                {confirmModal.action === 'approve' ? 'Approve Expense?' : 'Reject Expense?'}
-              </h2>
-              <p className="text-gray-600 text-center">
-                Are you sure you want to {confirmModal.action} this expense? This action cannot be undone.
-              </p>
-            </div>
-            <div className="flex gap-4 mt-4 w-full">
-              <button
-                className={`flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white ${confirmModal.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} transition-colors duration-200 focus:outline-none`}
-                onClick={async () => {
-                  if (confirmModal.action === 'approve') {
-                    await handleApprove(confirmModal.expenseId);
-                  } else {
-                    await handleReject(confirmModal.expenseId);
+        {/* Status Change Confirmation Modal */}
+        {confirmModal.open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4 animate-fadeIn">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={() =>
+                    setConfirmModal({
+                      open: false,
+                      action: null,
+                      expenseId: null,
+                    })
                   }
-                  setConfirmModal({ open: false, action: null, expenseId: null });
-                }}
-              >
-                Confirm
-              </button>
-              <button
-                className="flex-1 py-3 cursor-pointer rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 focus:outline-none"
-                onClick={() => setConfirmModal({ open: false, action: null, expenseId: null })}
-              >
-                Cancel
-              </button>
+                  className="text-gray-400 hover:text-gray-600 text-2xl focus:outline-none"
+                  aria-label="Close"
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="mb-4 flex flex-col items-center">
+                <div
+                  className={`mb-2 text-4xl ${
+                    confirmModal.action === "approve"
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {confirmModal.action === "approve" ? (
+                    <FiCheckCircle />
+                  ) : (
+                    <FiXCircle />
+                  )}
+                </div>
+                <h2 className="text-xl font-semibold mb-2 text-center">
+                  {confirmModal.action === "approve"
+                    ? "Approve Expense?"
+                    : "Reject Expense?"}
+                </h2>
+                <p className="text-gray-600 text-center">
+                  Are you sure you want to {confirmModal.action} this expense?
+                  This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-4 mt-4 w-full">
+                <button
+                  className={`flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white ${
+                    confirmModal.action === "approve"
+                      ? "bg-green-600 hover:bg-green-700"
+                      : "bg-red-600 hover:bg-red-700"
+                  } transition-colors duration-200 focus:outline-none`}
+                  onClick={async () => {
+                    if (confirmModal.action === "approve") {
+                      await handleApprove(confirmModal.expenseId);
+                    } else {
+                      await handleReject(confirmModal.expenseId);
+                    }
+                    setConfirmModal({
+                      open: false,
+                      action: null,
+                      expenseId: null,
+                    });
+                  }}
+                >
+                  Confirm
+                </button>
+                <button
+                  className="flex-1 py-3 cursor-pointer rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 focus:outline-none"
+                  onClick={() =>
+                    setConfirmModal({
+                      open: false,
+                      action: null,
+                      expenseId: null,
+                    })
+                  }
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );

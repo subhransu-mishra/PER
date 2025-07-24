@@ -10,6 +10,8 @@ import { RxDashboard } from "react-icons/rx";
 import { MdOutlinePayments } from "react-icons/md";
 import { NavLink } from "react-router-dom";
 import { IoSettingsOutline } from "react-icons/io5";
+import { IoIosAnalytics } from "react-icons/io";
+
 
 const sections = [
   { name: "Dashboard", icon: <RxDashboard size={22} />, path: "." },
@@ -20,7 +22,7 @@ const sections = [
   },
   { name: "Expenses", icon: <FiBarChart2 size={22} />, path: "expenses" },
   { name: "Revenue", icon: <FiDollarSign size={22} />, path: "revenue" },
-  { name: "Reports", icon: <FiFileText size={22} />, path: "reports" },
+  { name: "Analytics", icon: <IoIosAnalytics size={22} />, path: "analytics" },
   { name: "Settings", icon: <IoSettingsOutline size={22} />, path: "settings" },
 ];
 

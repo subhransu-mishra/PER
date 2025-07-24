@@ -51,7 +51,7 @@ const App = () => {
           <Route path="petty-cash" element={<PettyCash />} />
           <Route path="revenue" element={<Revenue />} />
           <Route path="expenses" element={<Expenses />} />
-          <Route path="reports" element={<Reports />} />
+          <Route path="analytics" element={<Reports />} />
           <Route path="settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<NotFound />} />

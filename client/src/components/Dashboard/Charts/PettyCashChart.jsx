@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,8 +10,8 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-} from 'chart.js';
-import { Bar, Line, Pie } from 'react-chartjs-2';
+} from "chart.js";
+import { Bar, Line, Pie } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -25,11 +25,27 @@ ChartJS.register(
   ArcElement
 );
 
-const PettyCashChart = ({ data, type = 'category' }) => {
-  if (!data) return <div className="flex items-center justify-center h-64">Loading...</div>;
+const PettyCashChart = ({ data, type = "category" }) => {
+  if (!data)
+    return (
+      <div className="flex items-center justify-center h-64">Loading...</div>
+    );
 
   const getMonthName = (month) => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     return months[month - 1];
   };
 
@@ -38,97 +54,105 @@ const PettyCashChart = ({ data, type = 'category' }) => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top',
+        position: "top",
       },
       title: {
         display: true,
-        text: type === 'category' ? 'Petty Cash by Category' : 
-              type === 'monthly' ? 'Monthly Petty Cash Trend' : 
-              type === 'status' ? 'Petty Cash by Status' : 'Petty Cash Overview',
+        text:
+          type === "category"
+            ? "Petty Cash by Category"
+            : type === "monthly"
+            ? "Monthly Petty Cash Trend"
+            : type === "status-pie"
+            ? "Petty Cash by Status"
+            : "Petty Cash Overview",
       },
     },
-    scales: type !== 'category-pie' && type !== 'status-pie' ? {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function(value) {
-            return '₹' + value.toLocaleString();
+    scales:
+      type !== "category-pie" && type !== "status-pie"
+        ? {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function (value) {
+                  return "₹" + value.toLocaleString();
+                },
+              },
+            },
           }
-        }
-      }
-    } : undefined,
+        : undefined,
   };
 
   // Petty Cash by Category (Bar Chart)
-  if (type === 'category') {
+  if (type === "category") {
     const chartData = {
-      labels: data.map(d => d._id),
+      labels: data.map((d) => d._id),
       datasets: [
         {
-          label: 'Petty Cash Amount',
-          data: data.map(d => d.totalAmount),
+          label: "Petty Cash Amount",
+          data: data.map((d) => d.totalAmount),
           backgroundColor: [
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(245, 158, 11, 0.8)',
-            'rgba(139, 92, 246, 0.8)',
-            'rgba(236, 72, 153, 0.8)',
-            'rgba(14, 165, 233, 0.8)',
-            'rgba(34, 197, 94, 0.8)',
-            'rgba(239, 68, 68, 0.8)',
+            "rgba(16, 185, 129, 0.8)",
+            "rgba(59, 130, 246, 0.8)",
+            "rgba(245, 158, 11, 0.8)",
+            "rgba(139, 92, 246, 0.8)",
+            "rgba(236, 72, 153, 0.8)",
+            "rgba(14, 165, 233, 0.8)",
+            "rgba(34, 197, 94, 0.8)",
+            "rgba(239, 68, 68, 0.8)",
           ],
           borderColor: [
-            'rgb(16, 185, 129)',
-            'rgb(59, 130, 246)',
-            'rgb(245, 158, 11)',
-            'rgb(139, 92, 246)',
-            'rgb(236, 72, 153)',
-            'rgb(14, 165, 233)',
-            'rgb(34, 197, 94)',
-            'rgb(239, 68, 68)',
+            "rgb(16, 185, 129)",
+            "rgb(59, 130, 246)",
+            "rgb(245, 158, 11)",
+            "rgb(139, 92, 246)",
+            "rgb(236, 72, 153)",
+            "rgb(14, 165, 233)",
+            "rgb(34, 197, 94)",
+            "rgb(239, 68, 68)",
           ],
           borderWidth: 1,
-        }
-      ]
+        },
+      ],
     };
 
     return (
-      <div className="h-64">
+      <div className="h-64 min-h-[220px] w-full overflow-x-auto p-2 sm:p-0">
         <Bar data={chartData} options={chartOptions} />
       </div>
     );
   }
 
   // Petty Cash by Category (Pie Chart)
-  if (type === 'category-pie') {
+  if (type === "category-pie") {
     const chartData = {
-      labels: data.map(d => d._id),
+      labels: data.map((d) => d._id),
       datasets: [
         {
-          data: data.map(d => d.totalAmount),
+          data: data.map((d) => d.totalAmount),
           backgroundColor: [
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(245, 158, 11, 0.8)',
-            'rgba(139, 92, 246, 0.8)',
-            'rgba(236, 72, 153, 0.8)',
-            'rgba(14, 165, 233, 0.8)',
-            'rgba(34, 197, 94, 0.8)',
-            'rgba(239, 68, 68, 0.8)',
+            "rgba(16, 185, 129, 0.8)",
+            "rgba(59, 130, 246, 0.8)",
+            "rgba(245, 158, 11, 0.8)",
+            "rgba(139, 92, 246, 0.8)",
+            "rgba(236, 72, 153, 0.8)",
+            "rgba(14, 165, 233, 0.8)",
+            "rgba(34, 197, 94, 0.8)",
+            "rgba(239, 68, 68, 0.8)",
           ],
           borderColor: [
-            'rgb(16, 185, 129)',
-            'rgb(59, 130, 246)',
-            'rgb(245, 158, 11)',
-            'rgb(139, 92, 246)',
-            'rgb(236, 72, 153)',
-            'rgb(14, 165, 233)',
-            'rgb(34, 197, 94)',
-            'rgb(239, 68, 68)',
+            "rgb(16, 185, 129)",
+            "rgb(59, 130, 246)",
+            "rgb(245, 158, 11)",
+            "rgb(139, 92, 246)",
+            "rgb(236, 72, 153)",
+            "rgb(14, 165, 233)",
+            "rgb(34, 197, 94)",
+            "rgb(239, 68, 68)",
           ],
           borderWidth: 2,
-        }
-      ]
+        },
+      ],
     };
 
     const pieOptions = {
@@ -136,21 +160,23 @@ const PettyCashChart = ({ data, type = 'category' }) => {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'right',
+          position: "right",
         },
         title: {
           display: true,
-          text: 'Petty Cash Distribution by Category',
+          text: "Petty Cash Distribution by Category",
         },
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               const total = context.dataset.data.reduce((a, b) => a + b, 0);
               const percentage = ((context.parsed / total) * 100).toFixed(1);
-              return `${context.label}: ₹${context.parsed.toLocaleString()} (${percentage}%)`;
-            }
-          }
-        }
+              return `${
+                context.label
+              }: ₹${context.parsed.toLocaleString()} (${percentage}%)`;
+            },
+          },
+        },
       },
     };
 
@@ -162,46 +188,51 @@ const PettyCashChart = ({ data, type = 'category' }) => {
   }
 
   // Monthly Petty Cash Trend (Line Chart)
-  if (type === 'monthly') {
+  if (type === "monthly") {
     const chartData = {
-      labels: data.map(d => `${getMonthName(d.month)} ${d.year}`),
+      labels: data.map((d) => `${getMonthName(d.month)} ${d.year}`),
       datasets: [
         {
-          label: 'Petty Cash',
-          data: data.map(d => d.totalAmount),
-          borderColor: 'rgb(16, 185, 129)',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          label: "Petty Cash",
+          data: data.map((d) => d.totalAmount),
+          borderColor: "rgb(16, 185, 129)",
+          backgroundColor: "rgba(16, 185, 129, 0.1)",
           tension: 0.4,
           fill: true,
-        }
-      ]
+        },
+      ],
     };
 
     return (
-      <div className="h-64">
+      <div className="h-64 min-h-[220px] w-full overflow-x-auto p-2 sm:p-0">
         <Line data={chartData} options={chartOptions} />
       </div>
     );
   }
 
   // Petty Cash by Status (Pie Chart)
-  if (type === 'status-pie') {
+  if (type === "status-pie") {
     const statusColors = {
-      pending: 'rgba(245, 158, 11, 0.8)',
-      approved: 'rgba(16, 185, 129, 0.8)',
-      rejected: 'rgba(239, 68, 68, 0.8)',
+      pending: "rgba(245, 158, 11, 0.8)",
+      approved: "rgba(16, 185, 129, 0.8)",
+      rejected: "rgba(239, 68, 68, 0.8)",
     };
 
     const chartData = {
-      labels: data.map(d => d._id.charAt(0).toUpperCase() + d._id.slice(1)),
+      labels: data.map((d) => d._id.charAt(0).toUpperCase() + d._id.slice(1)),
       datasets: [
         {
-          data: data.map(d => d.totalAmount),
-          backgroundColor: data.map(d => statusColors[d._id] || 'rgba(107, 114, 128, 0.8)'),
-          borderColor: data.map(d => statusColors[d._id]?.replace('0.8', '1') || 'rgb(107, 114, 128)'),
+          data: data.map((d) => d.totalAmount),
+          backgroundColor: data.map(
+            (d) => statusColors[d._id] || "rgba(107, 114, 128, 0.8)"
+          ),
+          borderColor: data.map(
+            (d) =>
+              statusColors[d._id]?.replace("0.8", "1") || "rgb(107, 114, 128)"
+          ),
           borderWidth: 2,
-        }
-      ]
+        },
+      ],
     };
 
     const pieOptions = {
@@ -209,21 +240,23 @@ const PettyCashChart = ({ data, type = 'category' }) => {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'right',
+          position: "right",
         },
         title: {
           display: true,
-          text: 'Petty Cash Status Distribution',
+          text: "Petty Cash Status Distribution",
         },
         tooltip: {
           callbacks: {
-            label: function(context) {
+            label: function (context) {
               const total = context.dataset.data.reduce((a, b) => a + b, 0);
               const percentage = ((context.parsed / total) * 100).toFixed(1);
-              return `${context.label}: ₹${context.parsed.toLocaleString()} (${percentage}%)`;
-            }
-          }
-        }
+              return `${
+                context.label
+              }: ₹${context.parsed.toLocaleString()} (${percentage}%)`;
+            },
+          },
+        },
       },
     };
 
@@ -234,7 +267,11 @@ const PettyCashChart = ({ data, type = 'category' }) => {
     );
   }
 
-  return <div className="flex items-center justify-center h-64">Invalid chart type</div>;
+  return (
+    <div className="flex items-center justify-center h-64">
+      Invalid chart type
+    </div>
+  );
 };
 
 export default PettyCashChart;

@@ -4,6 +4,9 @@ import { toast } from "react-hot-toast";
 import { format } from "date-fns";
 import { FaPlus, FaDownload } from "react-icons/fa6";
 import { FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { MdAccountBalanceWallet } from "react-icons/md";
+import { TbMoneybag } from "react-icons/tb";
+import { IoAnalyticsSharp } from "react-icons/io5";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -40,7 +43,7 @@ const PettyCash = () => {
     month: "",
     year: "",
   });
-  
+
   const getCurrentMonthDates = () => {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -60,13 +63,13 @@ const PettyCash = () => {
     sortBy: "date",
     sortOrder: "desc",
   });
-  
+
   const [pagination, setPagination] = useState({
     total: 0,
     totalPages: 0,
     hasMore: false,
   });
-  
+
   const [stats, setStats] = useState({
     totalAmount: 0,
     pendingAmount: 0,
@@ -76,7 +79,7 @@ const PettyCash = () => {
     approvedCount: 0,
     rejectedCount: 0,
   });
-  
+
   const [user] = useState(() => {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
@@ -321,7 +324,7 @@ const PettyCash = () => {
           approvedAmount: prev.approvedAmount + response.data.entry.amount,
           approvedCount: prev.approvedCount + 1,
         }));
-        fetchMonthlyApprovedTotal();
+        // fetchMonthlyApprovedTotal();
         toast.success("Voucher approved successfully");
       } else {
         toast.error(response.data.message || "Failed to approve voucher");
@@ -378,37 +381,44 @@ const PettyCash = () => {
     try {
       const token = localStorage.getItem("token");
       const queryParams = new URLSearchParams();
-      
-      if (filters.startDate) queryParams.append('from', filters.startDate);
-      if (filters.endDate) queryParams.append('to', filters.endDate);
-      
+
+      if (filters.startDate) queryParams.append("from", filters.startDate);
+      if (filters.endDate) queryParams.append("to", filters.endDate);
+
       const response = await axios.get(
         `${API_BASE_URL}/api/export/pettycash?${queryParams}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-          responseType: 'blob',
+          responseType: "blob",
         }
       );
-      
+
       // Create blob link to download
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      
+
       // Generate filename with date range
-      const fromDate = filters.startDate ? format(new Date(filters.startDate), 'dd-MM-yyyy') : 'all';
-      const toDate = filters.endDate ? format(new Date(filters.endDate), 'dd-MM-yyyy') : 'all';
-      link.setAttribute('download', `petty-cash-report-${fromDate}-to-${toDate}.pdf`);
-      
+      const fromDate = filters.startDate
+        ? format(new Date(filters.startDate), "dd-MM-yyyy")
+        : "all";
+      const toDate = filters.endDate
+        ? format(new Date(filters.endDate), "dd-MM-yyyy")
+        : "all";
+      link.setAttribute(
+        "download",
+        `petty-cash-report-${fromDate}-to-${toDate}.pdf`
+      );
+
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      
-      toast.success('PDF exported successfully!');
+
+      toast.success("PDF exported successfully!");
     } catch (err) {
-      console.error('Export error:', err);
-      toast.error(err.response?.data?.message || 'Failed to export PDF');
+      console.error("Export error:", err);
+      toast.error(err.response?.data?.message || "Failed to export PDF");
     }
   };
 
@@ -422,57 +432,88 @@ const PettyCash = () => {
   return (
     <div className="px-0 py-2 sm:p-6 max-w-full">
       {/* Stats Section - Responsive Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
-        <div className="bg-white p-2 sm:p-3 rounded-lg shadow">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
-            Total pettycash spend
-          </h3>
-          <p className="text-lg sm:text-xl font-bold text-red-600">
-            ₹{(stats.totalAmount || 0).toLocaleString()}
-          </p>
-          <span className="text-xs text-gray-500 truncate">
-            {format(new Date(), "MMMM yyyy")} includes all vouchers
-          </span>
-        </div>
-        
-        <div className="bg-white p-2 sm:p-3 rounded-lg shadow">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
-            Approved this Month
-          </h3>
-          <p className="text-lg sm:text-xl font-bold text-green-600">
-            ₹{monthlyApproved.totalApproved.toLocaleString()}
-          </p>
-          <span className="text-xs text-gray-500 truncate">
-            {monthlyApproved.count} approved in {monthlyApproved.month}{" "}
-            {monthlyApproved.year}
-          </span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Total Petty Cash Card */}
+        <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Total Pettycash Spend
+              </p>
+              <h3 className="text-xl font-bold text-red-600 mb-1">
+                ₹{(stats.totalAmount || 0).toLocaleString()}
+              </h3>
+              <p className="text-xs text-gray-500">
+                {format(new Date(), "MMMM yyyy")} includes all vouchers
+              </p>
+            </div>
+            <div className="p-2 bg-red-50 rounded-lg">
+              <MdAccountBalanceWallet className="w-6 h-6 text-red-500" />
+            </div>
+          </div>
         </div>
 
-        <div className="bg-white p-2 sm:p-3 rounded-lg shadow">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
-            Pending Vouchers
-          </h3>
-          <p className="text-lg sm:text-xl font-bold text-yellow-600">
-            {stats.pendingCount || 0} vouchers
-          </p>
-          <span className="text-xs text-gray-500 truncate">
-            ₹{(stats.pendingAmount || 0).toLocaleString()} pending
-          </span>
+        {/* Approved This Month Card */}
+        <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Approved this Month
+              </p>
+              <h3 className="text-xl font-bold text-green-600 mb-1">
+                ₹{monthlyApproved.totalApproved.toLocaleString()}
+              </h3>
+              <p className="text-xs text-gray-500">
+                {monthlyApproved.count} approved in {monthlyApproved.month}
+              </p>
+            </div>
+            <div className="p-2 bg-green-50 rounded-lg">
+              <FiCheckCircle className="w-6 h-6 text-green-500" />
+            </div>
+          </div>
         </div>
-        
-        <div className="bg-white p-2 sm:p-3 rounded-lg shadow">
-          <h3 className="text-xs sm:text-sm font-medium text-gray-500 truncate">
-            Total Vouchers
-          </h3>
-          <p className="text-lg sm:text-xl font-bold text-blue-600">
-            {(stats.pendingCount || 0) +
-              (stats.approvedCount || 0) +
-              (stats.rejectedCount || 0)}{" "}
-            vouchers
-          </p>
-          <span className="text-xs text-gray-500 truncate">
-            Issued in {format(new Date(), "MMMM yyyy")}
-          </span>
+
+        {/* Pending Vouchers Card */}
+        <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Pending Vouchers
+              </p>
+              <h3 className="text-xl font-bold text-amber-500 mb-1">
+                {stats.pendingCount || 0} vouchers
+              </h3>
+              <p className="text-xs text-gray-500">
+                ₹{(stats.pendingAmount || 0).toLocaleString()} pending
+              </p>
+            </div>
+            <div className="p-2 bg-amber-50 rounded-lg">
+              <TbMoneybag className="w-6 h-6 text-amber-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* Total Vouchers Card */}
+        <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Total Vouchers
+              </p>
+              <h3 className="text-xl font-bold text-blue-600 mb-1">
+                {(stats.pendingCount || 0) +
+                  (stats.approvedCount || 0) +
+                  (stats.rejectedCount || 0)}{" "}
+                vouchers
+              </h3>
+              <p className="text-xs text-gray-500">
+                Issued in {format(new Date(), "MMMM yyyy")}
+              </p>
+            </div>
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <IoAnalyticsSharp className="w-6 h-6 text-blue-500" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -513,7 +554,7 @@ const PettyCash = () => {
               className="w-full px-2 py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md shadow-sm"
             />
           </div>
-          
+
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               End Date
@@ -526,7 +567,7 @@ const PettyCash = () => {
               className="w-full px-2 py-1.5 text-xs sm:text-sm border border-gray-300 rounded-md shadow-sm"
             />
           </div>
-          
+
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Status
@@ -543,7 +584,7 @@ const PettyCash = () => {
               <option value="rejected">Rejected</option>
             </select>
           </div>
-          
+
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
               Search
@@ -565,42 +606,119 @@ const PettyCash = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voucher #</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Voucher #
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Category
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Description
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Amount
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan="7" className="px-3 py-4 text-center text-sm">Loading...</td>
+                <td colSpan="7" className="px-3 py-4 text-center text-sm">
+                  Loading...
+                </td>
               </tr>
             ) : vouchers.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-3 py-4 text-center text-sm">No entries found</td>
+                <td colSpan="7" className="px-3 py-4 text-center text-sm">
+                  No entries found
+                </td>
               </tr>
             ) : (
               vouchers.map((voucher) => (
-                <tr key={voucher._id} className="hover:bg-gray-50 transition-colors duration-150">
-                  <td className="px-3 py-3 whitespace-nowrap text-sm font-medium">{voucher.voucherNumber}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm">{new Date(voucher.date).toLocaleDateString('en-IN')}</td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm"><span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{voucher.categoryType}</span></td>
-                  <td className="px-3 py-3 text-sm max-w-[120px]"><div className="truncate" title={voucher.description}>{voucher.description}</div></td>
-                  <td className="px-3 py-3 whitespace-nowrap text-sm font-semibold">₹{voucher.amount.toLocaleString('en-IN')}</td>
-                  <td className="px-3 py-3 whitespace-nowrap"><span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${voucher.status === "approved" ? "bg-green-100 text-green-800" : voucher.status === "rejected" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}>{voucher.status.charAt(0).toUpperCase() + voucher.status.slice(1)}</span></td>
+                <tr
+                  key={voucher._id}
+                  className="hover:bg-gray-50 transition-colors duration-150"
+                >
+                  <td className="px-3 py-3 whitespace-nowrap text-sm font-medium">
+                    {voucher.voucherNumber}
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm">
+                    {new Date(voucher.date).toLocaleDateString("en-IN")}
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {voucher.categoryType}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 text-sm max-w-[120px]">
+                    <div className="truncate" title={voucher.description}>
+                      {voucher.description}
+                    </div>
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap text-sm font-semibold">
+                    ₹{voucher.amount.toLocaleString("en-IN")}
+                  </td>
+                  <td className="px-3 py-3 whitespace-nowrap">
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        voucher.status === "approved"
+                          ? "bg-green-100 text-green-800"
+                          : voucher.status === "rejected"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {voucher.status.charAt(0).toUpperCase() +
+                        voucher.status.slice(1)}
+                    </span>
+                  </td>
                   <td className="px-3 py-3 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       {voucher.receipt && (
-                        <a href={voucher.receipt} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-blue-700 bg-blue-100 hover:bg-blue-200">Receipt</a>
+                        <a
+                          href={voucher.receipt}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-blue-700 bg-blue-100 hover:bg-blue-200"
+                        >
+                          Receipt
+                        </a>
                       )}
                       {role === "admin" && voucher.status === "pending" && (
                         <>
-                          <button onClick={() => setConfirmModal({ open: true, action: 'approve', voucherId: voucher._id })} className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-green-700 bg-green-100 hover:bg-green-200">Approve</button>
-                          <button onClick={() => setConfirmModal({ open: true, action: 'reject', voucherId: voucher._id })} className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-red-700 bg-red-100 hover:bg-red-200">Reject</button>
+                          <button
+                            onClick={() =>
+                              setConfirmModal({
+                                open: true,
+                                action: "approve",
+                                voucherId: voucher._id,
+                              })
+                            }
+                            className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-green-700 bg-green-100 hover:bg-green-200"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() =>
+                              setConfirmModal({
+                                open: true,
+                                action: "reject",
+                                voucherId: voucher._id,
+                              })
+                            }
+                            className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-red-700 bg-red-100 hover:bg-red-200"
+                          >
+                            Reject
+                          </button>
                         </>
                       )}
                     </div>
@@ -619,34 +737,89 @@ const PettyCash = () => {
             <span className="text-gray-500">Loading...</span>
           </div>
         ) : vouchers.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No entries found</div>
+          <div className="text-center py-12 text-gray-500">
+            No entries found
+          </div>
         ) : (
           <div className="divide-y divide-gray-200">
             {vouchers.map((voucher) => (
-              <div key={voucher._id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
+              <div
+                key={voucher._id}
+                className="p-4 hover:bg-gray-50 transition-colors duration-150"
+              >
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-gray-500">{voucher.voucherNumber}</span>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${voucher.status === "approved" ? "bg-green-100 text-green-800" : voucher.status === "rejected" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}`}>{voucher.status.charAt(0).toUpperCase() + voucher.status.slice(1)}</span>
+                      <span className="text-xs font-medium text-gray-500">
+                        {voucher.voucherNumber}
+                      </span>
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          voucher.status === "approved"
+                            ? "bg-green-100 text-green-800"
+                            : voucher.status === "rejected"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {voucher.status.charAt(0).toUpperCase() +
+                          voucher.status.slice(1)}
+                      </span>
                     </div>
-                    <div className="text-sm font-semibold text-gray-900 mb-1">{voucher.description}</div>
+                    <div className="text-sm font-semibold text-gray-900 mb-1">
+                      {voucher.description}
+                    </div>
                     <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mb-2">
-                      <span className="bg-blue-50 px-2 py-1 rounded">{voucher.categoryType}</span>
-                      <span>{new Date(voucher.date).toLocaleDateString('en-IN')}</span>
+                      <span className="bg-blue-50 px-2 py-1 rounded">
+                        {voucher.categoryType}
+                      </span>
+                      <span>
+                        {new Date(voucher.date).toLocaleDateString("en-IN")}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div className="flex justify-between items-center mt-2">
-                  <span className="text-base font-bold text-gray-900">₹{voucher.amount.toLocaleString('en-IN')}</span>
+                  <span className="text-base font-bold text-gray-900">
+                    ₹{voucher.amount.toLocaleString("en-IN")}
+                  </span>
                   <div className="flex items-center gap-2">
                     {voucher.receipt && (
-                      <a href={voucher.receipt} target="_blank" rel="noopener noreferrer" className="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-blue-700 bg-blue-100 hover:bg-blue-200 touch-manipulation">Receipt</a>
+                      <a
+                        href={voucher.receipt}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-blue-700 bg-blue-100 hover:bg-blue-200 touch-manipulation"
+                      >
+                        Receipt
+                      </a>
                     )}
                     {role === "admin" && voucher.status === "pending" && (
                       <>
-                        <button onClick={() => setConfirmModal({ open: true, action: 'approve', voucherId: voucher._id })} className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-green-700 bg-green-100 hover:bg-green-200 touch-manipulation">Approve</button>
-                        <button onClick={() => setConfirmModal({ open: true, action: 'reject', voucherId: voucher._id })} className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-red-700 bg-red-100 hover:bg-red-200 touch-manipulation">Reject</button>
+                        <button
+                          onClick={() =>
+                            setConfirmModal({
+                              open: true,
+                              action: "approve",
+                              voucherId: voucher._id,
+                            })
+                          }
+                          className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-green-700 bg-green-100 hover:bg-green-200 touch-manipulation"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() =>
+                            setConfirmModal({
+                              open: true,
+                              action: "reject",
+                              voucherId: voucher._id,
+                            })
+                          }
+                          className="px-2 py-1 cursor-pointer border border-transparent text-xs rounded text-red-700 bg-red-100 hover:bg-red-200 touch-manipulation"
+                        >
+                          Reject
+                        </button>
                       </>
                     )}
                   </div>
@@ -676,13 +849,18 @@ const PettyCash = () => {
               Next
             </button>
           </div>
-          
+
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <p className="text-xs text-gray-700">
-              Showing <span className="font-medium">{(filters.page - 1) * filters.limit + 1}</span> to{" "}
+              Showing{" "}
+              <span className="font-medium">
+                {(filters.page - 1) * filters.limit + 1}
+              </span>{" "}
+              to{" "}
               <span className="font-medium">
                 {Math.min(filters.page * filters.limit, pagination.total)}
-              </span> of <span className="font-medium">{pagination.total}</span> results
+              </span>{" "}
+              of <span className="font-medium">{pagination.total}</span> results
             </p>
             <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
               <button
@@ -734,7 +912,7 @@ const PettyCash = () => {
                 </svg>
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-gray-700">
@@ -854,13 +1032,33 @@ const PettyCash = () => {
                 >
                   {isSubmitting ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Processing...
                     </>
-                  ) : (isEditing ? "Save" : "Create")}
+                  ) : isEditing ? (
+                    "Save"
+                  ) : (
+                    "Create"
+                  )}
                 </button>
               </div>
             </form>
@@ -874,7 +1072,13 @@ const PettyCash = () => {
           <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
             <div className="absolute top-4 right-4">
               <button
-                onClick={() => setConfirmModal({ open: false, action: null, voucherId: null })}
+                onClick={() =>
+                  setConfirmModal({
+                    open: false,
+                    action: null,
+                    voucherId: null,
+                  })
+                }
                 className="text-gray-400 hover:text-gray-600 text-2xl focus:outline-none"
                 aria-label="Close"
               >
@@ -882,31 +1086,60 @@ const PettyCash = () => {
               </button>
             </div>
             <div className="mb-4 flex flex-col items-center">
-              <div className={`mb-2 text-4xl ${confirmModal.action === 'approve' ? 'text-green-500' : 'text-red-500'}`}>{confirmModal.action === 'approve' ? <FiCheckCircle /> : <FiXCircle />}</div>
+              <div
+                className={`mb-2 text-4xl ${
+                  confirmModal.action === "approve"
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
+                {confirmModal.action === "approve" ? (
+                  <FiCheckCircle />
+                ) : (
+                  <FiXCircle />
+                )}
+              </div>
               <h2 className="text-xl font-semibold mb-2 text-center">
-                {confirmModal.action === 'approve' ? 'Approve Voucher?' : 'Reject Voucher?'}
+                {confirmModal.action === "approve"
+                  ? "Approve Voucher?"
+                  : "Reject Voucher?"}
               </h2>
               <p className="text-gray-600 text-center">
-                Are you sure you want to {confirmModal.action} this voucher? This action cannot be undone.
+                Are you sure you want to {confirmModal.action} this voucher?
+                This action cannot be undone.
               </p>
             </div>
             <div className="flex gap-4 mt-4 w-full">
               <button
-                className={`flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white ${confirmModal.action === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'} transition-colors duration-200 focus:outline-none`}
+                className={`flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white ${
+                  confirmModal.action === "approve"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-red-600 hover:bg-red-700"
+                } transition-colors duration-200 focus:outline-none`}
                 onClick={async () => {
-                  if (confirmModal.action === 'approve') {
+                  if (confirmModal.action === "approve") {
                     await handleApprove(confirmModal.voucherId);
                   } else {
                     await handleReject(confirmModal.voucherId);
                   }
-                  setConfirmModal({ open: false, action: null, voucherId: null });
+                  setConfirmModal({
+                    open: false,
+                    action: null,
+                    voucherId: null,
+                  });
                 }}
               >
                 Confirm
               </button>
               <button
                 className="flex-1 py-3 cursor-pointer rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 focus:outline-none"
-                onClick={() => setConfirmModal({ open: false, action: null, voucherId: null })}
+                onClick={() =>
+                  setConfirmModal({
+                    open: false,
+                    action: null,
+                    voucherId: null,
+                  })
+                }
               >
                 Cancel
               </button>
@@ -916,6 +1149,6 @@ const PettyCash = () => {
       )}
     </div>
   );
-}
+};
 
 export default PettyCash;
