@@ -6,14 +6,11 @@ const mongoose = require("mongoose");
 // Get Petty Cash Summary
 const getPettyCashSummary = async (req, res) => {
   try {
-    console.log('getPettyCashSummary called, user:', req.user);
+   
     const organizationId = new mongoose.Types.ObjectId(req.user.organizationId);
-    // console.log('organizationId:', organizationId);
-    // console.log('organizationId type:', typeof organizationId);
-
     // Check total documents in PettyCash collection
     const totalDocs = await PettyCash.countDocuments();
-    // console.log('Total PettyCash documents in collection:', totalDocs);
+   
     
     // Check documents for this organization
     const orgDocs = await PettyCash.countDocuments({ organizationId });
@@ -21,7 +18,6 @@ const getPettyCashSummary = async (req, res) => {
     
     // Check a few sample documents to see their structure
     const sampleDocs = await PettyCash.find().limit(3);
-    // console.log('Sample PettyCash documents:', JSON.stringify(sampleDocs, null, 2));
 
     // Total, pending, approved, rejected counts and amounts
     const summary = await PettyCash.aggregate([
@@ -35,7 +31,6 @@ const getPettyCashSummary = async (req, res) => {
       }
     ]);
     
-    // console.log('Summary aggregation result:', summary);
 
     // Category-wise breakdown
     const categoryBreakdown = await PettyCash.aggregate([
@@ -194,7 +189,6 @@ const getRevenueSummary = async (req, res) => {
     
     // Check total revenue count
     const totalRevenueCount = await Revenue.countDocuments({ organizationId });
-    console.log('Total revenue records for organization:', totalRevenueCount);
 
     // Monthly revenue trend
     const monthlyTrend = await Revenue.aggregate([

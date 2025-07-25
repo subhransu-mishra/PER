@@ -2,12 +2,10 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import {
   FiDownload,
-  FiSettings,
   FiUser,
   FiLock,
-  FiMail,
-  FiLayout,
-  FiPrinter,
+  FiEye,
+  FiEyeOff,
   FiFileText,
   FiAlertCircle,
 } from "react-icons/fi";
@@ -22,6 +20,16 @@ const Settings = () => {
     startDate: "",
     endDate: "",
   });
+  // Add state for password reset
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleDateChange = (e) => {
     setDateRange({
@@ -40,14 +48,14 @@ const Settings = () => {
         return;
       }
 
+      const queryParams = new URLSearchParams();
+      queryParams.append("from", dateRange.startDate);
+      queryParams.append("to", dateRange.endDate);
+
       // Make API call to download the report
       const response = await axios({
-        url: `http://localhost:3000/api/${reportType}/report`,
-        method: "POST",
-        data: {
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-        },
+        url: `http://localhost:3000/api/export/${reportType}?${queryParams}`,
+        method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -65,6 +73,7 @@ const Settings = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
 
       toast.success(
         `${
@@ -83,56 +92,67 @@ const Settings = () => {
     }
   };
 
-  // Add this function for Petty Cash export (copy from PettyCash.jsx)
-  const handleExportPettyCashPDF = async (startDate, endDate) => {
-    try {
-      const token = localStorage.getItem("token");
-      const queryParams = new URLSearchParams();
-      if (startDate) queryParams.append("from", startDate);
-      if (endDate) queryParams.append("to", endDate);
-      const response = await axios.get(
-        `http://localhost:3000/api/export/pettycash?${queryParams}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          responseType: "blob",
-        }
-      );
-      // Create blob link to download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      // Generate filename with date range
-      const fromDate = startDate
-        ? new Date(startDate).toLocaleDateString("en-GB")
-        : "all";
-      const toDate = endDate
-        ? new Date(endDate).toLocaleDateString("en-GB")
-        : "all";
-      link.setAttribute(
-        "download",
-        `petty-cash-report-${fromDate}-to-${toDate}.pdf`
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success("PDF exported successfully!");
-    } catch (err) {
-      console.error("Export error:", err);
-      toast.error(err.response?.data?.message || "Failed to export PDF");
-    }
+  // Handle password input changes
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData({
+      ...passwordData,
+      [name]: value,
+    });
   };
 
-  const updateProfile = async (e) => {
-    e.preventDefault();
-    // Implementation for profile update
-    toast.success("Profile updated successfully");
-  };
-
+  // Update password function
   const updatePassword = async (e) => {
     e.preventDefault();
 
-    toast.success("Password updated successfully");
+    // Validation
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters long");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem("token");
+
+      const response = await axios.post(
+        "http://localhost:3000/api/reset/reset-password",
+        passwordData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Clear form fields
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+
+      toast.success(response.data.message || "Password updated successfully");
+    } catch (error) {
+      console.error("Password update error:", error);
+      toast.error(error.response?.data?.message || "Failed to update password");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -358,12 +378,7 @@ const Settings = () => {
                         transactions
                       </p>
                       <button
-                        onClick={() =>
-                          handleExportPettyCashPDF(
-                            dateRange.startDate,
-                            dateRange.endDate
-                          )
-                        }
+                        onClick={() => downloadReport("pettycash")}
                         disabled={downloadingReport === "pettycash"}
                         className="w-full flex justify-center cursor-pointer items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:bg-purple-300"
                       >
@@ -394,21 +409,6 @@ const Settings = () => {
                         ) : (
                           <>Download Petty Cash Report</>
                         )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Print Options */}
-                  <div className="mt-8">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Additional Reports
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <button className="flex cursor-pointer items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <FiPrinter className="mr-2" /> Print Summary Report
-                      </button>
-                      <button className="flex items-center justify-center cursor-pointer px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <FiFileText className="mr-2" /> Generate Annual Report
                       </button>
                     </div>
                   </div>
@@ -539,66 +539,165 @@ const Settings = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-4">
-                
-                 
-                </div>
+                <div className="flex justify-end space-x-4"></div>
               </div>
             )}
 
             {/* Security Tab */}
             {activeTab === "security" && (
               <div>
-                <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Security Settings
+                <h2 className="text-lg font-medium text-gray-900 mb-1">
+                  Change Password
                 </h2>
-                <p className="text-gray-600 mb-6">
-                  Update your password and security preferences
+                <p className="text-sm text-gray-600 mb-6">
+                  For your security, we recommend choosing a strong password
+                  that you don't use elsewhere.
                 </p>
 
-                <form onSubmit={updatePassword} className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Current Password
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter your current password"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        New Password
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter new password"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Confirm New Password
-                      </label>
-                      <input
-                        type="password"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        placeholder="Confirm new password"
-                      />
-                    </div>
-                  </div>
+                <div className="border border-gray-200 rounded-lg p-6">
+                  <form onSubmit={updatePassword} className="space-y-6">
+                    <div className="grid grid-cols-1 gap-6">
+                      {/* Current Password */}
+                      <div>
+                        <label
+                          htmlFor="currentPassword"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          Current Password
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="currentPassword"
+                            type={showCurrentPassword ? "text" : "password"}
+                            name="currentPassword"
+                            value={passwordData.currentPassword}
+                            onChange={handlePasswordChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 pr-10"
+                            placeholder="Enter your current password"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowCurrentPassword(!showCurrentPassword)
+                            }
+                            className="absolute cursor-pointer inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                          >
+                            {showCurrentPassword ? (
+                              <FiEyeOff className="h-5 w-5" />
+                            ) : (
+                              <FiEye className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
 
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Update Password
-                    </button>
-                  </div>
-                </form>
+                      {/* New Password */}
+                      <div>
+                        <label
+                          htmlFor="newPassword"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          New Password
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="newPassword"
+                            type={showNewPassword ? "text" : "password"}
+                            name="newPassword"
+                            value={passwordData.newPassword}
+                            onChange={handlePasswordChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 pr-10"
+                            placeholder="Enter new password"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute cursor-pointer inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                          >
+                            {showNewPassword ? (
+                              <FiEyeOff className="h-5 w-5" />
+                            ) : (
+                              <FiEye className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Confirm New Password */}
+                      <div>
+                        <label
+                          htmlFor="confirmPassword"
+                          className="block text-sm font-medium text-gray-700 mb-1"
+                        >
+                          Confirm New Password
+                        </label>
+                        <div className="relative">
+                          <input
+                            id="confirmPassword"
+                            type={showConfirmPassword ? "text" : "password"}
+                            name="confirmPassword"
+                            value={passwordData.confirmPassword}
+                            onChange={handlePasswordChange}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 pr-10"
+                            placeholder="Confirm new password"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                            className="absolute cursor-pointer inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700"
+                          >
+                            {showConfirmPassword ? (
+                              <FiEyeOff className="h-5 w-5" />
+                            ) : (
+                              <FiEye className="h-5 w-5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="px-4 py-2 border cursor-pointer border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            Updating...
+                          </>
+                        ) : (
+                          "Update Password"
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
           </div>

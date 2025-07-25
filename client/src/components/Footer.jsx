@@ -61,18 +61,18 @@ const Footer = () => {
 
               {/* Social Media Links */}
               <div className="flex space-x-4  transition-colors duration-300">
-               <Link to="#">
-                 <FaFacebookF className="w-6 h-6 hover:text-blue-600" />
-               </Link>
-               <Link to="#">
+                <Link to="#">
+                  <FaFacebookF className="w-6 h-6 hover:text-blue-600" />
+                </Link>
+                <Link to="#">
                   <FaXTwitter className="w-6 h-6 hover:text-blue-600" />
-               </Link>
-               <Link to="#">
+                </Link>
+                <Link to="#">
                   <FaInstagram className="w-6 h-6 hover:text-blue-600" />
-               </Link>
-               <Link to="#">
+                </Link>
+                <Link to="#">
                   <FaLinkedinIn className="w-6 h-6 hover:text-blue-600" />
-               </Link>
+                </Link>
               </div>
             </motion.div>
 
@@ -218,21 +218,17 @@ const Footer = () => {
             </motion.div>
           </motion.div>
 
-          {/* Newsletter Subscription */}
-
-
           {/* Bottom Section */}
           <motion.div
             className="border-t border-slate-700 pt-8"
             variants={itemVariants}
           >
-            <div className="flex flex-col md:flex-row justify-center items-center">
-              <div className="text-slate-400 text-sm mb-4 md:mb-0">
+            <div className="flex flex-col justify-center items-center text-sm">
+              <div className="text-slate-400 mb-2">
                 © {new Date().getFullYear()} ITPlusPoint. All rights reserved.
               </div>
-              <div className="flex items-center space-x-6 text-sm">
-                <span className="text-slate-400">Made with for modern financial management world</span>
-               
+              <div className="text-slate-400">
+                Made with for modern financial management world
               </div>
             </div>
           </motion.div>

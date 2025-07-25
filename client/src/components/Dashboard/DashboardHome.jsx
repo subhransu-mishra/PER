@@ -124,7 +124,7 @@ const DashboardHome = () => {
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4 transition-all duration-300 ease-in-out">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 sm:p-6 mb-6 text-white">
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 sm:p-6 mb-6 text-white shadow-lg">
         <h1 className="text-xl sm:text-2xl font-bold mb-2">
           Hello {user?.name || "User"}!
         </h1>
@@ -141,14 +141,14 @@ const DashboardHome = () => {
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <Link
           to="/dashboard/revenue"
-          className="bg-white p-3 sm:p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+          className="bg-white p-3 sm:p-5 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         >
           <div className="flex flex-col sm:flex-row sm:items-center">
             <div className="bg-green-100 rounded-full p-2 sm:p-3 mb-2 sm:mb-0 sm:mr-4">
               <FiDollarSign className="text-green-600 text-lg sm:text-xl" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                 Add Revenue
               </h3>
               <p className="text-gray-500 text-xs sm:text-sm">
@@ -160,14 +160,14 @@ const DashboardHome = () => {
 
         <Link
           to="/dashboard/expenses"
-          className="bg-white p-3 sm:p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+          className="bg-white p-3 sm:p-5 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         >
           <div className="flex flex-col sm:flex-row sm:items-center">
             <div className="bg-blue-100 rounded-full p-2 sm:p-3 mb-2 sm:mb-0 sm:mr-4">
               <FiCreditCard className="text-blue-600 text-lg sm:text-xl" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                 Add Expense
               </h3>
               <p className="text-gray-500 text-xs sm:text-sm">
@@ -179,14 +179,16 @@ const DashboardHome = () => {
 
         <Link
           to="/dashboard/petty-cash"
-          className="bg-white p-3 sm:p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+          className="bg-white p-3 sm:p-5 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         >
           <div className="flex flex-col sm:flex-row sm:items-center">
             <div className="bg-yellow-100 rounded-full p-2 sm:p-3 mb-2 sm:mb-0 sm:mr-4">
               <FiDollarSign className="text-yellow-600 text-lg sm:text-xl" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold">Petty Cash</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">
+                Petty Cash
+              </h3>
               <p className="text-gray-500 text-xs sm:text-sm">
                 Manage small expenses
               </p>
@@ -195,15 +197,17 @@ const DashboardHome = () => {
         </Link>
 
         <Link
-          to="/dashboard/reports"
-          className="bg-white p-3 sm:p-5 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+          to="/dashboard/analytics"
+          className="bg-white p-3 sm:p-5 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
         >
           <div className="flex flex-col sm:flex-row sm:items-center">
             <div className="bg-purple-100 rounded-full p-2 sm:p-3 mb-2 sm:mb-0 sm:mr-4">
               <FiPieChart className="text-purple-600 text-lg sm:text-xl" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-semibold">Analytics</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">
+                Analytics
+              </h3>
               <p className="text-gray-500 text-xs sm:text-sm">
                 View financial analytics
               </p>
@@ -215,11 +219,13 @@ const DashboardHome = () => {
       {/* Stats Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
         {/* Revenue Card */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-100">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-gray-500 text-sm">Revenue This Month</h3>
-              <div className="text-xl sm:text-2xl font-bold mt-1">
+              <h3 className="text-gray-500 text-sm font-medium">
+                Revenue This Month
+              </h3>
+              <div className="text-xl sm:text-2xl font-bold mt-1 text-gray-800">
                 {isLoading ? (
                   <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
                 ) : (
@@ -228,13 +234,13 @@ const DashboardHome = () => {
               </div>
             </div>
             <div className="bg-green-100 p-2 rounded-full">
-              <FiArrowDown className="text-green-600" />
+              <FiArrowUp className="text-green-600" />
             </div>
           </div>
-          <div className="flex flex-wrap justify-between text-sm">
+          <div className="flex flex-wrap justify-between items-center text-sm">
             <div
-              className={`${
-                stats.revenue.percentageChange > 0
+              className={`flex items-center ${
+                stats.revenue.percentageChange >= 0
                   ? "text-green-600"
                   : "text-red-600"
               } mb-2 sm:mb-0`}
@@ -242,28 +248,36 @@ const DashboardHome = () => {
               {isLoading ? (
                 <div className="animate-pulse bg-gray-200 h-5 w-20 rounded"></div>
               ) : (
-                `${Math.abs(stats.revenue.percentageChange).toFixed(1)}% ${
-                  stats.revenue.percentageChange > 0 ? "more" : "less"
-                } than last month`
+                <>
+                  {stats.revenue.percentageChange >= 0 ? (
+                    <FiArrowUp className="mr-1" />
+                  ) : (
+                    <FiArrowDown className="mr-1" />
+                  )}
+                  <span>
+                    {Math.abs(stats.revenue.percentageChange).toFixed(1)}% vs
+                    last month
+                  </span>
+                </>
               )}
             </div>
-            <div className="text-gray-500">
-              <Link
-                to="/dashboard/revenue"
-                className="text-blue-600 hover:underline"
-              >
-                View all
-              </Link>
-            </div>
+            <Link
+              to="/dashboard/revenue"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              View all
+            </Link>
           </div>
         </div>
 
         {/* Expenses Card */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-100">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-gray-500 text-sm">Expenses This Month</h3>
-              <div className="text-xl sm:text-2xl font-bold mt-1">
+              <h3 className="text-gray-500 text-sm font-medium">
+                Expenses This Month
+              </h3>
+              <div className="text-xl sm:text-2xl font-bold mt-1 text-gray-800">
                 {isLoading ? (
                   <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
                 ) : (
@@ -272,12 +286,12 @@ const DashboardHome = () => {
               </div>
             </div>
             <div className="bg-red-100 p-2 rounded-full">
-              <FiArrowUp className="text-red-600" />
+              <FiDollarSign className="text-red-600" />
             </div>
           </div>
-          <div className="flex flex-wrap justify-between text-sm">
+          <div className="flex flex-wrap justify-between items-center text-sm">
             <div
-              className={`${
+              className={`flex items-center ${
                 stats.expenses.percentageChange < 0
                   ? "text-green-600"
                   : "text-red-600"
@@ -286,69 +300,75 @@ const DashboardHome = () => {
               {isLoading ? (
                 <div className="animate-pulse bg-gray-200 h-5 w-20 rounded"></div>
               ) : (
-                `${Math.abs(stats.expenses.percentageChange).toFixed(1)}% ${
-                  stats.expenses.percentageChange < 0 ? "less" : "more"
-                } than last month`
+                <>
+                  {stats.expenses.percentageChange < 0 ? (
+                    <FiArrowDown className="mr-1" />
+                  ) : (
+                    <FiArrowUp className="mr-1" />
+                  )}
+                  <span>
+                    {Math.abs(stats.expenses.percentageChange).toFixed(1)}% vs
+                    last month
+                  </span>
+                </>
               )}
             </div>
-            <div className="text-gray-500">
+            <div className="text-gray-600 font-medium">
               {isLoading ? (
                 <div className="animate-pulse bg-gray-200 h-5 w-16 rounded"></div>
               ) : (
-                `${stats.expenses.pendingCount} pending`
+                <Link to="/dashboard/expenses" className="hover:underline">
+                  {stats.expenses.pendingCount} pending
+                </Link>
               )}
             </div>
           </div>
         </div>
 
         {/* Petty Cash Card */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-100">
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-gray-500 text-sm">
-                Petty Cash Spent This Month
+              <h3 className="text-gray-500 text-sm font-medium">
+                Petty Cash Spent
               </h3>
-              <div className="text-xl sm:text-2xl font-bold mt-1">
+              <div className="text-xl sm:text-2xl font-bold mt-1 text-gray-800">
                 {isLoading ? (
                   <div className="animate-pulse bg-gray-200 h-8 w-24 rounded"></div>
                 ) : (
                   `₹${(
-                    stats.pettyCash.currentMonthTotal ||
-                    stats.pettyCash.balance ||
-                    0
+                    stats.pettyCash.currentMonthTotal || 0
                   ).toLocaleString()}`
                 )}
               </div>
             </div>
             <div className="bg-yellow-100 p-2 rounded-full">
-              <FiDollarSign className="text-yellow-600" />
+              <FiCreditCard className="text-yellow-600" />
             </div>
           </div>
-          <div className="flex flex-wrap justify-between text-sm">
-            <div className="text-gray-600 mb-2 sm:mb-0">
+          <div className="flex flex-wrap justify-between items-center text-sm">
+            <div className="text-gray-600 font-medium mb-2 sm:mb-0">
               {isLoading ? (
                 <div className="animate-pulse bg-gray-200 h-5 w-20 rounded"></div>
               ) : (
-                `${stats.pettyCash.pendingTransactions} pending transactions`
+                `${stats.pettyCash.pendingTransactions} pending`
               )}
             </div>
-            <div className="text-gray-500">
-              <Link
-                to="/dashboard/petty-cash"
-                className="text-blue-600 hover:underline"
-              >
-                Manage
-              </Link>
-            </div>
+            <Link
+              to="/dashboard/petty-cash"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Manage
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-6">
-        <div className="p-4 sm:p-6 border-b border-gray-100">
+      <div className="bg-white rounded-xl shadow-md mb-6">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-base sm:text-lg font-semibold">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800">
               Recent Transactions
             </h3>
             <Link
@@ -442,11 +462,11 @@ const DashboardHome = () => {
       </div>
 
       {/* Calendar & Upcoming Section */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-        <div className="p-4 sm:p-6 border-b border-gray-100">
+      <div className="bg-white rounded-xl shadow-md">
+        <div className="p-4 sm:p-6 border-b border-gray-200">
           <div className="flex items-center">
-            <FiCalendar className="text-blue-500 mr-2" />
-            <h3 className="text-base sm:text-lg font-semibold">
+            <FiCalendar className="text-blue-500 mr-3" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800">
               Financial Calendar
             </h3>
           </div>

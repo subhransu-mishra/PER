@@ -204,21 +204,7 @@ const Reports = () => {
             </p>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow flex items-center">
-          <div className="p-3 bg-purple-100 rounded-full mr-4">
-            <MdAccountBalanceWallet className="text-purple-600 text-2xl" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-1">
-              Net Balance
-            </h3>
-            <p className="text-2xl text-purple-600">
-              {formatCurrency(
-                reportData.cashflow?.overallSummary?.netBalance || 0
-              )}
-            </p>
-          </div>
-        </div>
+        
       </div>
 
       {/* Charts Section */}
@@ -340,23 +326,8 @@ const Reports = () => {
           </div>
         </section>
 
-        {/* Cashflow Analysis Section */}
-        <section className="bg-white rounded-lg shadow p-4 sm:p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">Cashflow Analysis</h2>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => fetchReportData()}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <VscRefresh className="text-gray-600 text-xl" />
-              </button>
-            </div>
-          </div>
-          <div className="h-[400px] w-full">
-            <CashflowChart data={reportData.cashflow?.cashflowData || []} />
-          </div>
-        </section>
+       
+      
       </div>
 
       {/* Summary Tables for smaller screens */}

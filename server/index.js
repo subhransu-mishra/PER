@@ -10,11 +10,13 @@ const app = express();
 connectDB();
 
 // CORS Configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL, // "https://accrue.onrender.com"
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  credentials: true, // Optional if using cookies/auth headers
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL, // "https://accrue.onrender.com"
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true, // Optional if using cookies/auth headers
+  })
+);
 
 // Middleware
 app.use(express.json());
@@ -27,8 +29,9 @@ app.use("/api/pettycash", require("./routes/pettyCashRoute"));
 app.use("/api/revenue", require("./routes/revenueRoute"));
 app.use("/api/contact", require("./routes/contactRoute"));
 app.use("/api/export", require("./routes/exportRoutes"));
-app.use("/api/reports", require("./routes/reportRoute")); 
-
+app.use("/api/reports", require("./routes/reportRoute"));
+app.use("/api/reset", require("./routes/resetPasswordRoute"));
+app.use("/api/user", require("./routes/userRoute"));
 
 // Root route
 app.get("/", (req, res) => {
@@ -40,4 +43,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
-

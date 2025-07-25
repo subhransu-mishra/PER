@@ -55,6 +55,12 @@ const Navbar = () => {
   const [navTransparent, setNavTransparent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
+  const [showPromoBar, setShowPromoBar] = useState(true);
+
+  // Add validation state
+  const [formErrors, setFormErrors] = useState({});
+  const [signupErrors, setSignupErrors] = useState({});
+  const [createUserErrors, setCreateUserErrors] = useState({});
 
   // Handle scroll effect for navbar
   useEffect(() => {
@@ -97,12 +103,37 @@ const Navbar = () => {
     };
   }, []);
 
+  // Email validation function
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Password strength validation
+  const isStrongPassword = (password) => {
+    return password.length >= 8;
+  };
+
+  // Phone number validation
+  const isValidPhone = (phone) => {
+    const phoneRegex = /^[0-9]{10,15}$/;
+    return phoneRegex.test(phone);
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // Clear error when user types
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: "",
+      });
+    }
   };
 
   const handleSignupInputChange = (e) => {
@@ -111,6 +142,14 @@ const Navbar = () => {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error when user types
+    if (signupErrors[name]) {
+      setSignupErrors({
+        ...signupErrors,
+        [name]: "",
+      });
+    }
   };
 
   const handleCreateUserInputChange = (e) => {
@@ -119,6 +158,14 @@ const Navbar = () => {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error when user types
+    if (createUserErrors[name]) {
+      setCreateUserErrors({
+        ...createUserErrors,
+        [name]: "",
+      });
+    }
   };
 
   const handleDashboardClick = (e) => {
@@ -134,6 +181,26 @@ const Navbar = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = formData;
+
+    // Validate form
+    const errors = {};
+
+    if (!email) {
+      errors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (!password) {
+      errors.password = "Password is required";
+    }
+
+    // If there are errors, display them and return
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
     setLoading(true);
     try {
       await login({ email, password });
@@ -152,20 +219,44 @@ const Navbar = () => {
     const { companyName, ownerName, email, password, confirmPassword, phone } =
       signupData;
 
-    if (
-      !companyName ||
-      !ownerName ||
-      !email ||
-      !password ||
-      !confirmPassword ||
-      !phone
-    ) {
-      toast.error("Please fill in all required fields");
-      return;
+    // Validate form
+    const errors = {};
+
+    if (!companyName || companyName.trim() === "") {
+      errors.companyName = "Company name is required";
     }
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
+    if (!ownerName || ownerName.trim() === "") {
+      errors.ownerName = "Owner name is required";
+    }
+
+    if (!email) {
+      errors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (!phone) {
+      errors.phone = "Phone number is required";
+    } else if (!isValidPhone(phone)) {
+      errors.phone = "Please enter a valid phone number";
+    }
+
+    if (!password) {
+      errors.password = "Password is required";
+    } else if (!isStrongPassword(password)) {
+      errors.password = "Password must be at least 8 characters long";
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = "Please confirm your password";
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    // If there are errors, display them and return
+    if (Object.keys(errors).length > 0) {
+      setSignupErrors(errors);
       return;
     }
 
@@ -196,18 +287,38 @@ const Navbar = () => {
     e.preventDefault();
     const { name, email, password, confirmPassword, role } = createUserData;
 
-    if (!name || !email || !password || !confirmPassword || !role) {
-      toast.error("Please fill in all required fields");
-      return;
+    // Validate form
+    const errors = {};
+
+    if (!name || name.trim() === "") {
+      errors.name = "Full name is required";
     }
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
+    if (!email) {
+      errors.email = "Email is required";
+    } else if (!isValidEmail(email)) {
+      errors.email = "Please enter a valid email address";
     }
 
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    if (!password) {
+      errors.password = "Password is required";
+    } else if (!isStrongPassword(password)) {
+      errors.password = "Password must be at least 8 characters long";
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = "Please confirm the password";
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    if (!role) {
+      errors.role = "Please select a role";
+    }
+
+    // If there are errors, display them and return
+    if (Object.keys(errors).length > 0) {
+      setCreateUserErrors(errors);
       return;
     }
 
@@ -285,13 +396,47 @@ const Navbar = () => {
 
   return (
     <>
+      {/* Promo notification bar */}
+      {showPromoBar && (
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-2 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center">
+                <span className="hidden md:inline-block bg-yellow-400 text-blue-900 text-xs font-bold px-2 py-1 rounded-full mr-2">
+                  SPECIAL OFFER
+                </span>
+                <p className="text-sm md:text-base font-medium">
+                  <span className="animate-pulse inline-block bg-white/20 px-2 py-0.5 rounded mr-1">
+                    25% OFF
+                  </span>
+                  on yearly subscriptions! Limited time offer.
+                  <NavLink
+                    to="/pricing"
+                    className="ml-2 underline font-bold hover:text-yellow-300 transition-colors"
+                  >
+                    Click here →
+                  </NavLink>
+                </p>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowPromoBar(false)}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white/80 hover:text-white"
+            aria-label="Close notification"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           navShadow ? "shadow-lg" : ""
         } ${
           navTransparent ? "bg-white/10 backdrop-blur-md" : "bg-white/95"
-        } border-b border-gray-200`}
+        } border-b border-gray-200 ${showPromoBar ? "mt-10" : ""}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -351,7 +496,7 @@ const Navbar = () => {
               >
                 Pricing
               </NavLink>
-              
+
               <NavLink
                 to="/contact"
                 className={({ isActive }) =>
@@ -708,9 +853,16 @@ const Navbar = () => {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white ${
+                    formErrors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="Enter your email"
                 />
+                {formErrors.email && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {formErrors.email}
+                  </p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -729,7 +881,9 @@ const Navbar = () => {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12 ${
+                      formErrors.password ? "border-red-500" : "border-gray-300"
+                    }`}
                     placeholder="Enter your password"
                   />
                   <button
@@ -744,32 +898,11 @@ const Navbar = () => {
                     )}
                   </button>
                 </div>
-              </div>
-
-              {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="remember"
-                    name="remember"
-                    checked={formData.remember}
-                    onChange={handleInputChange}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label
-                    htmlFor="remember"
-                    className="ml-2 text-sm text-gray-700"
-                  >
-                    Remember me
-                  </label>
-                </div>
-                <a
-                  href="#"
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Forgot password?
-                </a>
+                {formErrors.password && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {formErrors.password}
+                  </p>
+                )}
               </div>
 
               {/* Submit Button */}
@@ -862,12 +995,19 @@ const Navbar = () => {
                   required
                   value={signupData.email}
                   onChange={handleSignupInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white ${
+                    signupErrors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="Enter your email"
                 />
+                {signupErrors.email && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {signupErrors.email}
+                  </p>
+                )}
               </div>
 
-              {/* Employee ID Field */}
+              {/* Owner Name Field */}
               <div className="space-y-2">
                 <label
                   htmlFor="ownerName"
@@ -882,9 +1022,18 @@ const Navbar = () => {
                   required
                   value={signupData.ownerName}
                   onChange={handleSignupInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white ${
+                    signupErrors.ownerName
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                   placeholder="Enter your owner name"
                 />
+                {signupErrors.ownerName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {signupErrors.ownerName}
+                  </p>
+                )}
               </div>
 
               {/* Company Name Field */}
@@ -902,9 +1051,18 @@ const Navbar = () => {
                   required
                   value={signupData.companyName}
                   onChange={handleSignupInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white ${
+                    signupErrors.companyName
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                   placeholder="Enter your company name"
                 />
+                {signupErrors.companyName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {signupErrors.companyName}
+                  </p>
+                )}
               </div>
 
               {/* Phone Number Field */}
@@ -922,9 +1080,16 @@ const Navbar = () => {
                   required
                   value={signupData.phone}
                   onChange={handleSignupInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white ${
+                    signupErrors.phone ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="Enter your phone number"
                 />
+                {signupErrors.phone && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {signupErrors.phone}
+                  </p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -943,7 +1108,11 @@ const Navbar = () => {
                     required
                     value={signupData.password}
                     onChange={handleSignupInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12 ${
+                      signupErrors.password
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                     placeholder="Create a password"
                   />
                   <button
@@ -958,8 +1127,13 @@ const Navbar = () => {
                     )}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Password must be at least 8 characters
+                <p
+                  className={`text-xs ${
+                    signupErrors.password ? "text-red-500" : "text-gray-500"
+                  } mt-1`}
+                >
+                  {signupErrors.password ||
+                    "Password must be at least 8 characters"}
                 </p>
               </div>
 
@@ -979,7 +1153,11 @@ const Navbar = () => {
                     required
                     value={signupData.confirmPassword}
                     onChange={handleSignupInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white pr-12 ${
+                      signupErrors.confirmPassword
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
                     placeholder="Confirm your password"
                   />
                   <button
@@ -994,6 +1172,11 @@ const Navbar = () => {
                     )}
                   </button>
                 </div>
+                {signupErrors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {signupErrors.confirmPassword}
+                  </p>
+                )}
               </div>
 
               {/* Terms and Conditions */}
@@ -1124,9 +1307,16 @@ const Navbar = () => {
                   required
                   value={createUserData.name}
                   onChange={handleCreateUserInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white ${
+                    createUserErrors.name ? "border-red-500" : "border-gray-300"
+                  }`}
                   placeholder="Enter user's full name"
                 />
+                {createUserErrors.name && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {createUserErrors.name}
+                  </p>
+                )}
               </div>
 
               {/* Email Field */}
@@ -1144,9 +1334,18 @@ const Navbar = () => {
                   required
                   value={createUserData.email}
                   onChange={handleCreateUserInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white ${
+                    createUserErrors.email
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                   placeholder="Enter user's email"
                 />
+                {createUserErrors.email && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {createUserErrors.email}
+                  </p>
+                )}
               </div>
 
               {/* Role Selection */}
@@ -1163,11 +1362,18 @@ const Navbar = () => {
                   required
                   value={createUserData.role}
                   onChange={handleCreateUserInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50/80 focus:bg-white ${
+                    createUserErrors.role ? "border-red-500" : "border-gray-300"
+                  }`}
                 >
                   <option value="accountant">Accountant</option>
                   <option value="admin">Admin</option>
                 </select>
+                {createUserErrors.role && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {createUserErrors.role}
+                  </p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -1243,6 +1449,11 @@ const Navbar = () => {
                     )}
                   </button>
                 </div>
+                {createUserErrors.confirmPassword && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {createUserErrors.confirmPassword}
+                  </p>
+                )}
               </div>
 
               {/* Submit Button */}

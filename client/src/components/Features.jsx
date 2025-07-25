@@ -1,5 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+
 import {
   BarChart3,
   DollarSign,
@@ -120,8 +122,8 @@ const Features = () => {
           variants={itemVariants}
         >
           Our comprehensive PER (Petty cash Expense Reporter) system streamlines
-          financial management with powerful features designed for simplicity and
-          efficiency.
+          financial management with powerful features designed for simplicity
+          and efficiency.
         </motion.p>
       </motion.div>
 
@@ -205,10 +207,10 @@ const Features = () => {
           </p>
           <div className="mt-8 flex justify-center space-x-4 relative z-10">
             <Link
-              to="#"
-              className="px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-gray-50 transform hover:scale-105 transition-all duration-200 shadow-lg"
+              to="/"
+              className="flex justify-center items-center gap-2 px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-gray-50 transform  transition-all duration-200 shadow-lg"
             >
-              Get Started
+              Get Started by Registering <MdOutlineKeyboardDoubleArrowRight className="w-6 h-6" />
             </Link>
           </div>
         </div>

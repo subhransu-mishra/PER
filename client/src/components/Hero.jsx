@@ -2,7 +2,10 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
-// import { useAuth } from "../context/AuthContext";
+import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+
+
+
 
 // Animation variants for the container to orchestrate staggered animations
 const containerVariants = {
@@ -30,17 +33,6 @@ const itemVariants = {
 };
 
 const Hero = () => {
-  // const navigate = useNavigate();
-  // const { isAuthenticated } = useAuth();
-
-  // const handleGetStarted = () => {
-  //   if (isAuthenticated) {
-  //     navigate("/dashboard");
-  //   } else {
-  //     navigate("/login");
-  //   }
-  // };
-
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
@@ -65,7 +57,7 @@ const Hero = () => {
           animate="visible"
         >
           <motion.h1
-            className="text-5xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight"
+            className="text-4xl md:text-5xl xl:text-6xl font-extrabold text-gray-900 mb-4 leading-tight"
             variants={itemVariants}
           >
             Manage Your{" "}
@@ -76,7 +68,7 @@ const Hero = () => {
             Effortlessly
           </motion.h1>
           <motion.p
-            className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed"
+            className="text-lg lg:text-xl text-gray-600 mb-6 max-w-3xl mx-auto leading-relaxed"
             variants={itemVariants}
           >
             Streamline your Finance Entries with our powerful, intuitive
@@ -87,17 +79,12 @@ const Hero = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             variants={itemVariants}
           >
-            {/* <button
-                onClick={handleGetStarted}
-                className="bg-blue-600 cursor-pointer text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-blue-500/25 min-w-[200px]"
-              >
-                Get Started
-              </button> */}
             <Link
               to="/how-to-use"
-              className="border-2 cursor-pointer border-blue-600 text-blue-600 px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 transform hover:scale-105 shadow-lg min-w-[200px]"
+              className="inline-flex items-center justify-center px-5 py-3 mr-3 text-base font-medium text-center text-white rounded-lg bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 cursor-pointer"
             >
               Learn More
+              <MdOutlineKeyboardDoubleArrowRight className="w-5 h-5 ml-2 -mr-1" />
             </Link>
           </motion.div>
         </motion.div>
