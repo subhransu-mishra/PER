@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiEye, FiEdit, FiPlus, FiDownload } from "react-icons/fi";
+import { FiEye, FiEdit, FiPlus } from "react-icons/fi";
 import { IoAnalyticsSharp } from "react-icons/io5";
 import { MdAccountBalanceWallet } from "react-icons/md";
 import { TbMoneybag } from "react-icons/tb";
@@ -300,44 +300,6 @@ const Revenue = () => {
     setEndDate("");
   };
 
-  // const handleExportPDF = async () => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const queryParams = new URLSearchParams();
-      
-  //     if (startDate) queryParams.append('from', startDate);
-  //     if (endDate) queryParams.append('to', endDate);
-      
-  //     const response = await axios.get(
-  //       `${API_BASE_URL}/api/export/revenue?${queryParams}`,
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //         responseType: 'blob',
-  //       }
-  //     );
-      
-  //     // Create blob link to download
-  //     const url = window.URL.createObjectURL(new Blob([response.data]));
-  //     const link = document.createElement('a');
-  //     link.href = url;
-      
-  //     // Generate filename with date range
-  //     const fromDate = startDate ? format(new Date(startDate), 'dd-MM-yyyy') : 'all';
-  //     const toDate = endDate ? format(new Date(endDate), 'dd-MM-yyyy') : 'all';
-  //     link.setAttribute('download', `revenue-report-${fromDate}-to-${toDate}.pdf`);
-      
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     link.remove();
-  //     window.URL.revokeObjectURL(url);
-      
-  //     toast.success('PDF exported successfully!');
-  //   } catch (err) {
-  //     console.error('Export error:', err);
-  //     toast.error(err.response?.data?.message || 'Failed to export PDF');
-  //   }
-  // };
-
   return (
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -474,7 +436,7 @@ const Revenue = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -486,18 +448,28 @@ const Revenue = () => {
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{revenue.clientName || "-"}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">₹{(revenue.amount || 0).toLocaleString()}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600"><span className="capitalize">{revenue.paymentMethod || "-"}</span></td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-3">
-                          <button onClick={() => setEditConfirmModal({ open: true, revenue })} className="text-blue-600 cursor-pointer hover:text-blue-800 hover:bg-blue-50 p-1 rounded transition-colors duration-200" title="Edit Revenue">
-                            <FiEdit className="w-5 h-5 cursor-pointer" />
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                        <div className="flex items-center justify-center space-x-3">
+                          <button 
+                            onClick={() => setEditConfirmModal({ open: true, revenue })} 
+                            className="text-blue-600 cursor-pointer hover:text-blue-800 hover:bg-blue-50 p-1.5 rounded transition-colors duration-200" 
+                            title="Edit Revenue"
+                          >
+                            <FiEdit className="w-4 h-4" />
                           </button>
                           {revenue.invoiceUrl && (
-                            <a href={revenue.invoiceUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-800 hover:bg-green-50 p-1 rounded transition-colors duration-200" title="View Invoice">
-                              <FiEye className="w-5 h-5" />
+                            <a 
+                              href={revenue.invoiceUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-green-600 hover:text-green-800 hover:bg-green-50 p-1.5 rounded transition-colors duration-200" 
+                              title="View Invoice"
+                            >
+                              <FiEye className="w-4 h-4" />
                             </a>
                           )}
                           {revenue.invoiceNumber && (
-                            <span className="text-blue-600 text-xs ml-2">#{revenue.invoiceNumber}</span>
+                            <span className="text-blue-600 text-xs">#{revenue.invoiceNumber}</span>
                           )}
                         </div>
                       </td>
@@ -542,13 +514,23 @@ const Revenue = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-bold text-gray-900">₹{(revenue.amount || 0).toLocaleString()}</span>
-                      <div className="flex items-center space-x-2">
-                        <button onClick={() => handleEditRevenue(revenue)} className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-colors duration-200 touch-manipulation" title="Edit Revenue">
-                          <FiEdit className="w-5 h-5" />
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => setEditConfirmModal({ open: true, revenue })} 
+                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded transition-colors duration-200" 
+                          title="Edit Revenue"
+                        >
+                          <FiEdit className="w-4 h-4" />
                         </button>
                         {revenue.invoiceUrl && (
-                          <a href={revenue.invoiceUrl} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-800 hover:bg-green-50 p-2 rounded-full transition-colors duration-200 touch-manipulation" title="View Invoice">
-                            <FiEye className="w-5 h-5" />
+                          <a 
+                            href={revenue.invoiceUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-green-600 hover:text-green-800 hover:bg-green-50 p-2 rounded transition-colors duration-200" 
+                            title="View Invoice"
+                          >
+                            <FiEye className="w-4 h-4" />
                           </a>
                         )}
                       </div>
@@ -814,4 +796,5 @@ const Revenue = () => {
 };
 
 export default Revenue;
+              
             
