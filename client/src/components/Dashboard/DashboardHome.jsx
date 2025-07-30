@@ -462,76 +462,7 @@ const DashboardHome = () => {
       </div>
 
       {/* Calendar & Upcoming Section */}
-      <div className="bg-white rounded-xl shadow-md">
-        <div className="p-4 sm:p-6 border-b border-gray-200">
-          <div className="flex items-center">
-            <FiCalendar className="text-blue-500 mr-3" />
-            <h3 className="text-base sm:text-lg font-semibold text-gray-800">
-              Financial Calendar
-            </h3>
-          </div>
-        </div>
-        <div className="p-4 sm:p-6">
-          <p className="text-gray-500 mb-4 text-sm">
-            Important upcoming financial events and deadlines:
-          </p>
-          <div className="space-y-4">
-            {/* These would typically come from an API but hardcoded for now */}
-            <div className="flex items-start">
-              <div className="bg-blue-100 rounded-full p-2 mr-3 mt-1 flex-shrink-0">
-                <div className="text-xs text-blue-800 font-bold">
-                  {format(new Date(), "dd")}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm sm:text-base">
-                  Monthly Financial Review
-                </h4>
-                <p className="text-xs sm:text-sm text-gray-500">
-                  Review your monthly financial statements and reconcile
-                  accounts
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <div className="bg-red-100 rounded-full p-2 mr-3 mt-1 flex-shrink-0">
-                <div className="text-xs text-red-800 font-bold">
-                  {format(
-                    new Date(new Date().setDate(new Date().getDate() + 7)),
-                    "dd"
-                  )}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm sm:text-base">
-                  Tax Filing Deadline
-                </h4>
-                <p className="text-xs sm:text-sm text-gray-500">
-                  Deadline for filing your quarterly tax returns
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start">
-              <div className="bg-green-100 rounded-full p-2 mr-3 mt-1 flex-shrink-0">
-                <div className="text-xs text-green-800 font-bold">
-                  {format(
-                    new Date(new Date().setDate(new Date().getDate() + 14)),
-                    "dd"
-                  )}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-medium text-sm sm:text-base">
-                  Vendor Payment Due
-                </h4>
-                <p className="text-xs sm:text-sm text-gray-500">
-                  Monthly vendor payments and subscription renewals
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 };

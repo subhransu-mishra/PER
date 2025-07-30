@@ -1,6 +1,7 @@
 const Expense = require("../models/expense");
+const User = require("../models/user"); // Make sure User model is imported
 
-// Generate serial number
+
 const generateSerial = async (req) => {
   try {
     const orgId = req.user.tenantId || req.user.organizationId;
@@ -39,6 +40,7 @@ const createExpense = async (req, res) => {
   try {
     // console.log("Request body:", req.body);
     // console.log("Request file:", req.file);
+    // console.log("Request user:", req.user); // Debug log to check user object
 
     const { date, category, description, paymentType, amount } = req.body;
     const billUrl = req.file ? req.file.path : "";
@@ -60,8 +62,20 @@ const createExpense = async (req, res) => {
       });
     }
 
-    const orgId = req.user.tenantId || req.user.organizationId;
-    if (!orgId || !req.user.id) {
+    // Fix: Use the correct field names based on your user object structure
+    const orgId =
+      req.user.tenantId || req.user.organizationId || req.user.organization;
+    const userId = req.user._id || req.user.id;
+
+    if (!orgId || !userId) {
+      console.log(
+        "Missing data - orgId:",
+        orgId,
+        "userId:",
+        userId,
+        "req.user:",
+        req.user
+      );
       return res.status(400).json({
         success: false,
         message: "User or organization information missing",
@@ -70,23 +84,28 @@ const createExpense = async (req, res) => {
 
     const serialNumber = await generateSerial(req);
 
-    const expense = await Expense.create({
+    let newExpense = new Expense({
       serialNumber,
       date,
       category,
       description,
-      amount: parsedAmount, // Use the validated parsedAmount
+      amount: parsedAmount,
       paymentType,
       billUrl,
-      createdBy: req.user.id,
-      organizationId: orgId,
+      createdBy: userId, // Fix: Use userId instead of req.user._id
+      organizationId: orgId, // Fix: Use organizationId instead of organization
       status: "pending",
     });
+
+    await newExpense.save();
+
+    // Populate the createdBy field before sending the response
+    newExpense = await newExpense.populate("createdBy", "name username email");
 
     res.status(201).json({
       success: true,
       message: "Expense submitted successfully",
-      expense,
+      expense: newExpense,
     });
   } catch (err) {
     console.error("Expense creation error:", err);
@@ -113,7 +132,8 @@ const createExpense = async (req, res) => {
 // Get all expenses (filtered by org)
 const getExpenses = async (req, res) => {
   try {
-    const orgId = req.user.tenantId || req.user.organizationId;
+    const orgId =
+      req.user.tenantId || req.user.organizationId || req.user.organization;
     if (!orgId) {
       return res.status(400).json({
         success: false,
@@ -122,11 +142,14 @@ const getExpenses = async (req, res) => {
     }
 
     const expenses = await Expense.find({
-      organizationId: orgId,
-    }).sort({ createdAt: -1 });
+      organizationId: orgId, // Fix: Use organizationId consistently
+    })
+      .populate("createdBy", "name username email") // Populate user details
+      .sort({ date: -1 }); // Sort by most recent
 
     res.status(200).json({
       success: true,
+      count: expenses.length,
       data: expenses,
     });
   } catch (err) {
@@ -159,7 +182,8 @@ const updateExpenseStatus = async (req, res) => {
       });
     }
 
-    const orgId = req.user.tenantId || req.user.organizationId;
+    const orgId =
+      req.user.tenantId || req.user.organizationId || req.user.organization;
     if (!orgId) {
       return res.status(400).json({
         success: false,
@@ -169,7 +193,7 @@ const updateExpenseStatus = async (req, res) => {
 
     const expense = await Expense.findOne({
       _id: id,
-      organizationId: orgId,
+      organizationId: orgId, // Fix: Use organizationId consistently
     });
 
     if (!expense) {
@@ -180,7 +204,7 @@ const updateExpenseStatus = async (req, res) => {
     }
 
     expense.status = status;
-    expense.updatedBy = req.user.id;
+    expense.updatedBy = req.user._id || req.user.id;
     expense.updatedAt = new Date();
     await expense.save();
 
@@ -213,7 +237,8 @@ const updateExpenseStatus = async (req, res) => {
 // Get expense statistics
 const getExpenseStats = async (req, res) => {
   try {
-    const orgId = req.user.tenantId || req.user.organizationId;
+    const orgId =
+      req.user.tenantId || req.user.organizationId || req.user.organization;
     if (!orgId) {
       return res.status(400).json({
         success: false,
@@ -258,7 +283,7 @@ const getExpenseStats = async (req, res) => {
     const currentMonthAgg = await Expense.aggregate([
       {
         $match: {
-          organizationId: orgObjectId,
+          organizationId: orgObjectId, // Fix: Use organizationId consistently
           date: { $gte: startOfMonth, $lte: endOfMonth },
           status: "approved",
           amount: { $exists: true, $ne: null },
@@ -277,7 +302,7 @@ const getExpenseStats = async (req, res) => {
     const prevMonthAgg = await Expense.aggregate([
       {
         $match: {
-          organizationId: orgObjectId,
+          organizationId: orgObjectId, // Fix: Use organizationId consistently
           date: { $gte: startOfPrevMonth, $lte: endOfPrevMonth },
           status: "approved",
           amount: { $exists: true, $ne: null },
@@ -309,7 +334,7 @@ const getExpenseStats = async (req, res) => {
     const pendingCountAgg = await Expense.aggregate([
       {
         $match: {
-          organizationId: orgObjectId,
+          organizationId: orgObjectId, // Fix: Use organizationId consistently
           status: "pending",
         },
       },
@@ -381,11 +406,9 @@ const generateExpenseReport = async (req, res) => {
     }).sort({ date: 1 });
 
     if (expenses.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No expense data found for the specified date range",
-        });
+      return res.status(404).json({
+        message: "No expense data found for the specified date range",
+      });
     }
 
     // In a real implementation, you would use a library like PDFKit to generate a PDF
@@ -465,6 +488,103 @@ const generateExpenseReport = async (req, res) => {
   }
 };
 
+// Edit expense entry (PUT /api/expense/:id)
+const editExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Find the existing expense entry
+    const expense = await Expense.findById(id);
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: "Expense entry not found",
+      });
+    }
+
+    // Only allow editing by creator or admin
+    const userId = req.user._id || req.user.id;
+    const isAdmin =
+      req.user.role === "admin" || req.user.role === "super_admin";
+    if (
+      !isAdmin &&
+      (!expense.createdBy || expense.createdBy.toString() !== userId.toString())
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to edit this expense entry",
+      });
+    }
+
+    // Only allow editing if status is pending
+    if (expense.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Only pending expense entries can be edited",
+      });
+    }
+
+    // Build update object (exclude createdBy and serialNumber)
+    const {
+      date,
+      category,
+      description,
+      amount,
+      paymentType,
+      billUrl,
+      status,
+    } = req.body;
+
+    const updateData = {
+      date: date ? new Date(date) : expense.date,
+      category: category ?? expense.category,
+      description: description ?? expense.description,
+      amount: amount !== undefined ? Number(amount) : expense.amount,
+      paymentType: paymentType ?? expense.paymentType,
+      status: status ?? expense.status,
+      updatedAt: new Date(),
+    };
+
+    // Handle bill file upload
+    if (req.file) {
+      updateData.billUrl = req.file.path;
+    } else if (billUrl !== undefined) {
+      updateData.billUrl = billUrl;
+    }
+
+    // Update the entry
+    const updatedExpense = await Expense.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).populate("createdBy", "name username email");
+
+    if (!updatedExpense) {
+      return res.status(404).json({
+        success: false,
+        message: "Expense entry not found after update",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Expense entry updated successfully",
+      expense: updatedExpense,
+    });
+  } catch (error) {
+    console.error("Edit expense error:", error);
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: Object.values(error.errors).map((err) => err.message),
+      });
+    }
+    res.status(500).json({
+      success: false,
+      message: "Error editing expense: " + (error.message || "Unknown error"),
+    });
+  }
+};
+
 module.exports = {
   createExpense,
   getExpenses,
@@ -472,4 +592,5 @@ module.exports = {
   getExpenseStats,
   getNextSerialNumber,
   generateExpenseReport,
+  editExpense, // Export the new edit controller
 };

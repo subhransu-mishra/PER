@@ -32,7 +32,7 @@ app.use("/api/export", require("./routes/exportRoutes"));
 app.use("/api/reports", require("./routes/reportRoute"));
 app.use("/api/reset", require("./routes/resetPasswordRoute"));
 app.use("/api/user", require("./routes/userRoute"));
-
+app.use("/api/users", require("./routes/userManagementRoute"));
 // Root route
 app.get("/", (req, res) => {
   res.send("Accrue Backend is running");

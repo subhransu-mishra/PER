@@ -61,16 +61,16 @@ const Footer = () => {
 
               {/* Social Media Links */}
               <div className="flex space-x-4  transition-colors duration-300">
-                <Link to="#">
+                <Link to="https://www.facebook.com/profile.php?id=100064871866392">
                   <FaFacebookF className="w-6 h-6 hover:text-blue-600" />
                 </Link>
-                <Link to="#">
+                <Link to="https://x.com/itpluspoint">
                   <FaXTwitter className="w-6 h-6 hover:text-blue-600" />
                 </Link>
-                <Link to="#">
+                <Link to="https://www.instagram.com/itpluspoint/">
                   <FaInstagram className="w-6 h-6 hover:text-blue-600" />
                 </Link>
-                <Link to="#">
+                <Link to="https://www.linkedin.com/company/itpluspoint/posts/?feedView=all">
                   <FaLinkedinIn className="w-6 h-6 hover:text-blue-600" />
                 </Link>
               </div>
@@ -86,7 +86,7 @@ const Footer = () => {
                 {[
                   { name: "Home", path: "/" },
                   { name: "About Us", path: "/about" },
-                  { name: "Features", path: "/features" },
+                  { name: "How to use", path: "/how-to-use" },
                   { name: "Pricing", path: "/pricing" },
                   { name: "Contact", path: "/contact" },
                 ].map((item) => (
@@ -104,7 +104,7 @@ const Footer = () => {
             </motion.div>
 
             {/* Services */}
-            <motion.div variants={itemVariants}>
+            {/* <motion.div variants={itemVariants}>
               <h3 className="text-lg font-semibold text-white mb-6 relative">
                 Services
                 <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400"></div>
@@ -128,12 +128,12 @@ const Footer = () => {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </motion.div> */}
 
             {/* Support & Legal */}
             <motion.div variants={itemVariants}>
               <h3 className="text-lg font-semibold text-white mb-6 relative">
-                Support & Legal
+                Support
                 <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400"></div>
               </h3>
 
@@ -174,7 +174,7 @@ const Footer = () => {
                       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                     />
                   </svg>
-                  <span className="text-slate-300">+91-9876543210</span>
+                  <span className="text-slate-300">+91 9876543210</span>
                 </div>
                 <div className="flex items-center">
                   <svg
@@ -195,14 +195,19 @@ const Footer = () => {
                   </span>
                 </div>
               </div>
+            </motion.div>
 
-              {/* Legal Links */}
+            {/* Legal Links (Added as a separate column) */}
+            <motion.div variants={itemVariants}>
+              <h3 className="text-lg font-semibold text-white mb-6 relative">
+                Legal
+                <div className="absolute -bottom-2 left-0 w-8 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400"></div>
+              </h3>
               <ul className="space-y-3 text-sm">
                 {[
                   { name: "Privacy Policy", path: "/privacy" },
                   { name: "Terms of Service", path: "/terms" },
                   { name: "Cookie Policy", path: "/cookies" },
-                  { name: "Register", path: "/register" },
                 ].map((item) => (
                   <li key={item.name}>
                     <a

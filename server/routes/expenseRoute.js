@@ -7,6 +7,7 @@ const {
   getExpenseStats,
   getNextSerialNumber,
   generateExpenseReport,
+  editExpense, // Import the new controller
 } = require("../controllers/expenseController");
 
 const authMiddleware = require("../middlewares/auth");
@@ -29,5 +30,8 @@ router.patch("/:id/status", authMiddleware, updateExpenseStatus);
 
 // Generate expense report
 router.post("/report", authMiddleware, generateExpenseReport);
+
+// Edit expense entry (PUT for full update)
+router.put("/:id/edit", authMiddleware, upload.single("bill"), editExpense);
 
 module.exports = router;

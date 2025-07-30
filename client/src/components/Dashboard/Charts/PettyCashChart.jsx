@@ -63,13 +63,11 @@ const PettyCashChart = ({ data, type = "category" }) => {
             ? "Petty Cash by Category"
             : type === "monthly"
             ? "Monthly Petty Cash Trend"
-            : type === "status-pie"
-            ? "Petty Cash by Status"
             : "Petty Cash Overview",
       },
     },
     scales:
-      type !== "category-pie" && type !== "status-pie"
+      type !== "category-pie"
         ? {
             y: {
               beginAtZero: true,
@@ -210,68 +208,7 @@ const PettyCashChart = ({ data, type = "category" }) => {
     );
   }
 
-  // Petty Cash by Status (Pie Chart)
-  if (type === "status-pie") {
-    const statusColors = {
-      pending: "rgba(245, 158, 11, 0.8)",
-      approved: "rgba(16, 185, 129, 0.8)",
-      rejected: "rgba(239, 68, 68, 0.8)",
-    };
-
-    const chartData = {
-      labels: data.map((d) => d._id.charAt(0).toUpperCase() + d._id.slice(1)),
-      datasets: [
-        {
-          data: data.map((d) => d.totalAmount),
-          backgroundColor: data.map(
-            (d) => statusColors[d._id] || "rgba(107, 114, 128, 0.8)"
-          ),
-          borderColor: data.map(
-            (d) =>
-              statusColors[d._id]?.replace("0.8", "1") || "rgb(107, 114, 128)"
-          ),
-          borderWidth: 2,
-        },
-      ],
-    };
-
-    const pieOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "right",
-        },
-        title: {
-          display: true,
-          text: "Petty Cash Status Distribution",
-        },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = ((context.parsed / total) * 100).toFixed(1);
-              return `${
-                context.label
-              }: ₹${context.parsed.toLocaleString()} (${percentage}%)`;
-            },
-          },
-        },
-      },
-    };
-
-    return (
-      <div className="h-64">
-        <Pie data={chartData} options={pieOptions} />
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-center h-64">
-      Invalid chart type
-    </div>
-  );
+  return <div className="flex items-center justify-center h-64"></div>;
 };
 
 export default PettyCashChart;

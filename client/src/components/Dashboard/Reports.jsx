@@ -27,11 +27,8 @@ const Reports = () => {
   const fetchReportData = async () => {
     try {
       setLoading(true);
-      setError(null); // Clear previous errors
+      setError(null);
       const token = localStorage.getItem("token");
-
-      console.log("Fetching report data...");
-      console.log("Token exists:", !!token);
 
       if (!token) {
         setError("No authentication token found");
@@ -45,7 +42,6 @@ const Reports = () => {
         "Content-Type": "application/json",
       };
 
-      // Fetch all report data in parallel with proper API URL
       const [revenueRes, expensesRes, pettyCashRes, cashflowRes] =
         await Promise.all([
           fetch(`${API_BASE_URL}/api/reports/revenue-summary`, { headers }),
@@ -54,72 +50,11 @@ const Reports = () => {
           fetch(`${API_BASE_URL}/api/reports/cashflow-summary`, { headers }),
         ]);
 
-      // Process responses individually - don't fail all if one fails
-      let revenueData = null;
-      let expensesData = null;
-      let pettyCashData = null;
-      let cashflowData = null;
-
-      // Handle revenue response
-      if (revenueRes.ok) {
-        revenueData = await revenueRes.json();
-      } else {
-        console.error(
-          "Revenue API error:",
-          revenueRes.status,
-          await revenueRes.text()
-        );
-      }
-
-      // Handle expenses response
-      if (expensesRes.ok) {
-        expensesData = await expensesRes.json();
-      } else {
-        console.error(
-          "Expenses API error:",
-          expensesRes.status,
-          await expensesRes.text()
-        );
-      }
-
-      // Handle petty cash response
-      if (pettyCashRes.ok) {
-        pettyCashData = await pettyCashRes.json();
-      } else {
-        console.error(
-          "PettyCash API error:",
-          pettyCashRes.status,
-          await pettyCashRes.text()
-        );
-      }
-
-      // Handle cashflow response
-      if (cashflowRes.ok) {
-        cashflowData = await cashflowRes.json();
-      } else {
-        console.error(
-          "Cashflow API error:",
-          cashflowRes.status,
-          await cashflowRes.text()
-        );
-      }
-
-      // Data is already processed above
-
-      console.log("Revenue Data:", revenueData);
-      console.log("Revenue sourceBreakdown:", revenueData?.sourceBreakdown);
-      console.log("Revenue monthlyTrend:", revenueData?.monthlyTrend);
-      console.log("Revenue statusBreakdown:", revenueData?.statusBreakdown);
-      console.log(
-        "Revenue paymentMethodBreakdown:",
-        revenueData?.paymentMethodBreakdown
-      );
-
       setReportData({
-        revenue: revenueData,
-        expenses: expensesData,
-        pettyCash: pettyCashData,
-        cashflow: cashflowData,
+        revenue: revenueRes.ok ? await revenueRes.json() : null,
+        expenses: expensesRes.ok ? await expensesRes.json() : null,
+        pettyCash: pettyCashRes.ok ? await pettyCashRes.json() : null,
+        cashflow: cashflowRes.ok ? await cashflowRes.json() : null,
       });
     } catch (err) {
       console.error("Error fetching report data:", err);
@@ -129,14 +64,13 @@ const Reports = () => {
     }
   };
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-IN", {
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
-  };
+    }).format(amount || 0);
 
   if (loading) {
     return (
@@ -157,10 +91,15 @@ const Reports = () => {
     );
   }
 
+  const totalRevenue = reportData.revenue?.totalSummary?.totalAmount || 0;
+  const totalExpenses = reportData.expenses?.totalSummary?.totalAmount || 0;
+  const netProfit = totalRevenue - totalExpenses;
+
   return (
     <div className="p-4 sm:p-6 md:p-8 w-full">
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        {/* Total Revenue */}
         <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow flex items-center">
           <div className="p-3 bg-green-100 rounded-full mr-4">
             <PiBankBold className="text-green-600 text-2xl" />
@@ -170,12 +109,12 @@ const Reports = () => {
               Total Revenue
             </h3>
             <p className="text-2xl text-green-600">
-              {formatCurrency(
-                reportData.revenue?.totalSummary?.totalAmount || 0
-              )}
+              {formatCurrency(totalRevenue)}
             </p>
           </div>
         </div>
+
+        {/* Total Expenses */}
         <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow flex items-center">
           <div className="p-3 bg-red-100 rounded-full mr-4">
             <GiPayMoney className="text-red-600 text-2xl" />
@@ -185,12 +124,39 @@ const Reports = () => {
               Total Expenses
             </h3>
             <p className="text-2xl text-red-600">
-              {formatCurrency(
-                reportData.expenses?.totalSummary?.totalAmount || 0
-              )}
+              {formatCurrency(totalExpenses)}
             </p>
           </div>
         </div>
+
+        {/* Net Profit */}
+        <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow flex items-center">
+          <div
+            className={`p-3 rounded-full mr-4 ${
+              netProfit >= 0 ? "bg-emerald-100" : "bg-rose-100"
+            }`}
+          >
+            <IoAnalyticsSharp
+              className={`text-2xl ${
+                netProfit >= 0 ? "text-emerald-600" : "text-rose-600"
+              }`}
+            />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-1">
+              Net Profit
+            </h3>
+            <p
+              className={`text-2xl font-semibold ${
+                netProfit >= 0 ? "text-emerald-600" : "text-rose-600"
+              }`}
+            >
+              {formatCurrency(netProfit)}
+            </p>
+          </div>
+        </div>
+
+        {/* Petty Cash */}
         <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow flex items-center">
           <div className="p-3 bg-blue-100 rounded-full mr-4">
             <TbMoneybag className="text-blue-600 text-2xl" />
@@ -204,23 +170,35 @@ const Reports = () => {
             </p>
           </div>
         </div>
-        
+
+        {/* Cash Flow */}
+        {/* <div className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow flex items-center">
+          <div className="p-3 bg-purple-100 rounded-full mr-4">
+            <MdAccountBalanceWallet className="text-purple-600 text-2xl" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-1">
+              Cash Flow
+            </h3>
+            <p className="text-2xl text-purple-600">
+              {formatCurrency(reportData.cashflow?.summary?.netFlow || 0)}
+            </p>
+          </div>
+        </div> */}
       </div>
 
-      {/* Charts Section */}
+      {/* ----------  (Charts remain unchanged)  ---------- */}
       <div className="space-y-8">
         {/* Revenue Section */}
         <section className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">Revenue Analytics</h2>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => fetchReportData()}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <VscRefresh className="text-gray-600 text-xl" />
-              </button>
-            </div>
+            <button
+              onClick={fetchReportData}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <VscRefresh className="text-gray-600 text-xl" />
+            </button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="h-[400px] w-full">
@@ -254,14 +232,12 @@ const Reports = () => {
         <section className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">Expense Analytics</h2>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => fetchReportData()}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <VscRefresh className="text-gray-600 text-xl" />
-              </button>
-            </div>
+            <button
+              onClick={fetchReportData}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <VscRefresh className="text-gray-600 text-xl" />
+            </button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="h-[400px] w-full">
@@ -291,18 +267,16 @@ const Reports = () => {
           </div>
         </section>
 
-        {/* Petty Cash Section with Enhanced Visualizations */}
+        {/* Petty Cash Section */}
         <section className="bg-white rounded-lg shadow p-4 sm:p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold">Petty Cash Analytics</h2>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => fetchReportData()}
-                className="p-2 hover:bg-gray-100 rounded-full"
-              >
-                <VscRefresh className="text-gray-600 text-xl" />
-              </button>
-            </div>
+            <button
+              onClick={fetchReportData}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <VscRefresh className="text-gray-600 text-xl" />
+            </button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="h-[400px] w-full">
@@ -317,86 +291,9 @@ const Reports = () => {
                 type="category-pie"
               />
             </div>
-            <div className="h-[400px] w-full">
-              <PettyCashChart
-                data={reportData.pettyCash?.statusBreakdown || []}
-                type="status-pie"
-              />
-            </div>
+            {/* Remove the status-pie chart since it's no longer supported in PettyCashChart component */}
           </div>
         </section>
-
-       
-      
-      </div>
-
-      {/* Summary Tables for smaller screens */}
-      <div className="mt-8 space-y-6 lg:hidden">
-        {/* Revenue Summary */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-4 border-b">
-            <h3 className="font-semibold">Revenue Summary</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Source
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {reportData.revenue?.sourceBreakdown?.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {item._id}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-900">
-                      {formatCurrency(item.totalAmount)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Expenses Summary */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-4 border-b">
-            <h3 className="font-semibold">Expenses Summary</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Category
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                    Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {reportData.expenses?.categoryBreakdown?.map((item, index) => (
-                  <tr key={index}>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {item._id}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-900">
-                      {formatCurrency(item.totalAmount)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
     </div>
   );

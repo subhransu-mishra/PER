@@ -194,6 +194,134 @@ const getPettyCashById = async (req, res) => {
   }
 };
 
+// Update petty cash entry
+const updatePettyCash = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date, transactionType, categoryType, description, amount } =
+      req.body;
+
+    // Validate required fields
+    if (!date || !transactionType || !categoryType || !description || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields except voucher number are required",
+      });
+    }
+
+    // Validate amount is a positive number
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount must be a valid positive number",
+      });
+    }
+
+    const orgId = req.user.tenantId || req.user.organizationId;
+    if (!orgId) {
+      return res.status(400).json({
+        success: false,
+        message: "Organization/Tenant information missing in token",
+      });
+    }
+
+    // Find the existing entry
+    const existingEntry = await PettyCash.findOne({
+      _id: id,
+      organizationId: orgId,
+    });
+
+    if (!existingEntry) {
+      return res.status(404).json({
+        success: false,
+        message: "Petty cash entry not found",
+      });
+    }
+
+    // Check if user has permission to update (only creator or admin)
+    const isCreator = existingEntry.createdBy.toString() === req.user.id;
+    const isAdmin =
+      req.user.role === "admin" || req.user.role === "super_admin";
+
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only edit entries created by you",
+      });
+    }
+
+    // Check if entry is still pending (only pending entries can be edited)
+    if (existingEntry.status !== "pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Only pending entries can be edited",
+      });
+    }
+
+    // Prepare update data
+    const updateData = {
+      date: new Date(date),
+      transactionType,
+      categoryType,
+      description,
+      amount: parsedAmount,
+      updatedAt: new Date(),
+    };
+
+    // Handle receipt update if new file is uploaded
+    if (req.file) {
+      updateData.receipt = req.file.path;
+    }
+
+    // Update the entry
+    const updatedEntry = await PettyCash.findByIdAndUpdate(id, updateData, {
+      new: true, // Return updated document
+      runValidators: true, // Run schema validators
+    }).populate("createdBy", "name email");
+
+    if (!updatedEntry) {
+      return res.status(404).json({
+        success: false,
+        message: "Failed to update petty cash entry",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Petty cash entry updated successfully",
+      entry: updatedEntry,
+    });
+  } catch (error) {
+    console.error("Error updating petty cash entry:", error);
+
+    if (error.name === "ValidationError") {
+      const validationErrors = Object.values(error.errors).map(
+        (err) => err.message
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: validationErrors,
+      });
+    }
+
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid entry ID format",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Error updating petty cash entry: " +
+        (error.message || "Unknown error"),
+    });
+  }
+};
+
 // Approve a petty cash entry
 const approvePettyCash = async (req, res) => {
   try {
@@ -592,18 +720,7 @@ const getMonthlyApprovedTotal = async (req, res) => {
   }
 };
 
-module.exports = {
-  createPettyCash,
-  getPettyCash,
-  getPettyCashById,
-  approvePettyCash,
-  rejectPettyCash,
-  getPettyCashStats,
-  getNextVoucherNumber,
-  getMonthlyPettyCashSummary,
-  getMonthlyApprovedTotal,
-};
-
+// Generate petty cash report
 const generatePettyCashReport = async (req, res) => {
   try {
     const { startDate, endDate } = req.body;
@@ -624,11 +741,9 @@ const generatePettyCashReport = async (req, res) => {
     }).sort({ date: 1 });
 
     if (transactions.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No petty cash data found for the specified date range",
-        });
+      return res.status(404).json({
+        message: "No petty cash data found for the specified date range",
+      });
     }
 
     // In a real implementation, you would use a library like PDFKit to generate a PDF
@@ -720,10 +835,150 @@ const generatePettyCashReport = async (req, res) => {
   }
 };
 
+// Get petty cash analytics for charts
+const getPettyCashAnalytics = async (req, res) => {
+  try {
+    const orgId = req.user.tenantId || req.user.organizationId;
+    if (!orgId) {
+      return res.status(400).json({
+        success: false,
+        message: "Organization/Tenant information missing in token",
+      });
+    }
+
+    const startDate = req.query.startDate
+      ? new Date(req.query.startDate)
+      : new Date(0);
+    const endDate = req.query.endDate
+      ? new Date(req.query.endDate)
+      : new Date();
+
+    // Ensure endDate includes the entire day
+    endDate.setHours(23, 59, 59, 999);
+
+    // Convert organizationId to ObjectId if valid
+    const orgIdForQuery = mongoose.Types.ObjectId.isValid(orgId)
+      ? new mongoose.Types.ObjectId(orgId)
+      : orgId;
+
+    // Analytics by status
+    const statusAnalytics = await PettyCash.aggregate([
+      {
+        $match: {
+          organizationId: orgIdForQuery,
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: "$status",
+          totalAmount: { $sum: "$amount" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // Analytics by category
+    const categoryAnalytics = await PettyCash.aggregate([
+      {
+        $match: {
+          organizationId: orgIdForQuery,
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: "$categoryType",
+          totalAmount: { $sum: "$amount" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { totalAmount: -1 },
+      },
+    ]);
+
+    // Monthly analytics
+    const monthlyAnalytics = await PettyCash.aggregate([
+      {
+        $match: {
+          organizationId: orgIdForQuery,
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$date" },
+            month: { $month: "$date" },
+          },
+          totalAmount: { $sum: "$amount" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          year: "$_id.year",
+          month: "$_id.month",
+          totalAmount: 1,
+          count: 1,
+        },
+      },
+      {
+        $sort: { year: 1, month: 1 },
+      },
+    ]);
+
+    // Transaction type analytics
+    const transactionTypeAnalytics = await PettyCash.aggregate([
+      {
+        $match: {
+          organizationId: orgIdForQuery,
+          date: { $gte: startDate, $lte: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: "$transactionType",
+          totalAmount: { $sum: "$amount" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { totalAmount: -1 },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      message: "Petty cash analytics retrieved successfully",
+      analytics: {
+        status: statusAnalytics,
+        category: categoryAnalytics,
+        monthly: monthlyAnalytics,
+        transactionType: transactionTypeAnalytics,
+      },
+    });
+  } catch (error) {
+    console.error("Error retrieving petty cash analytics:", error);
+    res.status(500).json({
+      success: false,
+      message:
+        "Error retrieving petty cash analytics: " +
+        (error.message || "Database timeout"),
+    });
+  }
+};
+
 module.exports = {
   createPettyCash,
   getPettyCash,
   getPettyCashById,
+  updatePettyCash,
   approvePettyCash,
   rejectPettyCash,
   getPettyCashStats,
@@ -731,4 +986,5 @@ module.exports = {
   getMonthlyPettyCashSummary,
   getMonthlyApprovedTotal,
   generatePettyCashReport,
+  getPettyCashAnalytics, // Add the new function to exports
 };

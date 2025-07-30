@@ -2,48 +2,117 @@ const Revenue = require("../models/revenue");
 
 const addRevenue = async (req, res) => {
   try {
+    console.log("AddRevenue - Starting execution");
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file);
+    console.log("Request user:", req.user);
+
     const {
       date,
       clientName,
       companyName,
       amount,
       source,
-      receivedThrough,
-      paymentMethod, // Add paymentMethod from request body
+      paymentMethod,
       description,
-      billUrl, // Add billUrl from request body
+      invoiceNumber,
     } = req.body;
 
-    console.log("Revenue request body:", req.body);
-
-    // Use paymentMethod as receivedThrough if receivedThrough is not provided
-    const effectiveReceivedThrough = receivedThrough || paymentMethod || "bank";
-
-    const invoiceUrl = req.file ? req.file.path : billUrl || "";
-
-    const revenue = await Revenue.create({
+    // Validate required fields
+    const requiredFields = {
       date,
-      clientName,
-      companyName,
       amount,
       source,
-      receivedThrough: effectiveReceivedThrough,
-      paymentMethod,
-      invoiceUrl,
-      billUrl,
       description,
-      createdBy: req.user.id,
-      organizationId: req.user.organizationId || req.user.tenantId,
+    };
+
+    const missingFields = Object.entries(requiredFields)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      console.log("Missing required fields:", missingFields);
+      return res.status(400).json({
+        success: false,
+        message: `Missing required fields: ${missingFields.join(", ")}`,
+      });
+    }
+
+    // Validate user and organization
+    const userId = req.user.id || req.user._id;
+    const orgId = req.user.organizationId || req.user.tenantId;
+
+    if (!userId || !orgId) {
+      console.log("Missing user/org data:", { userId, orgId });
+      return res.status(400).json({
+        success: false,
+        message: "User or organization information missing",
+      });
+    }
+
+    // Parse amount to ensure it's a number
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Amount must be a valid positive number",
+      });
+    }
+
+    // Get invoice URL from file upload
+    const invoiceUrl = req.file ? req.file.path : "";
+
+    // Use paymentMethod as receivedThrough if not provided
+    const effectivePaymentMethod = paymentMethod || "bank";
+
+    const revenue = await Revenue.create({
+      date: new Date(date),
+      clientName: clientName || "",
+      companyName: companyName || "",
+      amount: parsedAmount,
+      source,
+      paymentMethod: effectivePaymentMethod,
+      receivedThrough: effectivePaymentMethod, // Use same value for both fields
+      description,
+      invoiceUrl,
+      billUrl: invoiceUrl, // Set billUrl same as invoiceUrl
+      invoiceNumber: invoiceNumber || "",
+      createdBy: userId,
+      organizationId: orgId,
       status: "pending",
     });
 
+    // Populate the createdBy field with user details
+    const populatedRevenue = await Revenue.findById(revenue._id).populate({
+      path: "createdBy",
+      select: "name username email",
+      model: "User",
+    });
+
+    console.log("Created revenue with user details:", populatedRevenue);
+
     res.status(201).json({
+      success: true,
       message: "Revenue added successfully",
-      revenue,
+      revenue: populatedRevenue,
     });
   } catch (error) {
-    console.error("Revenue error:", error);
-    res.status(500).json({ message: "Server Error" });
+    console.error("Revenue creation error:", error);
+    console.error("Error stack:", error.stack);
+
+    // Handle MongoDB validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: Object.values(error.errors).map((err) => err.message),
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Error creating revenue: " + (error.message || "Unknown error"),
+    });
   }
 };
 
@@ -51,8 +120,15 @@ const getRevenues = async (req, res) => {
   try {
     const revenues = await Revenue.find({
       organizationId: req.user.organizationId || req.user.tenantId,
-    }).sort({ date: -1 });
+    })
+      .populate({
+        path: "createdBy",
+        select: "name username email", // Include required user fields
+        model: "User", // Explicitly specify the model
+      })
+      .sort({ date: -1 });
 
+    console.log("Fetched revenues with user details:", revenues);
     res.status(200).json(revenues);
   } catch (error) {
     console.error("Fetch revenues error:", error);
@@ -60,8 +136,81 @@ const getRevenues = async (req, res) => {
   }
 };
 
+const getRevenueById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user is admin
+    if (req.user.role !== "admin" && req.user.role !== "super_admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Only administrators can view detailed revenue information",
+      });
+    }
+
+    // Check if id is a valid MongoDB ObjectId to avoid CastError
+    const mongoose = require("mongoose");
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+      });
+    }
+
+    const revenue = await Revenue.findById(id);
+
+    if (!revenue) {
+      return res.status(404).json({
+        success: false,
+        message: "Revenue not found",
+      });
+    }
+
+    // Check if user has permission to access this revenue
+    if (
+      revenue.organizationId.toString() !==
+      (req.user.organizationId || req.user.tenantId).toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to access this revenue",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: revenue,
+    });
+  } catch (error) {
+    console.error("Get revenue by ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const updateRevenue = async (req, res) => {
   try {
+    // Check if the revenue was created within the last 24 hours
+    const revenue = await Revenue.findById(req.params.id);
+    if (!revenue) {
+      return res.status(404).json({ message: "Revenue not found" });
+    }
+
+    const createdAt = new Date(revenue.createdAt);
+    const now = new Date();
+    const diffInHours = (now - createdAt) / (1000 * 60 * 60);
+
+    if (diffInHours > 24) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Revenue entries can only be edited within 24 hours of creation",
+      });
+    }
+
     const {
       date,
       clientName,
@@ -115,53 +264,6 @@ const updateRevenue = async (req, res) => {
   } catch (error) {
     console.error("Update revenue error:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-const getRevenueById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Check if id is a valid MongoDB ObjectId to avoid CastError
-    const mongoose = require("mongoose");
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid ID format",
-      });
-    }
-
-    const revenue = await Revenue.findById(id);
-
-    if (!revenue) {
-      return res.status(404).json({
-        success: false,
-        message: "Revenue not found",
-      });
-    }
-
-    // Check if user has permission to access this revenue
-    if (
-      revenue.organizationId.toString() !==
-      (req.user.organizationId || req.user.tenantId).toString()
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to access this revenue",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: revenue,
-    });
-  } catch (error) {
-    console.error("Get revenue by ID error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-      error: error.message,
-    });
   }
 };
 

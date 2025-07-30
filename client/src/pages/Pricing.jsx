@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Layout from "../components/Layout";
 import { Check } from "lucide-react";
-
+import { Link } from "react-router-dom";
 // Simple hook for reveal-on-scroll
 function useRevealOnScroll(options = {}) {
   const ref = useRef(null);
@@ -37,11 +37,11 @@ const Pricing = () => {
         "Perfect for small teams getting started with financial management",
       features: [
         "Up to 5 users",
-        "Basic petty cash management",
-        "Expense tracking",
-        "Basic reporting",
-        "Email support",
-        "Mobile app access",
+        "Max 30 petty cash transactions/month",
+        "Expense tracking & categorization",
+        "Revenue tracking & reporting",
+        "Basic analytics & insights",
+        
       ],
       popular: false,
       color: "blue",
@@ -53,9 +53,9 @@ const Pricing = () => {
       description: "Ideal for growing businesses that need advanced features",
       features: [
         "Up to 25 users",
-        "Advanced petty cash management",
-        "Expense tracking & categorization",
-        "Advanced reporting & analytics",
+        "200 petty cash transactions/month",
+        "Advanced expense tracking",
+        "Up to 1cr revenue tracking & reporting",
         "Priority email support",
         "Mobile app access",
         "API access",
@@ -271,16 +271,13 @@ const Pricing = () => {
               Ready to get started?
             </h2>
             <p className="mt-4 text-lg text-blue-100 max-w-2xl mx-auto">
-              Join thousands of organizations that trust PER System for their
+              Join thousands of organizations that trust Accrue System for their
               financial management needs.
             </p>
             <div className="mt-8 flex justify-center space-x-4">
-              <button className="px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-white hover:bg-gray-50 transform hover:scale-105 transition-all duration-200 shadow-lg">
-                Start Free Trial
-              </button>
-              <button className="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-800 bg-opacity-60 hover:bg-opacity-70 transform hover:scale-105 transition-all duration-200 shadow-lg">
+              <Link to="/contact" className="px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-800 bg-opacity-60 hover:bg-opacity-70 transform hover:scale-105 transition-all duration-200 shadow-lg">
                 Contact Sales
-              </button>
+              </Link>
             </div>
           </div>
         </div>

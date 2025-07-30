@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import {
   FiDollarSign,
   FiBarChart2,
@@ -12,18 +13,33 @@ import { NavLink } from "react-router-dom";
 import { IoSettingsOutline } from "react-icons/io5";
 import { IoIosAnalytics } from "react-icons/io";
 
-
 const sections = [
-  { name: "Dashboard", icon: <RxDashboard size={22} />, path: "." },
+  { name: "Dashboard", icon: RxDashboard, path: "/dashboard" },
   {
     name: "Petty Cash",
-    icon: <MdOutlinePayments size={22} />,
-    path: "petty-cash",
+    icon: MdOutlinePayments,
+    path: "/dashboard/petty-cash",
   },
-  { name: "Expenses", icon: <FiBarChart2 size={22} />, path: "expenses" },
-  { name: "Revenue", icon: <FiDollarSign size={22} />, path: "revenue" },
-  { name: "Analytics", icon: <IoIosAnalytics size={22} />, path: "analytics" },
-  { name: "Settings", icon: <IoSettingsOutline size={22} />, path: "settings" },
+  {
+    name: "Expenses",
+    icon: FiBarChart2,
+    path: "/dashboard/expenses",
+  },
+  {
+    name: "Revenue",
+    icon: FiDollarSign,
+    path: "/dashboard/revenue",
+  },
+  {
+    name: "Analytics",
+    icon: IoIosAnalytics,
+    path: "/dashboard/analytics",
+  },
+  {
+    name: "Settings",
+    icon: IoSettingsOutline,
+    path: "/dashboard/settings",
+  },
 ];
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
@@ -45,17 +61,20 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       {/* Logo + Company Name */}
       <div className="flex items-center gap-3 px-4 py-5">
         <div className="rounded-full  text-white flex items-center justify-center text-xl font-bold">
-          <img src="/Accure2.png" alt="Logo" className="w-20 h-22" />
+          <Link to="/">
+            <img src="/Accure2.png" alt="Logo" className="w-16 h-18" />
+          </Link>
         </div>
         {/* <span className="text-xl font-semibold text-gray-800">Accrue</span> */}
       </div>
 
       {/* Sidebar Sections */}
-      <nav className="flex-1 flex flex-col mt-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 flex flex-col mt-4 space-y-2 overflow-y-auto px-2">
         {sections.map((section) => (
           <NavLink
             key={section.name}
             to={section.path}
+            end={section.path === "/dashboard"} // Ensures only dashboard index is active on /dashboard
             onClick={() => window.innerWidth < 640 && toggleSidebar()}
             className={({ isActive }) =>
               `flex items-center gap-4 px-4 py-3 cursor-pointer rounded-lg transition-all duration-200 group
@@ -66,14 +85,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               }`
             }
           >
-            <div
-              className={({ isActive }) =>
-                `${isActive ? "text-blue-700" : "text-blue-600"}`
-              }
-            >
-              {section.icon}
-            </div>
-            <span>{section.name}</span>
+            {({ isActive }) => {
+              const Icon = section.icon;
+              return (
+                <>
+                  <Icon
+                    size={22}
+                    className={isActive ? "text-blue-700" : "text-blue-600"}
+                  />
+                  <span>{section.name}</span>
+                </>
+              );
+            }}
           </NavLink>
         ))}
       </nav>

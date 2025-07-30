@@ -72,10 +72,12 @@ const Contact = () => {
     }
 
     try {
+      // Remove any authentication headers since this is a public endpoint
       const config = {
         headers: {
           "Content-Type": "application/json",
         },
+        // Remove any authorization headers that might be automatically added
       };
 
       const response = await axios.post(
@@ -89,9 +91,9 @@ const Contact = () => {
         config
       );
 
-      if (response.data) {
+      if (response.data && response.data.success) {
         console.log("Form submitted:", response.data);
-        toast.success("Message sent successfully!");
+        toast.success("Message sent successfully! We'll get back to you soon.");
         setFormData({
           FullName: "",
           Email: "",
@@ -101,11 +103,26 @@ const Contact = () => {
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        "Failed to send message. Please try again.";
-      toast.error(errorMessage);
+
+      // More detailed error handling
+      if (error.response) {
+        // Server responded with an error status
+        const errorMessage =
+          error.response.data?.message ||
+          `Server error: ${error.response.status}`;
+        toast.error(errorMessage);
+        console.error("Server error details:", error.response.data);
+      } else if (error.request) {
+        // Request was made but no response received
+        toast.error(
+          "Network error. Please check your connection and try again."
+        );
+        console.error("Network error:", error.request);
+      } else {
+        // Something else happened
+        toast.error("An unexpected error occurred. Please try again.");
+        console.error("Unexpected error:", error.message);
+      }
     }
   };
 
@@ -244,10 +261,7 @@ const Contact = () => {
             </motion.div>
 
             {/* Contact Information */}
-            <motion.div
-              className="space-y-8"
-              variants={containerVariants}
-            >
+            <motion.div className="space-y-8" variants={containerVariants}>
               <motion.div variants={itemVariants}>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
                   Get in touch
@@ -259,7 +273,10 @@ const Contact = () => {
               </motion.div>
 
               <motion.div className="space-y-6" variants={containerVariants}>
-                <motion.div className="flex items-start space-x-4" variants={itemVariants}>
+                <motion.div
+                  className="flex items-start space-x-4"
+                  variants={itemVariants}
+                >
                   <div className="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
                     <Mail className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                   </div>
@@ -267,12 +284,19 @@ const Contact = () => {
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                       Email Us
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400">contact@accrue.com</p>
-                    <p className="text-gray-600 dark:text-gray-400">info@accrue.com</p>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      contact@accrue.com
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      info@accrue.com
+                    </p>
                   </div>
                 </motion.div>
 
-                <motion.div className="flex items-start space-x-4" variants={itemVariants}>
+                <motion.div
+                  className="flex items-start space-x-4"
+                  variants={itemVariants}
+                >
                   <div className="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
                     <Phone className="w-6 h-6 text-green-600 dark:text-green-400" />
                   </div>
@@ -280,12 +304,19 @@ const Contact = () => {
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                       Call Us
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-400">(+1) 123-456-7890</p>
-                    <p className="text-gray-600 dark:text-gray-400">(+1) 987-654-3210</p>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      (+1) 123-456-7890
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      (+1) 987-654-3210
+                    </p>
                   </div>
                 </motion.div>
 
-                <motion.div className="flex items-start space-x-4" variants={itemVariants}>
+                <motion.div
+                  className="flex items-start space-x-4"
+                  variants={itemVariants}
+                >
                   <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
                     <MapPin className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   </div>
@@ -294,12 +325,16 @@ const Contact = () => {
                       Visit Us
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                       MIG –II, 14/5, Housing Board Colony, Chandrasekharpur, Bhubaneswar, Odisha 751016
+                      MIG –II, 14/5, Housing Board Colony, Chandrasekharpur,
+                      Bhubaneswar, Odisha 751016
                     </p>
                   </div>
                 </motion.div>
 
-                <motion.div className="flex items-start space-x-4" variants={itemVariants}>
+                <motion.div
+                  className="flex items-start space-x-4"
+                  variants={itemVariants}
+                >
                   <div className="bg-orange-100 dark:bg-orange-900/30 p-3 rounded-full">
                     <Clock className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                   </div>
@@ -310,7 +345,6 @@ const Contact = () => {
                     <p className="text-gray-600 dark:text-gray-400">
                       Monday - Friday: 9:00 AM - 6:00 PM
                     </p>
-                  
                   </div>
                 </motion.div>
               </motion.div>

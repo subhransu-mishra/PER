@@ -6,6 +6,7 @@ import { TbMoneybag } from "react-icons/tb";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { format } from "date-fns";
+import { useAuth } from "../../context/AuthContext"; // Import the auth context
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -22,11 +23,17 @@ const emptyRevenue = {
 };
 
 const Revenue = () => {
-  // Confirmation modal state for edit
+  // Use auth context to get authenticated user information
+  const { user: authUser } = useAuth();
+
+  // Remove the duplicate user state since we're using authUser from context
   const [editConfirmModal, setEditConfirmModal] = useState({
     open: false,
     revenue: null,
   });
+
+  // View details modal state
+  const [viewDetails, setViewDetails] = useState(null);
 
   const [search, setSearch] = useState("");
   const [revenues, setRevenues] = useState([]);
@@ -38,10 +45,6 @@ const Revenue = () => {
   const [currentId, setCurrentId] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [user] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
-  });
 
   const fetchRevenues = async () => {
     try {
@@ -126,9 +129,9 @@ const Revenue = () => {
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!authUser) return; // Use authUser instead of user
     fetchRevenues();
-  }, [user]);
+  }, [authUser]); // Dependency on authUser
 
   // Add another effect to handle date filter changes
   useEffect(() => {
@@ -141,8 +144,23 @@ const Revenue = () => {
   // Handle add/edit revenue
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.description || !form.source || !form.amount) {
-      toast.error("Please fill in required fields.");
+
+    // Validate form
+    const requiredFields = {
+      date: form.date,
+      amount: form.amount,
+      source: form.source,
+      description: form.description,
+    };
+
+    const missingFields = Object.entries(requiredFields)
+      .filter(([_, value]) => !value)
+      .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+      toast.error(
+        `Please fill in required fields: ${missingFields.join(", ")}`
+      );
       return;
     }
 
@@ -150,14 +168,25 @@ const Revenue = () => {
       setSubmitting(true);
       const token = localStorage.getItem("token");
 
-      // Create FormData for file upload
+      if (!token) {
+        toast.error("Authentication token missing. Please log in again.");
+        return;
+      }
+
+      // Create FormData
       const formData = new FormData();
-      formData.append("amount", Number(form.amount));
-      formData.append("description", form.description);
-      formData.append("source", form.source);
-      formData.append("clientName", form.clientName || "");
-      formData.append("invoiceNumber", form.invoiceNumber || "");
+
+      // Append required fields
       formData.append("date", form.date);
+      formData.append("amount", parseFloat(form.amount));
+      formData.append("source", form.source);
+      formData.append("description", form.description);
+
+      // Append optional fields
+      if (form.clientName) formData.append("clientName", form.clientName);
+      if (form.companyName) formData.append("companyName", form.companyName);
+      if (form.invoiceNumber)
+        formData.append("invoiceNumber", form.invoiceNumber);
       formData.append("paymentMethod", form.paymentMethod || "bank");
 
       // Append file if exists
@@ -165,58 +194,44 @@ const Revenue = () => {
         formData.append("invoice", form.invoice);
       }
 
-      let res;
+      console.log("Submitting revenue data:", {
+        date: form.date,
+        amount: form.amount,
+        source: form.source,
+        description: form.description,
+        clientName: form.clientName,
+        companyName: form.companyName,
+        paymentMethod: form.paymentMethod,
+        hasFile: !!form.invoice,
+      });
 
-      if (editMode && currentId) {
-        // Update existing revenue
-        res = await axios.put(
-          `${API_BASE_URL}/api/revenue/${currentId}`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        if (res.data && res.data.revenue) {
-          setRevenues((prev) =>
-            prev.map((item) =>
-              item._id === currentId ? res.data.revenue : item
-            )
-          );
-          toast.success("Revenue updated successfully!");
+      const res = await axios.post(
+        `${API_BASE_URL}/api/revenue/create`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
-      } else {
-        // Create new revenue
-        res = await axios.post(
-          `${API_BASE_URL}/api/revenue/create`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        if (res.data && res.data.revenue) {
-          setRevenues((prev) => [res.data.revenue, ...prev]);
-          toast.success("Revenue added successfully!");
-        }
-      }
-
-      setForm(emptyRevenue);
-      setShowModal(false);
-      setEditMode(false);
-      setCurrentId(null);
-      fetchRevenues(); // Refresh the list
-    } catch (err) {
-      console.error("Error with revenue:", err);
-      toast.error(
-        err.response?.data?.message || "An error occurred. Please try again."
       );
+
+      console.log("API response:", res.data);
+
+      if (res.data.success) {
+        toast.success("Revenue added successfully!");
+        setRevenues((prev) => [res.data.revenue, ...prev]);
+        setForm(emptyRevenue);
+        setShowModal(false);
+        fetchRevenues();
+      } else {
+        throw new Error(res.data.message || "Failed to add revenue");
+      }
+    } catch (err) {
+      console.error("Revenue creation error:", err);
+      const errorMessage =
+        err.response?.data?.message || err.message || "Failed to add revenue";
+      toast.error(errorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -252,6 +267,14 @@ const Revenue = () => {
     setForm(emptyRevenue);
     setEditMode(false);
     setCurrentId(null);
+  };
+
+  const closeDetailsModal = () => {
+    setViewDetails(null);
+  };
+
+  const handleViewDetails = (revenue) => {
+    setViewDetails(revenue);
   };
 
   // Calculate total revenue received this month
@@ -300,6 +323,37 @@ const Revenue = () => {
     setEndDate("");
   };
 
+  // Add helper function to check if user is admin
+  const isAdmin = () => {
+    return authUser?.role === "admin" || authUser?.role === "super_admin";
+  };
+
+  // Improve isWithin24Hours function for better accuracy
+  const isWithin24Hours = (createdAtDate) => {
+    if (!createdAtDate) return false;
+
+    const now = new Date();
+    const entryDate = new Date(createdAtDate);
+    const diffInHours = (now - entryDate) / (1000 * 60 * 60);
+    return diffInHours <= 24;
+  };
+
+  // Add helper to check if current user created this revenue
+  const isCreatedByCurrentUser = (revenue) => {
+    if (!authUser || !revenue?.createdBy) return false;
+    return (
+      revenue.createdBy._id === authUser.id ||
+      revenue.createdBy._id === authUser._id
+    );
+  };
+
+  // Helper to determine if edit should be shown
+  const shouldShowEdit = (revenue) => {
+    return (
+      isWithin24Hours(revenue.createdAt) && isCreatedByCurrentUser(revenue)
+    );
+  };
+
   return (
     <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -319,11 +373,15 @@ const Revenue = () => {
           <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">This Month</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">
+                  This Month
+                </p>
                 <h3 className="text-xl font-bold text-blue-600 mb-1">
                   ₹{calculateThisMonthRevenue().toLocaleString()}
                 </h3>
-                <p className="text-xs text-gray-500">Revenue received this month</p>
+                <p className="text-xs text-gray-500">
+                  Revenue received this month
+                </p>
               </div>
               <div className="p-2 bg-blue-50 rounded-lg">
                 <IoAnalyticsSharp className="w-6 h-6 text-blue-500" />
@@ -335,11 +393,15 @@ const Revenue = () => {
           <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">This Week</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">
+                  This Week
+                </p>
                 <h3 className="text-xl font-bold text-green-600 mb-1">
                   ₹{calculateThisWeekRevenue().toLocaleString()}
                 </h3>
-                <p className="text-xs text-gray-500">Revenue received this week</p>
+                <p className="text-xs text-gray-500">
+                  Revenue received this week
+                </p>
               </div>
               <div className="p-2 bg-green-50 rounded-lg">
                 <MdAccountBalanceWallet className="w-6 h-6 text-green-500" />
@@ -351,7 +413,9 @@ const Revenue = () => {
           <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">Total Revenue</p>
+                <p className="text-sm font-medium text-gray-500 mb-1">
+                  Total Revenue
+                </p>
                 <h3 className="text-xl font-bold text-purple-600 mb-1">
                   ₹{calculateTotalRevenue().toLocaleString()}
                 </h3>
@@ -430,48 +494,120 @@ const Revenue = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Source
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Client
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Amount
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Payment
+                    </th>
+                    {isAdmin() && (
+                      <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Details
+                      </th>
+                    )}
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Invoice
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Edit
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRevenues.map((revenue) => (
-                    <tr key={revenue._id} className="hover:bg-gray-50 transition-colors duration-150">
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{revenue.date ? new Date(revenue.date).toLocaleDateString() : "-"}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900 max-w-xs truncate">{revenue.description || "-"}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600"><span className="capitalize">{revenue.source || "-"}</span></td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">{revenue.clientName || "-"}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">₹{(revenue.amount || 0).toLocaleString()}</td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600"><span className="capitalize">{revenue.paymentMethod || "-"}</span></td>
+                    <tr
+                      key={revenue._id}
+                      className="hover:bg-gray-50 transition-colors duration-150"
+                    >
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {revenue.date
+                          ? new Date(revenue.date).toLocaleDateString()
+                          : "-"}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-900 max-w-xs truncate">
+                        {revenue.description || "-"}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <span className="capitalize">
+                          {revenue.source || "-"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {revenue.clientName || "-"}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        ₹{(revenue.amount || 0).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <span className="capitalize">
+                          {revenue.paymentMethod || "-"}
+                        </span>
+                      </td>
+
+                      {/* Details column - only for admins */}
+                      {isAdmin() && (
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                          <button
+                            onClick={() => handleViewDetails(revenue)}
+                            className="text-blue-600 cursor-pointer hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-colors duration-200"
+                            title="View Details"
+                          >
+                            <FiEye className="w-4 h-4" />
+                          </button>
+                        </td>
+                      )}
+
+                      {/* Invoice column - separate from edit */}
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
-                        <div className="flex items-center justify-center space-x-3">
-                          <button 
-                            onClick={() => setEditConfirmModal({ open: true, revenue })} 
-                            className="text-blue-600 cursor-pointer hover:text-blue-800 hover:bg-blue-50 p-1.5 rounded transition-colors duration-200" 
+                        {revenue.invoiceUrl ? (
+                          <a
+                            href={revenue.invoiceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs rounded text-blue-700 bg-blue-100 hover:bg-blue-200"
+                            title="View Invoice"
+                          >
+                            Invoice
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 text-xs">N/A</span>
+                        )}
+                        {revenue.invoiceNumber && (
+                          <span className="text-blue-600 text-xs block mt-1">
+                            #{revenue.invoiceNumber}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Edit column - separate from invoice */}
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-center">
+                        {shouldShowEdit(revenue) ? (
+                          <button
+                            onClick={() =>
+                              setEditConfirmModal({ open: true, revenue })
+                            }
+                            className="text-blue-600 cursor-pointer hover:text-blue-800 hover:bg-blue-50 p-1.5 rounded transition-colors duration-200"
                             title="Edit Revenue"
                           >
                             <FiEdit className="w-4 h-4" />
                           </button>
-                          {revenue.invoiceUrl && (
-                            <a 
-                              href={revenue.invoiceUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="text-green-600 hover:text-green-800 hover:bg-green-50 p-1.5 rounded transition-colors duration-200" 
-                              title="View Invoice"
-                            >
-                              <FiEye className="w-4 h-4" />
-                            </a>
-                          )}
-                          {revenue.invoiceNumber && (
-                            <span className="text-blue-600 text-xs">#{revenue.invoiceNumber}</span>
-                          )}
-                        </div>
+                        ) : (
+                          <span className="text-gray-300">
+                            <FiEdit className="w-4 h-4 mx-auto" />
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -484,50 +620,107 @@ const Revenue = () => {
           <div className="lg:hidden">
             {loading ? (
               <div className="flex justify-center items-center py-20">
-                <svg className="animate-spin h-8 w-8 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin h-8 w-8 text-green-500 mr-3"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
                 <span className="text-gray-600">Loading revenues...</span>
               </div>
             ) : filteredRevenues.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">No revenues found</div>
+              <div className="text-center py-12 text-gray-500">
+                No revenues found
+              </div>
             ) : (
               <div className="divide-y divide-gray-200">
                 {filteredRevenues.map((revenue) => (
-                  <div key={revenue._id} className="p-4 hover:bg-gray-50 transition-colors duration-150">
+                  <div
+                    key={revenue._id}
+                    className="p-4 hover:bg-gray-50 transition-colors duration-150"
+                  >
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-gray-500">{revenue.date ? new Date(revenue.date).toLocaleDateString() : "-"}</span>
+                          <span className="text-sm font-medium text-gray-500">
+                            {revenue.date
+                              ? new Date(revenue.date).toLocaleDateString()
+                              : "-"}
+                          </span>
                           {revenue.invoiceNumber && (
-                            <span className="text-blue-600 text-xs ml-2">#{revenue.invoiceNumber}</span>
+                            <span className="text-blue-600 text-xs ml-2">
+                              #{revenue.invoiceNumber}
+                            </span>
                           )}
                         </div>
-                        <h3 className="text-base font-semibold text-gray-900 mb-1">{revenue.description || "-"}</h3>
+                        <h3 className="text-base font-semibold text-gray-900 mb-1">
+                          {revenue.description || "-"}
+                        </h3>
                         <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 mb-2">
-                          <span className="capitalize bg-gray-100 px-2 py-1 rounded">{revenue.source || "-"}</span>
-                          <span className="capitalize">{revenue.paymentMethod || "-"}</span>
-                          {revenue.clientName && <span className="bg-blue-50 px-2 py-1 rounded">{revenue.clientName}</span>}
+                          <span className="capitalize bg-gray-100 px-2 py-1 rounded">
+                            {revenue.source || "-"}
+                          </span>
+                          <span className="capitalize">
+                            {revenue.paymentMethod || "-"}
+                          </span>
+                          {revenue.clientName && (
+                            <span className="bg-blue-50 px-2 py-1 rounded">
+                              {revenue.clientName}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-gray-900">₹{(revenue.amount || 0).toLocaleString()}</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        ₹{(revenue.amount || 0).toLocaleString()}
+                      </span>
                       <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => setEditConfirmModal({ open: true, revenue })} 
-                          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded transition-colors duration-200" 
-                          title="Edit Revenue"
-                        >
-                          <FiEdit className="w-4 h-4" />
-                        </button>
+                        {/* Details button - only for admins */}
+                        {isAdmin() && (
+                          <button
+                            onClick={() => handleViewDetails(revenue)}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded-full transition-colors duration-200"
+                            title="View Details"
+                          >
+                            <FiEye className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Edit button - conditional display */}
+                        {shouldShowEdit(revenue) && (
+                          <button
+                            onClick={() =>
+                              setEditConfirmModal({ open: true, revenue })
+                            }
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 p-2 rounded transition-colors duration-200"
+                            title="Edit Revenue"
+                          >
+                            <FiEdit className="w-4 h-4" />
+                          </button>
+                        )}
+
+                        {/* Invoice button */}
                         {revenue.invoiceUrl && (
-                          <a 
-                            href={revenue.invoiceUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-green-600 hover:text-green-800 hover:bg-green-50 p-2 rounded transition-colors duration-200" 
+                          <a
+                            href={revenue.invoiceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-600 hover:text-green-800 hover:bg-green-50 p-2 rounded transition-colors duration-200"
                             title="View Invoice"
                           >
                             <FiEye className="w-4 h-4" />
@@ -748,53 +941,267 @@ const Revenue = () => {
             </div>
           </div>
         )}
-      {/* Edit Confirmation Modal */}
-      {editConfirmModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
-            <div className="absolute top-4 right-4">
-              <button
-                onClick={() => setEditConfirmModal({ open: false, revenue: null })}
-                className="text-gray-400 hover:text-gray-600 text-2xl focus:outline-none"
-                aria-label="Close"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="mb-4 flex flex-col items-center">
-              <div className="mb-2 text-4xl text-blue-500"><FiEdit /></div>
-              <h2 className="text-xl font-semibold mb-2 text-center">
-                Edit Revenue Entry?
-              </h2>
-              <p className="text-gray-600 text-center">
-                Are you sure you want to edit this revenue entry?
-              </p>
-            </div>
-            <div className="flex gap-4 mt-4 w-full">
-              <button
-                className="flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 focus:outline-none"
-                onClick={() => {
-                  handleEditRevenue(editConfirmModal.revenue);
-                  setEditConfirmModal({ open: false, revenue: null });
-                }}
-              >
-                Confirm
-              </button>
-              <button
-                className="flex-1 py-3 cursor-pointer rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 focus:outline-none"
-                onClick={() => setEditConfirmModal({ open: false, revenue: null })}
-              >
-                Cancel
-              </button>
+
+        {/* View Details Modal - Only for admins */}
+        {viewDetails && isAdmin() && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
+            <div className="bg-white/95 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/20 backdrop-blur-lg">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6 border-b pb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Revenue Details
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      {viewDetails.invoiceNumber
+                        ? `#${viewDetails.invoiceNumber}`
+                        : "Revenue Entry"}
+                    </p>
+                  </div>
+                  <button
+                    onClick={closeDetailsModal}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Close"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">Date</h3>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {viewDetails.date
+                        ? new Date(viewDetails.date).toLocaleDateString(
+                            "en-IN",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Amount
+                    </h3>
+                    <p className="mt-1 text-lg font-semibold text-gray-900">
+                      ₹
+                      {viewDetails.amount
+                        ? parseFloat(viewDetails.amount).toLocaleString(
+                            "en-IN",
+                            {
+                              maximumFractionDigits: 2,
+                            }
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Client Name
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {viewDetails.clientName || "N/A"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Company Name
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {viewDetails.companyName || "N/A"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Payment Method
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900 capitalize">
+                      {viewDetails.paymentMethod ||
+                        viewDetails.receivedThrough ||
+                        "N/A"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Source
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900 capitalize">
+                      {viewDetails.source || "N/A"}
+                    </p>
+                  </div>
+
+                  {viewDetails.invoiceNumber && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Invoice Number
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-900">
+                        #{viewDetails.invoiceNumber}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="md:col-span-2">
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Description
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900 whitespace-pre-line">
+                      {viewDetails.description || "No description provided"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Created By
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {viewDetails.createdBy
+                        ? viewDetails.createdBy.name ||
+                          viewDetails.createdBy.username ||
+                          viewDetails.createdBy.email ||
+                          "Anonymous User"
+                        : "Information not available"}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Created On
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {viewDetails.createdAt
+                        ? new Date(viewDetails.createdAt).toLocaleString(
+                            "en-IN",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+
+                  {viewDetails.invoiceUrl && (
+                    <div className="md:col-span-2">
+                      <h3 className="text-sm font-medium text-gray-500 mb-2">
+                        Invoice
+                      </h3>
+                      <div className="mt-1">
+                        <a
+                          href={viewDetails.invoiceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        >
+                          <svg
+                            className="-ml-0.5 mr-2 h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                          View Invoice
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-8 flex justify-end space-x-3">
+                  <button
+                    onClick={closeDetailsModal}
+                    className="px-4 py-2 text-sm font-semibold rounded-md text-white bg-gray-800 hover:bg-gray-700 transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Edit Confirmation Modal */}
+        {editConfirmModal.open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40 p-4 animate-fadeIn">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-8 relative flex flex-col items-center">
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={() =>
+                    setEditConfirmModal({ open: false, revenue: null })
+                  }
+                  className="text-gray-400 hover:text-gray-600 text-2xl focus:outline-none"
+                  aria-label="Close"
+                >
+                  &times;
+                </button>
+              </div>
+              <div className="mb-4 flex flex-col items-center">
+                <div className="mb-2 text-4xl text-blue-500">
+                  <FiEdit />
+                </div>
+                <h2 className="text-xl font-semibold mb-2 text-center">
+                  Edit Revenue Entry?
+                </h2>
+                <p className="text-gray-600 text-center">
+                  Are you sure you want to edit this revenue entry?
+                </p>
+              </div>
+              <div className="flex gap-4 mt-4 w-full">
+                <button
+                  className="flex-1 py-3 cursor-pointer rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 focus:outline-none"
+                  onClick={() => {
+                    handleEditRevenue(editConfirmModal.revenue);
+                    setEditConfirmModal({ open: false, revenue: null });
+                  }}
+                >
+                  Confirm
+                </button>
+                <button
+                  className="flex-1 py-3 cursor-pointer rounded-lg font-semibold bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 focus:outline-none"
+                  onClick={() =>
+                    setEditConfirmModal({ open: false, revenue: null })
+                  }
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default Revenue;
-              
-            

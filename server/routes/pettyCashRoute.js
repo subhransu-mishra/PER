@@ -4,6 +4,7 @@ const {
   createPettyCash,
   getPettyCash,
   getPettyCashById,
+  updatePettyCash, // Add import
   approvePettyCash,
   rejectPettyCash,
   getPettyCashStats,
@@ -11,10 +12,11 @@ const {
   getMonthlyPettyCashSummary,
   getMonthlyApprovedTotal,
   generatePettyCashReport,
+  getPettyCashAnalytics, // Add import
 } = require("../controllers/pettyCashController");
 
 const authMiddleware = require("../middlewares/auth");
-const upload = require("../middlewares/upload");
+const upload = require("../middlewares/upload"); // Add this missing import
 
 // Static routes first
 router.get("/monthly-approved-total", authMiddleware, getMonthlyApprovedTotal);
@@ -25,7 +27,8 @@ router.get(
 );
 router.get("/next-voucher", authMiddleware, getNextVoucherNumber);
 router.get("/stats", authMiddleware, getPettyCashStats);
-
+router.get("/analytics", authMiddleware, getPettyCashAnalytics); // Add analytics route
+router.post("/edit", authMiddleware, updatePettyCash);
 // Create route
 router.post(
   "/create",
@@ -33,6 +36,9 @@ router.post(
   upload.single("receipt"), // the file field name should be `receipt`
   createPettyCash
 );
+
+// Update petty cash entry
+router.put("/:id", authMiddleware, upload.single("receipt"), updatePettyCash);
 
 // Main listing route
 router.get("/", authMiddleware, getPettyCash);
