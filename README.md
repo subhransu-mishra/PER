@@ -1,238 +1,194 @@
-# PER - Personal Expense & Revenue Management System
+# Project Name
 
-A multi-tenant SaaS application for companies to manage their expenses, petty cash, and revenue. Built with Node.js, Express, MongoDB, and React.
+## Overview
 
-## Features
+A modern web application with a React frontend and Express backend, providing data visualization, document generation, and user authentication capabilities.
 
-### Multi-Tenant Architecture
+## Table of Contents
 
-- **Company Isolation**: Each company has their own data space
-- **Subscription Management**: Trial, Active, Inactive status tracking
-- **Secure Data Segregation**: Users can only access their company's data
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Environment Setup](#environment-setup)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-### User Roles
-
-- **System Admin**: Manages all tenants and can create users for any company
-- **Company Users**: HR, Accountants, CA who manage their company's finances
-
-### Core Functionality
-
-- **Expense Management**: Track, categorize, and approve/reject expenses
-- **Petty Cash Management**: Handle small cash transactions and requests
-- **Revenue Tracking**: Monitor income from various sources
-- **User Management**: Admin can create users for different companies
-
-## Project Structure
-
-```
-PER/
-├── server/                 # Backend API
-│   ├── config/
-│   │   └── db.js          # MongoDB connection
-│   ├── controllers/       # Business logic
-│   │   ├── authController.js
-│   │   ├── expenseController.js
-│   │   ├── pettyCashController.js
-│   │   └── revenueController.js
-│   ├── middlewares/
-│   │   └── auth.js        # JWT authentication
-│   ├── models/            # MongoDB schemas
-│   │   ├── expense.js
-│   │   ├── pettycash.js
-│   │   ├── revenue.js
-│   │   ├── tenant.js
-│   │   └── user.js
-│   ├── routes/            # API endpoints
-│   │   ├── authRoute.js
-│   │   ├── expenseRoute.js
-│   │   ├── pettyCashRoute.js
-│   │   └── revenueRoute.js
-│   ├── .env               # Environment variables
-│   ├── .env.example       # Environment template
-│   └── index.js           # Server entry point
-└── client/                # Frontend React app
-    └── src/
-        ├── components/
-        │   ├── Dashboard/
-        │   │   ├── AdminDashboard.jsx
-        │   │   ├── Expenses.jsx
-        │   │   ├── PettyCash.jsx
-        │   │   └── Revenue.jsx
-        │   └── Navbar.jsx # Authentication UI
-        └── pages/
-```
-
-## Environment Setup
-
-### Server Environment (.env)
-
-```env
-MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/PER"
-JWT_SECRET=your_jwt_secret_key_here
-PORT=3000
-```
-
-## API Endpoints
-
-### Authentication
-
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration (creates company if new)
-
-### Admin Only
-
-- `POST /api/auth/admin/create-user` - Create user for existing company
-- `GET /api/auth/admin/tenants` - Get all companies
-- `GET /api/auth/admin/tenants/:id/users` - Get users for a company
-
-### Expenses
-
-- `POST /api/expenses` - Create expense
-- `GET /api/expenses` - Get company expenses
-- `PATCH /api/expenses/:id/status` - Approve/reject expense (admin only)
-
-### Petty Cash
-
-- `POST /api/petty-cash` - Create petty cash entry
-- `GET /api/petty-cash` - Get company petty cash entries
-
-### Revenue
-
-- `POST /api/revenues` - Create revenue entry
-- `GET /api/revenues` - Get company revenues
-- `PATCH /api/revenues/:id/status` - Update revenue status
-
-## Database Models
-
-### Tenant (Company)
-
-```javascript
-{
-  name: String,           // Company name
-  email: String,          // Contact email
-  subscriptionStatus: String, // 'active', 'inactive', 'trial'
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### User
-
-```javascript
-{
-  email: String,
-  password: String,       // Hashed
-  employeeId: String,
-  tenantId: ObjectId,     // Reference to Tenant
-  role: String,           // 'admin', 'accountant'
-  createdAt: Date
-}
-```
-
-### Expense
-
-```javascript
-{
-  tenantId: ObjectId,
-  userId: ObjectId,
-  amount: Number,
-  description: String,
-  category: String,       // 'office_supplies', 'travel', etc.
-  date: Date,
-  status: String,         // 'pending', 'approved', 'rejected'
-  receiptUrl: String,
-  approvedBy: ObjectId,
-  approvedAt: Date
-}
-```
-
-### Revenue
-
-```javascript
-{
-  tenantId: ObjectId,
-  userId: ObjectId,
-  amount: Number,
-  description: String,
-  source: String,         // 'sales', 'services', 'investment', 'other'
-  clientName: String,
-  invoiceNumber: String,
-  date: Date,
-  status: String          // 'pending', 'received', 'overdue'
-}
-```
-
-## Multi-Tenant Implementation
-
-### Data Isolation
-
-- All financial data (expenses, revenue, petty cash) is filtered by `tenantId`
-- Users can only access data from their own company
-- JWT tokens include `tenantId` for automatic filtering
-
-### User Registration Flow
-
-1. User provides email, password, employeeId, and companyName
-2. System checks if company exists, creates if new
-3. User is assigned to the company with 'accountant' role
-4. JWT token includes user and tenant information
-
-### Admin Management
-
-- System admin uses hardcoded credentials from .env
-- Admin can view all companies and their users
-- Admin can create new users for any existing company
-- Admin has special JWT token with admin privileges
-
-## Security Features
-
-- **JWT Authentication**: Secure token-based authentication
-- **Password Hashing**: bcrypt with 12 salt rounds
-- **Role-based Access**: Different permissions for admin vs users
-- **Data Isolation**: Automatic tenant filtering in all queries
-- **Input Validation**: Required field validation on all endpoints
-
-## Installation & Setup
-
-### Backend
-
-```bash
-cd server
-npm install
-cp .env.example .env
-# Edit .env with your configuration
-npm start
-```
+## Tech Stack
 
 ### Frontend
 
-```bash
-cd client
-npm install
-npm start
+- **Framework**: React 19 with Vite
+- **Routing**: React Router DOM v7
+- **UI/Styling**: Tailwind CSS v4, Framer Motion, Lucide React
+- **Data Visualization**: Chart.js, React Chart.js 2
+- **HTTP Client**: Axios
+- **User Notifications**: React Hot Toast, React Toastify
+- **Carousels/Sliders**: Swiper
+- **Date Handling**: date-fns
+
+### Backend
+
+- **Runtime**: Node.js
+- **Framework**: Express v5
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT, bcrypt
+- **File Handling**: Multer, Cloudinary
+- **Data Validation**: Express Validator
+- **PDF Generation**: PDFKit
+- **Development**: Nodemon
+
+## Features
+
+- **User Authentication & Authorization**: Secure login/registration system using JWT and bcrypt
+- **Cloud-based File Storage**: Upload and manage files using Cloudinary integration
+- **Data Visualization**: Interactive charts and graphs using Chart.js
+- **PDF Document Generation**: Create and download PDF documents with PDFKit
+- **Responsive UI**: Modern, animated interface using Tailwind CSS and Framer Motion
+- **Form Validation**: Client and server-side validation for data integrity
+- **User Notifications**: Toast notifications for improved user experience
+- **Interactive Carousels**: Image/content sliders using Swiper
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Node.js (v16.x or higher recommended)
+- npm (v8.x or higher) or yarn
+- MongoDB (v5.x or higher)
+- Git
+
+## Environment Setup
+
+1. Clone the repository:
+
+2. Set up environment variables by creating `.env` files in both root and client directories.
+
+## Configuration
+
+Create a `.env` file in the server directory with the following variables:
+
+```
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Database Configuration
+MONGODB_URI=mongodb://localhost:27017/your_database_name
+
+# Authentication
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRE=24h
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-## Current Admin Credentials
+## Installation
 
-- Email: `itpluspoint@2025.com`
-- Password: `itpp@9753`
+1. Install backend dependencies:
 
-## Key Features Implemented
+   ```bash
+   cd server
+   npm install
+   ```
 
-1. **Multi-Tenant Registration**: Automatic company creation during user signup
-2. **Admin Dashboard**: Comprehensive tenant and user management
-3. **Expense Management**: Full CRUD with approval workflow
-4. **Revenue Tracking**: Income management with status updates
-5. **Petty Cash**: Small transaction management
-6. **Secure Authentication**: JWT-based with role-based access
-7. **Data Isolation**: Automatic tenant-based data filtering
+2. Install frontend dependencies:
+   ```bash
+   cd client
+   npm install
+   ```
 
-## Next Steps for Production
+## Running the Application
 
-1. Add email verification for new registrations
-2. Implement password reset functionality
-3. Add file upload for receipts and invoices
-4. Implement subscription payment processing
-5. Add comprehensive reporting and analytics
-6. Set up proper logging and monitoring
-7. Add data backup and recovery procedures
+### Development Mode
+
+1. Start the backend server:
+
+   ```bash
+   cd server
+   npm run dev
+   ```
+
+2. Start the frontend development server:
+
+   ```bash
+   cd client
+   npm run dev
+   ```
+
+3. The application should now be running at:
+   - Backend: http://localhost:3000
+   - Frontend: http://localhost:5173 (Vite's default port)
+
+### Production Mode
+
+1. Build the frontend:
+
+   ```bash
+   cd client
+   npm run build
+   ```
+
+2. Start the production server:
+   ```bash
+   cd server
+   npm run dev
+   ```
+
+## API Documentation
+
+The API includes the following key endpoints (update with your actual endpoints):
+
+### Authentication
+
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login a user
+- `GET /api/auth/profile` - Get user profile (requires authentication)
+
+### Files
+
+- `POST /api/upload` - Upload files to Cloudinary
+- `GET /api/files` - Get all files for the authenticated user
+
+### Data
+
+- `GET /api/data` - Fetch data for charts and visualizations
+- `POST /api/generate-pdf` - Generate and download PDF documents
+
+## Testing
+
+For testing functionality:
+
+```bash
+cd server
+npm test
+```
+
+For frontend testing, implement testing using your preferred testing library.
+
+## Deployment
+
+### Building for Production
+
+```bash
+# Build the React frontend
+cd client
+npm run build
+
+# The build files will be in the dist directory
+```
+
+### Hosting Options
+
+- **Frontend**: Vercel, Netlify, or GitHub Pages
+- **Backend**: Heroku, Railway, Render, or AWS
+- **Database**: MongoDB Atlas
+

@@ -206,7 +206,7 @@ const Navbar = () => {
       await login({ email, password });
       closeSigninModal();
       toast.success("Login successful!");
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       toast.error(error.message || "Login failed");
     } finally {
