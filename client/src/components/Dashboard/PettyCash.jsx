@@ -488,6 +488,12 @@ const PettyCash = () => {
       setForm(emptyVoucher);
       setReceiptFile(null);
       setShowModal(false);
+      
+      // Refresh stats and monthly approved total
+      await Promise.all([
+        fetchStats(),
+        fetchMonthlyApprovedTotal()
+      ]);
     } catch (err) {
       toast.error(
         err.response?.data?.message || "Failed to create petty cash entry"
