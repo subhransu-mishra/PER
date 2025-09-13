@@ -12,11 +12,12 @@ connectDB();
 // CORS Configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL, // "https://accrue.onrender.com"
+    origin: "https://accruee.onrender.com", // Your frontend URL
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true, // Optional if using cookies/auth headers
   })
 );
+
 
 // Middleware
 app.use(express.json());
